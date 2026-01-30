@@ -1,0 +1,17 @@
+{
+  "name": "Интерактивная Конституция РФ",
+  "short_name": "Конституция",
+  "description": "Учебный тренажер PrepMate для подготовки к ЕГЭ/ОГЭ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0b0e",
+  "theme_color": "#12141a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}

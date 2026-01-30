@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#12141a" />
+
+  <title>PrepMate — Интерактивная Конституция</title>
+  <meta name="description"
+    content="Интерактивная Конституция РФ от PrepMate: умный поиск, аудио-режим, пояснения с примерами и тренажеры ЕГЭ." />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="icon" href="logo.png" type="image/png">
+</head>
+
+<body>
+  <header class="site-header" role="banner">
+    <div class="brand">
+      <h1>Интерактивная Конституция</h1>
+    </div>
+
+    <div class="logo-container">
+      <img src="logo.png" alt="PrepMate" class="logo" />
+    </div>
+
+    <div class="header-tools">
+      <button id="dictionaryBtn" class="btn" aria-label="Словарь" title="Словарь терминов">📖</button>
+      <button id="game23Btn" class="btn" aria-label="Задание 23" title="ЕГЭ Задание №23">📋</button>
+      <button id="gameBtn" class="btn" aria-label="Тренажер полномочий" title="Игра: Кто за что отвечает?">🎮</button>
+      <button id="fontBtn" class="btn" aria-label="Настройки шрифта" title="Размер текста">Aa</button>
+      <button id="printBtn" class="btn" aria-label="Распечатать" title="Версия для печати">🖨️</button>
+      <button id="markersBtn" class="btn" aria-pressed="false" aria-label="Подсветка ключевых слов"
+        title="Подсветка слов-маркеров">🖍️</button>
+      <button id="themeToggle" class="btn" aria-label="Переключить тему" title="Сменить тему">🌓</button>
+      <button id="teacherModeBtn" class="btn" aria-pressed="false" aria-label="Учебный режим"
+        title="Учительский режим">🎓</button>
+    </div>
+
+    <div id="scrollProgress" class="progress">
+      <div class="bar"></div>
+    </div>
+  </header>
+
+  <main class="layout" role="main">
+    <aside id="sidebarPanel" class="sidebar" aria-label="Оглавление">
+      <div id="egeTimer" class="ege-timer">Загрузка таймера...</div>
+
+      <div class="search-container">
+        <div class="search-box">
+          <input id="searchInput" type="search" placeholder="Поиск по статьям…" aria-label="Поиск" autocomplete="off" />
+          <button id="searchTriggerBtn" class="btn-search" title="Найти">🔍</button>
+        </div>
+        <div id="searchHistory" class="search-history" hidden></div>
+      </div>
+
+      <button id="favFilterBtn" class="btn btn-block" aria-pressed="false">
+        ⭐ Только избранное <span id="favCount" class="badge">0</span>
+      </button>
+
+      <nav id="toc" class="toc" aria-label="Навигация по главам"></nav>
+
+      <a href="https://t.me/Nicky_Lambx" target="_blank" rel="noopener"
+        class="btn btn-block btn-secondary feedback-btn">
+        🐞 Нашли ошибку?
+      </a>
+
+      <section class="sources">
+        <h2>Источники</h2>
+        <ul>
+          <li><a href="https://pravo.gov.ru/constitution/" target="_blank" rel="noopener">Официальный интернет‑портал
+              правовой информации</a></li>
+        </ul>
+      </section>
+    </aside>
+
+    <section id="content" class="content" tabindex="-1" aria-live="polite">
+      <div class="loading">Загрузка глав…</div>
+    </section>
+  </main>
+
+  <nav class="mobile-nav">
+    <button class="nav-item" id="navHome">🏠<br>Главная</button>
+    <button class="nav-item" id="navSearch">🔍<br>Поиск</button>
+    <button class="nav-item" id="navFav">⭐<br>Избранное</button>
+    <button class="nav-item" id="navMenu">☰<br>Меню</button>
+  </nav>
+
+  <button id="backToTop" class="btn-up" aria-label="Вернуться в начало">⬆</button>
+  <button id="btn-return" class="btn-return" aria-label="Вернуться назад">↩ Вернуться назад</button>
+
+  <div id="toast">Ссылка скопирована!</div>
+  <div id="tooltip" role="tooltip"></div>
+
+  <dialog id="mapDialog" class="large-dialog">
+    <header class="dialog-header">
+      <h3>Федеративное устройство (Ст. 65)</h3>
+      <button id="closeMap" class="btn btn-secondary">Закрыть</button>
+    </header>
+    <div class="map-wrapper">
+      <div class="map-container">
+        <h4 class="map-instruction">Нажмите на федеральный округ, чтобы увидеть состав</h4>
+
+        <svg id="russiaMap" viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">
+          <path class="region" id="reg-fe" d="M650,50 L950,50 L980,150 L900,450 L750,500 L600,350 L650,200 Z"
+            data-name="Дальневосточный ФО" />
+          <path class="region" id="reg-sib" d="M450,100 L650,50 L650,200 L600,350 L750,500 L500,550 L400,450 Z"
+            data-name="Сибирский ФО" />
+          <path class="region" id="reg-ural" d="M350,100 L450,100 L400,450 L300,400 Z" data-name="Уральский ФО" />
+          <path class="region" id="reg-nw" d="M150,50 L350,100 L300,250 L100,200 Z" data-name="Северо-Западный ФО" />
+          <path class="region" id="reg-cen" d="M100,200 L300,250 L280,350 L100,300 Z" data-name="Центральный ФО" />
+          <path class="region" id="reg-vol" d="M280,350 L300,250 L300,400 L350,450 L250,450 Z"
+            data-name="Приволжский ФО" />
+          <path class="region" id="reg-south" d="M50,300 L100,300 L100,450 L50,400 Z" data-name="Южный ФО" />
+          <path class="region" id="reg-kav" d="M50,400 L100,450 L80,480 L40,450 Z" data-name="Северо-Кавказский ФО" />
+        </svg>
+      </div>
+      <div id="mapInfoPanel" class="map-info-panel">
+        <h4 id="mapRegionTitle">Выберите регион на карте</h4>
+        <ul id="mapRegionList"></ul>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="game23Dialog" class="large-dialog">
+    <div class="game-header">
+      <h3>Задание №23 ЕГЭ (Конституция)</h3>
+      <button id="closeGame23" class="btn-ghost">✕</button>
+    </div>
+    <div class="game23-body">
+      <p class="game23-task">На основе положений Конституции РФ сформулируйте и подтвердите характеристику:</p>
+      <h2 id="task23Question" class="task23-question">...</h2>
+      <p class="game23-hint">Выберите 3 верных положения из списка:</p>
+
+      <div id="task23Options" class="task23-options"></div>
+
+      <div class="game23-controls">
+        <button id="checkTask23Btn" class="btn btn-primary btn-lg" disabled>Проверить ответ</button>
+        <button id="nextTask23Btn" class="btn btn-secondary" style="display:none">Следующий вопрос</button>
+      </div>
+      <div id="task23Feedback" class="game-feedback"></div>
+    </div>
+  </dialog>
+
+  <dialog id="dictionaryDialog" class="large-dialog">
+    <header class="dialog-header">
+      <h3>Словарь терминов</h3>
+      <button id="closeDictionary" class="btn btn-secondary">Закрыть</button>
+    </header>
+    <div class="dictionary-content" id="dictionaryList"></div>
+  </dialog>
+
+  <dialog id="fontSettingsDialog" class="mini-dialog">
+    <form method="dialog">
+      <h3>Настройки текста</h3>
+      <div class="setting-group">
+        <label>Размер шрифта:</label>
+        <div class="range-controls">
+          <button type="button" id="fontDec">-</button>
+          <span id="fontSizeVal">16px</span>
+          <button type="button" id="fontInc">+</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <label>Межстрочный интервал:</label>
+        <div class="range-controls">
+          <button type="button" id="lhDec">-</button>
+          <span id="lhVal">1.6</span>
+          <button type="button" id="lhInc">+</button>
+        </div>
+      </div>
+      <button class="btn btn-block btn-secondary" style="margin-top:15px">Закрыть</button>
+    </form>
+  </dialog>
+
+  <dialog id="gameDialog" class="game-dialog">
+    <div class="game-header">
+      <h3>Тренажер полномочий (ЕГЭ №13)</h3>
+      <button id="closeGame" class="btn-ghost">✕</button>
+    </div>
+
+    <div id="gameStartScreen">
+      <p>Вам будет дано полномочие. Ваша задача — определить, кто его осуществляет.</p>
+      <div class="stats-preview">Рекорд: <span id="highScore">0</span></div>
+      <button id="startGameBtn" class="btn btn-primary btn-lg">Начать тренировку</button>
+    </div>
+
+    <div id="gamePlayScreen" hidden>
+      <div class="game-score">Счет: <span id="currentScore">0</span></div>
+      <div class="question-card">
+        <div class="question-text" id="questionText">Вопрос...</div>
+      </div>
+      <div class="answers-grid">
+        <button class="ans-btn" data-target="president">Президент РФ</button>
+        <button class="ans-btn" data-target="sf">Совет Федерации</button>
+        <button class="ans-btn" data-target="gd">Государственная Дума</button>
+        <button class="ans-btn" data-target="gov">Правительство РФ</button>
+      </div>
+      <div id="gameFeedback" class="game-feedback"></div>
+    </div>
+  </dialog>
+
+  <dialog id="articleDialog" aria-label="Подробности статьи">
+    <form method="dialog">
+      <header class="dialog-header">
+        <h3 id="dialogTitle"></h3>
+        <menu>
+          <button id="closeDialog" class="btn btn-secondary">Закрыть</button>
+        </menu>
+      </header>
+      <article id="dialogBody"></article>
+      <footer class="dialog-footer">
+        <label class="toggle">
+          <input type="checkbox" id="toggleExplanations" />
+          <span>Показывать пояснения (учебный режим)</span>
+        </label>
+      </footer>
+    </form>
+  </dialog>
+
+  <template id="articleCardTmpl">
+    <article class="card" data-article-id="">
+      <header>
+        <div class="header-content">
+          <div class="breadcrumbs"></div>
+          <h3 class="title"></h3>
+        </div>
+        <div class="meta">
+          <button class="btn-audio btn-ghost" title="Прослушать статью">🔊</button>
+          <button class="btn-fav btn-ghost" title="Добавить в избранное">☆</button>
+          <a class="deeplink btn btn-ghost" title="Скопировать ссылку на статью">🔗</a>
+        </div>
+      </header>
+      <div class="body"></div>
+      <details class="explain">
+        <summary>Пояснение</summary>
+        <div class="explain-body"></div>
+      </details>
+    </article>
+  </template>
+
+  <script src="app.js" defer></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('Ошибка PWA:', err));
+      });
+    }
+  </script>
+</body>
+
+</html>

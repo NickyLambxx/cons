@@ -1,0 +1,917 @@
+/* Интерактивная Конституция — Защищенная версия */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+function safeAddListener(selector, event, handler) {
+    const el = $(selector);
+    if (el) el.addEventListener(event, handler);
+}
+
+const state = {
+    teacherMode: false,
+    markersMode: false,
+    showFavoritesOnly: false,
+    articles: [],
+    favorites: new Set(),
+    returnPosition: null,
+    landingPosition: null,
+    isJumping: false,
+    fontSize: 16,
+    lineHeight: 1.6,
+    searchHistory: [],
+    progress: {},
+    activeSearchQuery: '',
+    speech: null
+};
+
+const LS = {
+    THEME: 'ic-theme',
+    TEACHER: 'ic-teacher-mode',
+    MARKERS: 'ic-markers-mode',
+    FAVORITES: 'ic-favorites',
+    FONT: 'ic-font-settings',
+    HIGHSCORE: 'ic-game-highscore',
+    SEARCH: 'ic-search-history',
+    PROGRESS: 'ic-chapter-progress',
+    CACHE_CHAPTERS: 'ic-chapters-cache'
+};
+
+const DICTIONARY = {
+    "суверенитет": "Независимость государства во внешних делах и верховенство государственной власти во внутренних делах.",
+    "демократическое": "Государство, в котором источником власти является народ, а управление осуществляется через выборы.",
+    "федеративное": "Форма устройства, при которой государство состоит из самостоятельных субъектов (республик, краев), имеющих свои полномочия.",
+    "правовое государство": "Государство, где закон превыше всего, и ему подчиняются все, включая саму власть.",
+    "республиканская": "Форма правления, при которой высшие органы власти избираются на определенный срок.",
+    "светское государство": "Государство, в котором никакая религия не может быть обязательной, а церковь отделена от государства.",
+    "социальное государство": "Государство, политика которого направлена на обеспечение достойной жизни граждан (пенсии, пособия, МРОТ).",
+    "презумпция невиновности": "Принцип, согласно которому человек считается невиновным, пока его вина не доказана судом.",
+    "референдум": "Всенародное голосование граждан по наиболее важным вопросам государственного значения.",
+    "импичмент": "Процедура отрешения Президента от должности парламентом в случае совершения им тяжкого преступления.",
+    "амнистия": "Освобождение от наказания неопределенного круга лиц (объявляется Госдумой).",
+    "помилование": "Освобождение от наказания конкретного лица (осуществляется Президентом).",
+    "экстрадиция": "Выдача преступника другому государству для суда или отбывания наказания."
+};
+
+const MARKERS = {
+    federal: ['регулирование', 'федеральный', 'федеральные', 'основы', 'судоустройство', 'прокуратура', 'амнистия', 'помилование', 'оборона', 'безопасность', 'валютное', 'кредитное', 'таможенное', 'денежная эмиссия', 'стандарты', 'метрологическая', 'геодезия', 'картография', 'государственные награды'],
+    joint: ['совместном', 'обеспечение', 'защита', 'координация', 'охрана', 'общие принципы', 'общие вопросы', 'административное', 'трудовое', 'семейное', 'жилищное', 'адвокатура', 'нотариат', 'кадры']
+};
+
+/* --- ДАННЫЕ ДЛЯ КАРТЫ (Федеральные округа - Полные названия) --- */
+const FEDERAL_DISTRICTS = {
+    "reg-cen": {
+        title: "Центральный федеральный округ",
+        list: "Город федерального значения Москва, Московская область, Белгородская область, Брянская область, Владимирская область, Воронежская область, Ивановская область, Калужская область, Костромская область, Курская область, Липецкая область, Орловская область, Рязанская область, Смоленская область, Тамбовская область, Тверская область, Тульская область, Ярославская область."
+    },
+    "reg-nw": {
+        title: "Северо-Западный федеральный округ",
+        list: "Город федерального значения Санкт-Петербург, Ленинградская область, Архангельская область, Вологодская область, Калининградская область, Мурманская область, Новгородская область, Псковская область, Республика Карелия, Республика Коми, Ненецкий автономный округ."
+    },
+    "reg-south": {
+        title: "Южный федеральный округ",
+        list: "Краснодарский край, Астраханская область, Волгоградская область, Ростовская область, Республика Адыгея, Республика Калмыкия, Республика Крым, Город федерального значения Севастополь."
+    },
+    "reg-kav": {
+        title: "Северо-Кавказский федеральный округ",
+        list: "Ставропольский край, Республика Дагестан, Республика Ингушетия, Кабардино-Балкарская Республика, Карачаево-Черкесская Республика, Республика Северная Осетия — Алания, Чеченская Республика."
+    },
+    "reg-vol": {
+        title: "Приволжский федеральный округ",
+        list: "Республика Татарстан, Республика Башкортостан, Чувашская Республика, Пермский край, Нижегородская область, Самарская область, Саратовская область, Ульяновская область, Пензенская область, Оренбургская область, Кировская область, Республика Марий Эл, Республика Мордовия, Удмуртская Республика."
+    },
+    "reg-ural": {
+        title: "Уральский федеральный округ",
+        list: "Свердловская область, Челябинская область, Курганская область, Тюменская область, Ханты-Мансийский автономный округ — Югра, Ямало-Ненецкий автономный округ."
+    },
+    "reg-sib": {
+        title: "Сибирский федеральный округ",
+        list: "Новосибирская область, Омская область, Томская область, Кемеровская область, Иркутская область, Красноярский край, Алтайский край, Республика Алтай, Республика Тыва, Республика Хакасия."
+    },
+    "reg-fe": {
+        title: "Дальневосточный федеральный округ",
+        list: "Приморский край, Хабаровский край, Амурская область, Магаданская область, Сахалинская область, Республика Саха (Якутия), Республика Бурятия, Забайкальский край, Еврейская автономная область, Чукотский автономный округ, Камчатский край."
+    }
+};
+
+/* --- ИГРА №13 (Полномочия) --- */
+const POWERS = [
+    { text: "Объявление амнистии", target: "gd" },
+    { text: "Осуществление помилования", target: "president" },
+    { text: "Назначение выборов Президента РФ", target: "sf" },
+    { text: "Утверждение изменения границ между субъектами РФ", target: "sf" },
+    { text: "Разработка федерального бюджета", target: "gov" },
+    { text: "Управление федеральной собственностью", target: "gov" },
+    { text: "Назначение Председателя Центрального банка", target: "gd" },
+    { text: "Решение вопроса о возможности использования ВС РФ за пределами территории", target: "sf" },
+    { text: "Обеспечение проведения единой финансовой политики", target: "gov" },
+    { text: "Награждение государственными наградами РФ", target: "president" },
+    { text: "Введение военного положения", target: "president" },
+    { text: "Объявление недоверия Правительству РФ", target: "gd" },
+    { text: "Назначение судей Конституционного Суда", target: "sf" },
+    { text: "Руководство внешней политикой РФ", target: "president" },
+    { text: "Обеспечение поддержки НКО и волонтеров", target: "gov" }
+];
+
+const game = { score: 0, currentQuestion: null, isBusy: false };
+
+function initGame() {
+    safeAddListener('#gameBtn', 'click', () => {
+        const hs = $('#highScore');
+        if (hs) hs.textContent = localStorage.getItem(LS.HIGHSCORE) || 0;
+        const start = $('#gameStartScreen');
+        const play = $('#gamePlayScreen');
+        if (start) start.hidden = false;
+        if (play) play.hidden = true;
+        const dlg = $('#gameDialog');
+        if (dlg) dlg.showModal();
+    });
+
+    safeAddListener('#closeGame', 'click', () => $('#gameDialog').close());
+    safeAddListener('#startGameBtn', 'click', () => {
+        game.score = 0;
+        updateGameScore();
+        $('#gameStartScreen').hidden = true;
+        $('#gamePlayScreen').hidden = false;
+        nextQuestion();
+    });
+
+    $$('.ans-btn').forEach(btn => btn.addEventListener('click', (e) => checkAnswer(e.target)));
+}
+
+function nextQuestion() {
+    game.isBusy = false;
+    const randomIndex = Math.floor(Math.random() * POWERS.length);
+    game.currentQuestion = POWERS[randomIndex];
+    const qText = $('#questionText');
+    if (qText) {
+        qText.style.opacity = 0;
+        setTimeout(() => { qText.textContent = game.currentQuestion.text; qText.style.opacity = 1; }, 200);
+    }
+    $$('.ans-btn').forEach(btn => btn.className = 'ans-btn');
+    const fb = $('#gameFeedback');
+    if (fb) fb.textContent = "";
+}
+
+function checkAnswer(btn) {
+    if (game.isBusy) return;
+    game.isBusy = true;
+    const target = btn.dataset.target;
+    const isCorrect = target === game.currentQuestion.target;
+    const fb = $('#gameFeedback');
+
+    if (isCorrect) {
+        btn.classList.add('correct');
+        game.score++;
+        if (fb) { fb.textContent = "Верно! 🎉"; fb.style.color = "#22c55e"; }
+    } else {
+        btn.classList.add('wrong');
+        const correctBtn = $(`.ans-btn[data-target="${game.currentQuestion.target}"]`);
+        if (correctBtn) correctBtn.classList.add('correct');
+        if (fb) { fb.textContent = "Ошибка 😔"; fb.style.color = "#ef4444"; }
+    }
+    updateGameScore();
+    const currentHigh = parseInt(localStorage.getItem(LS.HIGHSCORE) || 0);
+    if (game.score > currentHigh) localStorage.setItem(LS.HIGHSCORE, game.score);
+    setTimeout(nextQuestion, 1500);
+}
+
+function updateGameScore() {
+    const sc = $('#currentScore');
+    if (sc) sc.textContent = game.score;
+}
+
+/* --- ЗАДАНИЕ №23 (Фича 2 - Тренажер) --- */
+const TASKS_23 = [
+    {
+        question: "РФ — социальное государство",
+        options: [
+            { id: 1, text: "Охрана труда и здоровья людей", correct: true },
+            { id: 2, text: "Установление гарантированного МРОТ", correct: true },
+            { id: 3, text: "Разделение государственной власти на три ветви", correct: false },
+            { id: 4, text: "Обеспечение государственной поддержки семьи", correct: true },
+            { id: 5, text: "Признание идеологического многообразия", correct: false }
+        ]
+    },
+    {
+        question: "РФ — светское государство",
+        options: [
+            { id: 1, text: "Никакая религия не может устанавливаться в качестве государственной", correct: true },
+            { id: 2, text: "Религиозные объединения отделены от государства", correct: true },
+            { id: 3, text: "Во взаимоотношениях с федеральными органами все субъекты равноправны", correct: false },
+            { id: 4, text: "Гарантия свободы совести и вероисповедания", correct: true },
+            { id: 5, text: "Земля и другие природные ресурсы используются как основа жизни", correct: false }
+        ]
+    },
+    {
+        question: "РФ — республиканская форма правления",
+        options: [
+            { id: 1, text: "Глава государства (Президент) избирается сроком на 6 лет", correct: true },
+            { id: 2, text: "Государственная Дума избирается сроком на 5 лет", correct: true },
+            { id: 3, text: "Единственным источником власти является многонациональный народ", correct: false }, // Это демократия
+            { id: 4, text: "Высшим непосредственным выражением власти народа являются выборы", correct: true },
+            { id: 5, text: "Осуществление правосудия только судом", correct: false }
+        ]
+    }
+];
+
+const game23 = { currentTaskIndex: 0, selectedIds: new Set() };
+
+function initGame23() {
+    safeAddListener('#game23Btn', 'click', () => {
+        game23.currentTaskIndex = 0;
+        renderTask23();
+        $('#game23Dialog').showModal();
+    });
+    safeAddListener('#closeGame23', 'click', () => $('#game23Dialog').close());
+
+    safeAddListener('#checkTask23Btn', 'click', checkTask23);
+    safeAddListener('#nextTask23Btn', 'click', () => {
+        game23.currentTaskIndex = (game23.currentTaskIndex + 1) % TASKS_23.length;
+        renderTask23();
+    });
+}
+
+function renderTask23() {
+    const task = TASKS_23[game23.currentTaskIndex];
+    game23.selectedIds.clear();
+
+    $('#task23Question').textContent = task.question;
+    const container = $('#task23Options');
+    container.innerHTML = '';
+
+    // Перемешаем опции для интереса
+    const shuffled = [...task.options].sort(() => Math.random() - 0.5);
+
+    shuffled.forEach(opt => {
+        const div = document.createElement('div');
+        div.className = 'task23-option';
+        div.textContent = opt.text;
+        div.dataset.id = opt.id;
+        div.addEventListener('click', () => toggleOption23(div, opt.id));
+        container.appendChild(div);
+    });
+
+    $('#checkTask23Btn').disabled = true;
+    $('#checkTask23Btn').style.display = 'inline-block';
+    $('#nextTask23Btn').style.display = 'none';
+    $('#task23Feedback').textContent = '';
+}
+
+function toggleOption23(el, id) {
+    // Если уже проверено, не даем менять
+    if ($('#nextTask23Btn').style.display === 'inline-block') return;
+
+    if (game23.selectedIds.has(id)) {
+        game23.selectedIds.delete(id);
+        el.classList.remove('selected');
+    } else {
+        if (game23.selectedIds.size < 3) {
+            game23.selectedIds.add(id);
+            el.classList.add('selected');
+        }
+    }
+
+    $('#checkTask23Btn').disabled = game23.selectedIds.size !== 3;
+}
+
+function checkTask23() {
+    const task = TASKS_23[game23.currentTaskIndex];
+    const correctIds = new Set(task.options.filter(o => o.correct).map(o => o.id));
+
+    let errors = 0;
+
+    $$('.task23-option').forEach(el => {
+        const id = parseInt(el.dataset.id);
+        const isSelected = game23.selectedIds.has(id);
+        const isCorrect = correctIds.has(id);
+
+        if (isSelected && isCorrect) {
+            el.classList.add('correct');
+        } else if (isSelected && !isCorrect) {
+            el.classList.add('wrong');
+            errors++;
+        } else if (!isSelected && isCorrect) {
+            // Показать, что нужно было выбрать
+            el.style.border = "2px dashed #22c55e";
+        }
+    });
+
+    const fb = $('#task23Feedback');
+    if (errors === 0 && game23.selectedIds.size === 3) {
+        fb.textContent = "Отлично! Все верно. +3 балла";
+        fb.style.color = "#22c55e";
+    } else {
+        fb.textContent = `Ошибок: ${errors}. Попробуйте запомнить верные положения.`;
+        fb.style.color = "#ef4444";
+    }
+
+    $('#checkTask23Btn').style.display = 'none';
+    $('#nextTask23Btn').style.display = 'inline-block';
+}
+
+/* --- ШРИФТЫ --- */
+function initFontSettings() {
+    const saved = JSON.parse(localStorage.getItem(LS.FONT));
+    if (saved) {
+        state.fontSize = saved.size;
+        state.lineHeight = saved.height;
+    }
+    applyFontSettings();
+
+    safeAddListener('#fontBtn', 'click', () => {
+        const dlg = $('#fontSettingsDialog');
+        if (dlg) dlg.open ? dlg.close() : dlg.show();
+    });
+
+    safeAddListener('#fontInc', 'click', () => changeFont(1));
+    safeAddListener('#fontDec', 'click', () => changeFont(-1));
+    safeAddListener('#lhInc', 'click', () => changeLH(0.1));
+    safeAddListener('#lhDec', 'click', () => changeLH(-0.1));
+}
+
+function changeFont(delta) {
+    state.fontSize = Math.max(12, Math.min(24, state.fontSize + delta));
+    applyFontSettings();
+}
+
+function changeLH(delta) {
+    state.lineHeight = Math.max(1.2, Math.min(2.0, parseFloat((state.lineHeight + delta).toFixed(1))));
+    applyFontSettings();
+}
+
+function applyFontSettings() {
+    document.documentElement.style.setProperty('--font-size', state.fontSize + 'px');
+    document.documentElement.style.setProperty('--line-height', state.lineHeight);
+    localStorage.setItem(LS.FONT, JSON.stringify({ size: state.fontSize, height: state.lineHeight }));
+}
+
+/* --- ТАЙМЕР --- */
+function initTimer() {
+    const timerEl = $('#egeTimer');
+    if (!timerEl) return;
+    const examDate = new Date('2026-06-11T09:00:00');
+
+    function update() {
+        const now = new Date();
+        const diff = examDate - now;
+        if (diff <= 0) { timerEl.innerHTML = "ЕГЭ уже идет!"; return; }
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        let txt = 'дней';
+        const lastDigit = days % 10;
+        const lastTwo = days % 100;
+        if (lastDigit === 1 && lastTwo !== 11) txt = 'день';
+        else if ([2, 3, 4].includes(lastDigit) && ![12, 13, 14].includes(lastTwo)) txt = 'дня';
+        timerEl.innerHTML = `До ЕГЭ по обществознанию:<br><span>${days} ${txt}</span>`;
+    }
+    update();
+    setInterval(update, 1000 * 60 * 60);
+}
+
+/* --- ПОИСК --- */
+function initSearchHistory() {
+    const stored = localStorage.getItem(LS.SEARCH);
+    if (stored) state.searchHistory = JSON.parse(stored);
+
+    const input = $('#searchInput');
+    const container = $('#searchHistory');
+    if (!input || !container) return;
+
+    input.addEventListener('focus', () => {
+        if (state.searchHistory.length > 0 && input.value === '') {
+            renderSearchHistory();
+            container.hidden = false;
+        }
+    });
+    input.addEventListener('input', () => { container.hidden = true; });
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-container')) container.hidden = true;
+    });
+}
+
+function saveSearchQuery(query) {
+    if (!query || query.length < 2) return;
+    state.searchHistory = state.searchHistory.filter(q => q !== query);
+    state.searchHistory.unshift(query);
+    if (state.searchHistory.length > 5) state.searchHistory.pop();
+    localStorage.setItem(LS.SEARCH, JSON.stringify(state.searchHistory));
+}
+
+function renderSearchHistory() {
+    const container = $('#searchHistory');
+    if (!container) return;
+    container.innerHTML = '';
+    state.searchHistory.forEach(q => {
+        const item = document.createElement('div');
+        item.className = 'search-history-item';
+        item.textContent = q;
+        item.addEventListener('click', () => {
+            $('#searchInput').value = q;
+            container.hidden = true;
+            performSearch(q);
+        });
+        container.appendChild(item);
+    });
+}
+
+function performSearch(query) {
+    saveSearchQuery(query);
+    filterArticles(query);
+    $('#searchHistory').hidden = true;
+}
+
+function processText(text) {
+    const articleRegex = /(стать(?:ей|ями|е|ю|я|и)\s+)((?:[\d\.\,\s–-]+|(?:\([^\)]+\))|и)+)/gi;
+    text = text.replace(articleRegex, (match, prefix, listContent) => {
+        const linkedList = listContent.replace(/((?:часть|пункт)\s+)?(\d+(?:\.\d+)?)/gi, (m, keyword, num) => {
+            if (keyword) return m;
+            const targetArt = state.articles.find(a => a.title.startsWith(`Статья ${num}`));
+            if (targetArt) return `<a href="#${targetArt.id}" class="cross-link" data-target="${targetArt.id}">${num}</a>`;
+            return num;
+        });
+        return prefix + linkedList;
+    });
+
+    for (let term in DICTIONARY) {
+        const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${safeTerm}[а-я]*)`, 'gi');
+        text = text.replace(regex, (match) => {
+            if (match.includes('<') || match.includes('>')) return match;
+            return `<span class="term" data-term="${term}">${match}</span>`;
+        });
+    }
+
+    if (state.markersMode) {
+        const escapeReg = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        MARKERS.federal.forEach(word => {
+            const regex = new RegExp(`(${escapeReg(word)})`, 'gi');
+            text = text.replace(regex, '<span class="mark-fed">$1</span>');
+        });
+        MARKERS.joint.forEach(word => {
+            const regex = new RegExp(`(${escapeReg(word)})`, 'gi');
+            text = text.replace(regex, '<span class="mark-joint">$1</span>');
+        });
+    }
+    return text;
+}
+
+function loadFavorites() {
+    const stored = localStorage.getItem(LS.FAVORITES);
+    if (stored) { state.favorites = new Set(JSON.parse(stored)); }
+    updateFavCount();
+}
+
+function toggleFavorite(id) {
+    if (state.favorites.has(id)) state.favorites.delete(id);
+    else state.favorites.add(id);
+    localStorage.setItem(LS.FAVORITES, JSON.stringify([...state.favorites]));
+    updateFavCount();
+    renderArticles();
+}
+
+function updateFavCount() {
+    const badge = $('#favCount');
+    if (badge) badge.textContent = state.favorites.size;
+}
+
+function setFavFilterMode() {
+    state.showFavoritesOnly = !state.showFavoritesOnly;
+    const btn = $('#favFilterBtn');
+    if (btn) btn.setAttribute('aria-pressed', state.showFavoritesOnly ? 'true' : 'false');
+    const search = $('#searchInput');
+    if (search) search.value = '';
+    state.activeSearchQuery = '';
+    renderArticles();
+}
+
+function applyTheme(init = false) {
+    let t = localStorage.getItem(LS.THEME);
+    if (!t && init) {
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        t = systemPrefersDark ? 'dark' : 'light';
+    } else if (!t) { t = 'dark'; }
+    document.documentElement.classList.toggle('light', t === 'light');
+    if (!init) updateScrollState();
+}
+
+function toggleTheme() {
+    const isLight = document.documentElement.classList.contains('light');
+    const newTheme = isLight ? 'dark' : 'light';
+    localStorage.setItem(LS.THEME, newTheme);
+    applyTheme();
+}
+
+function updateScrollState() {
+    const scrollTop = window.scrollY;
+    const bar = $('#scrollProgress .bar');
+    if (bar) {
+        const docHeight = document.body.scrollHeight;
+        const winHeight = window.innerHeight;
+        const scrollPercent = scrollTop / (docHeight - winHeight);
+        bar.style.width = Math.round(scrollPercent * 100) + '%';
+    }
+    const btnUp = $('#backToTop');
+    if (btnUp) {
+        if (scrollTop > 300) btnUp.classList.add('visible');
+        else btnUp.classList.remove('visible');
+    }
+    if (state.returnPosition !== null && !state.isJumping && state.landingPosition !== null) {
+        const diff = Math.abs(scrollTop - state.landingPosition);
+        if (diff > 2500) {
+            hideReturnButton();
+            state.returnPosition = null;
+            state.landingPosition = null;
+        }
+    }
+}
+
+function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function showReturnButton() { const btn = $('#btn-return'); if (btn) btn.classList.add('visible'); }
+function hideReturnButton() { const btn = $('#btn-return'); if (btn) btn.classList.remove('visible'); }
+
+function returnBack() {
+    if (state.returnPosition !== null) {
+        state.isJumping = true;
+        window.scrollTo({ top: state.returnPosition, behavior: 'smooth' });
+        hideReturnButton();
+        setTimeout(() => {
+            state.isJumping = false;
+            state.returnPosition = null;
+            state.landingPosition = null;
+        }, 1000);
+    }
+}
+
+function buildTOC() {
+    const nav = $('#toc');
+    if (!nav) return;
+    nav.innerHTML = '<div class="toc-title">Оглавление</div><ul class="toc-list"></ul>';
+    const ul = $('.toc-list', nav);
+
+    const chapters = {};
+    state.articles.forEach(a => {
+        if (!chapters[a.chapterTitle]) chapters[a.chapterTitle] = [];
+        chapters[a.chapterTitle].push(a);
+    });
+
+    Object.keys(chapters).forEach(chTitle => {
+        const li = document.createElement('li');
+        li.className = 'toc-chapter';
+        const header = document.createElement('div');
+        header.className = 'toc-chapter-header';
+        header.innerHTML = `<span>${chTitle}</span><span class="toc-toggle-icon">▼</span>`;
+        header.addEventListener('click', () => { li.classList.toggle('open'); });
+
+        const subUl = document.createElement('ul');
+        subUl.className = 'toc-articles';
+        chapters[chTitle].forEach(art => {
+            const subLi = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = '#';
+            a.textContent = art.title;
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                if (state.showFavoritesOnly) setFavFilterMode();
+                const el = document.getElementById(art.id);
+                if (el) {
+                    const offset = 80;
+                    const bodyRect = document.body.getBoundingClientRect().top;
+                    const elementRect = el.getBoundingClientRect().top;
+                    const elementPosition = elementRect - bodyRect;
+                    window.scrollTo({ top: elementPosition - offset, behavior: "smooth" });
+                }
+            });
+            subLi.append(a);
+            subUl.append(subLi);
+        });
+        li.append(header);
+        li.append(subUl);
+        ul.append(li);
+    });
+}
+
+function renderArticles(list = state.articles) {
+    const container = $('#content');
+    if (!container) return;
+    container.innerHTML = '';
+
+    let displayList = list;
+    if (state.showFavoritesOnly) {
+        displayList = list.filter(a => state.favorites.has(a.id));
+        if (displayList.length === 0) {
+            container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--muted)">В избранном пока ничего нет.</div>';
+            return;
+        }
+    }
+
+    const template = $('#articleCardTmpl');
+
+    displayList.forEach(a => {
+        const node = template.content.cloneNode(true);
+        const card = $('.card', node);
+        card.dataset.articleId = a.id;
+        card.id = a.id;
+
+        const crumbs = $('.breadcrumbs', node);
+        const chShort = a.chapterTitle.split('.')[0] || a.chapterTitle;
+        crumbs.textContent = `${chShort.trim()} > ${a.title}`;
+
+        $('.title', node).textContent = a.title;
+
+        let processedBody = processText(a.bodyHTML);
+        if (state.activeSearchQuery) {
+            const escaped = state.activeSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp(`(${escaped})`, 'gi');
+            processedBody = processedBody.replace(re, '<mark>$1</mark>');
+        }
+        $('.body', node).innerHTML = processedBody;
+
+        const explain = $('.explain', node);
+        let processedExplain = a.explainHTML ? processText(a.explainHTML) : '';
+        let foundInExplain = false;
+
+        if (a.explainHTML) {
+            if (state.activeSearchQuery) {
+                const escaped = state.activeSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const re = new RegExp(`(${escaped})`, 'gi');
+                if (re.test(processedExplain)) foundInExplain = true;
+                processedExplain = processedExplain.replace(re, '<mark>$1</mark>');
+            }
+            $('.explain-body', node).innerHTML = processedExplain;
+
+            if (foundInExplain) { explain.hidden = false; explain.open = true; }
+            else { explain.hidden = !state.teacherMode; explain.open = false; }
+        } else { explain.hidden = true; }
+
+        const favBtn = $('.btn-fav', node);
+        const isFav = state.favorites.has(a.id);
+        favBtn.textContent = isFav ? '★' : '☆';
+        if (isFav) favBtn.classList.add('active');
+        favBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleFavorite(a.id); });
+
+        const audioBtn = $('.btn-audio', node);
+        audioBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleSpeech(a.bodyHTML.replace(/<[^>]+>/g, ' '), audioBtn); });
+
+        const link = $('.deeplink', node);
+        link.href = `#${a.id}`;
+        link.addEventListener('click', e => {
+            e.preventDefault(); e.stopPropagation();
+            history.replaceState(null, '', `#${a.id}`);
+            navigator.clipboard.writeText(window.location.href).then(showToast);
+        });
+
+        if (a.title.includes('Статья 65')) {
+            const mapBtn = document.createElement('button');
+            mapBtn.className = 'btn btn-primary';
+            mapBtn.style.marginTop = '10px';
+            mapBtn.innerHTML = '🗺️ Открыть карту РФ';
+            mapBtn.onclick = () => $('#mapDialog').showModal();
+            $('.body', node).appendChild(mapBtn);
+        }
+
+        container.append(node);
+    });
+
+    initDynamicEvents(container);
+}
+
+function initDynamicEvents(container) {
+    const tooltip = $('#tooltip');
+    container.querySelectorAll('.term').forEach(term => {
+        term.addEventListener('mouseenter', (e) => {
+            const def = DICTIONARY[term.dataset.term];
+            if (def && tooltip) {
+                tooltip.innerHTML = `<b>${term.dataset.term}</b>${def}`;
+                tooltip.classList.add('show');
+                moveTooltip(e);
+            }
+        });
+        term.addEventListener('mousemove', (e) => { if (tooltip) moveTooltip(e); });
+        term.addEventListener('mouseleave', () => { if (tooltip) tooltip.classList.remove('show'); });
+    });
+    container.querySelectorAll('.cross-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            state.returnPosition = window.scrollY; state.isJumping = true;
+            const targetId = link.dataset.target;
+            const el = document.getElementById(targetId);
+            if (el) {
+                const offset = 80;
+                const elementPosition = el.getBoundingClientRect().top + window.scrollY;
+                window.scrollTo({ top: elementPosition - offset, behavior: "smooth" });
+                state.landingPosition = elementPosition - offset;
+                showReturnButton();
+                el.classList.add('highlight');
+                setTimeout(() => { el.classList.remove('highlight'); state.isJumping = false; }, 1000);
+            }
+        });
+    });
+}
+
+function moveTooltip(e) {
+    const tooltip = $('#tooltip'); if (!tooltip) return;
+    const x = e.clientX; const y = e.clientY;
+    tooltip.style.left = (x + 15) + 'px'; tooltip.style.top = (y + 15) + 'px';
+    if (x + 320 > window.innerWidth) tooltip.style.left = (x - 315) + 'px';
+    if (y + 100 > window.innerHeight) tooltip.style.top = (y - 100) + 'px';
+}
+
+function showToast() {
+    const toast = $('#toast'); if (!toast) return;
+    toast.className = "show";
+    setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+}
+
+function filterArticles(query) {
+    query = query.trim().toLowerCase(); state.activeSearchQuery = query;
+    if (!query) { renderArticles(state.articles); return; }
+    const sourceList = state.showFavoritesOnly ? state.articles.filter(a => state.favorites.has(a.id)) : state.articles;
+    const filtered = sourceList.filter(a => {
+        const t = a.title.toLowerCase();
+        const body = a.bodyHTML.replace(/<[^>]+>/g, ' ').toLowerCase();
+        const exp = (a.explainHTML || '').replace(/<[^>]+>/g, ' ').toLowerCase();
+        return t.includes(query) || body.includes(query) || exp.includes(query);
+    });
+    renderArticles(filtered);
+}
+
+function initDictionary() {
+    safeAddListener('#dictionaryBtn', 'click', () => {
+        const dlg = $('#dictionaryDialog'); if (!dlg) return;
+        const list = $('#dictionaryList');
+        if (list && list.innerHTML === '') {
+            Object.keys(DICTIONARY).sort().forEach(term => {
+                const div = document.createElement('div');
+                div.className = 'dict-item';
+                div.innerHTML = `<span class="dict-term">${term.charAt(0).toUpperCase() + term.slice(1)}</span><span class="dict-def">${DICTIONARY[term]}</span>`;
+                list.appendChild(div);
+            });
+        }
+        dlg.showModal();
+    });
+    safeAddListener('#closeDictionary', 'click', () => $('#dictionaryDialog').close());
+}
+
+function toggleSpeech(text, btn) {
+    if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        if (btn.classList.contains('active')) { $$('.btn-audio').forEach(b => b.classList.remove('active')); return; }
+    }
+    $$('.btn-audio').forEach(b => b.classList.remove('active'));
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ru-RU';
+    utterance.onend = () => { btn.classList.remove('active'); };
+    btn.classList.add('active');
+    window.speechSynthesis.speak(utterance);
+}
+
+/* --- КАРТА (Логика) --- */
+function initMap() {
+    safeAddListener('#closeMap', 'click', () => $('#mapDialog').close());
+    const title = $('#mapRegionTitle');
+    const list = $('#mapRegionList');
+
+    $$('.region').forEach(reg => {
+        reg.addEventListener('click', (e) => {
+            const id = e.target.id;
+            const data = FEDERAL_DISTRICTS[id];
+            if (data) {
+                title.textContent = data.title;
+                list.innerHTML = '';
+                const items = data.list.split(',').map(s => s.trim());
+                items.forEach(i => {
+                    const li = document.createElement('li');
+                    li.textContent = i;
+                    list.appendChild(li);
+                });
+            }
+        });
+    });
+}
+
+function initMobileNav() {
+    safeAddListener('#navHome', 'click', () => scrollToTop());
+    safeAddListener('#navSearch', 'click', () => { $('#searchInput').focus(); scrollToTop(); });
+    safeAddListener('#navFav', 'click', () => { setFavFilterMode(); $('#navFav').classList.toggle('active'); });
+    safeAddListener('#navMenu', 'click', () => { $('#sidebarPanel').classList.toggle('visible'); });
+}
+
+async function loadChapters() {
+    const container = $('#content');
+    const cachedData = localStorage.getItem(LS.CACHE_CHAPTERS);
+    if (cachedData) {
+        try {
+            state.articles = JSON.parse(cachedData);
+            renderArticles(); buildTOC();
+            if (container) container.classList.remove('loading');
+        } catch (e) { console.error(e); }
+    }
+
+    try {
+        const files = [
+            'chapters/chapter1.html', 'chapters/chapter2.html', 'chapters/chapter3.html',
+            'chapters/chapter4.html', 'chapters/chapter5.html', 'chapters/chapter6.html',
+            'chapters/chapter7.html', 'chapters/chapter8.html', 'chapters/chapter9.html'
+        ];
+        const responses = await Promise.all(files.map(f => fetch(f).then(r => r.text())));
+        const parser = new DOMParser();
+        let newArticles = [];
+
+        responses.forEach((html, index) => {
+            const doc = parser.parseFromString(html, 'text/html');
+            const chapterTitle = doc.querySelector('h2')?.textContent?.trim() || `Глава ${index + 1}`;
+            doc.querySelectorAll('article.interactive-article, article').forEach(artNode => {
+                const id = artNode.id || `article-${index}-${Math.random().toString(36).slice(2, 7)}`;
+                const title = artNode.getAttribute('data-title') || artNode.querySelector('h3')?.textContent?.trim() || 'Статья';
+                const bodyClone = artNode.cloneNode(true);
+                bodyClone.querySelector('h3')?.remove();
+                const explain = artNode.getAttribute('data-comment') || '';
+                newArticles.push({ id, title, bodyHTML: bodyClone.innerHTML, explainHTML: explain, chapterTitle });
+            });
+        });
+
+        state.articles = newArticles;
+        try { localStorage.setItem(LS.CACHE_CHAPTERS, JSON.stringify(newArticles)); } catch (e) { }
+        renderArticles(); buildTOC(); applyFontSettings();
+        if (container) container.classList.remove('loading');
+        updateScrollState();
+    } catch (e) {
+        if (!state.articles.length && container) {
+            container.innerHTML = `<div class="error" style="color:red;padding:20px;border:1px solid red">Ошибка загрузки: ${e.message}</div>`;
+        }
+    }
+}
+
+function openDialogById(id) {
+    const art = state.articles.find(x => x.id === id); if (!art) return;
+    const dlg = $('#articleDialog'); if (!dlg) return;
+    $('#dialogTitle').textContent = art.title;
+    $('#dialogBody').innerHTML = processText(art.bodyHTML) + (art.explainHTML ? `<hr><div class="muted">Пояснение:</div>${processText(art.explainHTML)}` : '');
+    initDynamicEvents($('#dialogBody'));
+    dlg.showModal();
+}
+
+function setTeacherMode(isActive) {
+    state.teacherMode = isActive; localStorage.setItem(LS.TEACHER, isActive ? '1' : '0');
+    const btn = $('#teacherModeBtn'); if (btn) btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    const toggle = $('#toggleExplanations'); if (toggle) toggle.checked = isActive;
+    if (!state.activeSearchQuery) { $$('#content details.explain').forEach(d => d.hidden = !isActive); } else { renderArticles(); }
+}
+
+function setMarkersMode(isActive) {
+    state.markersMode = isActive; localStorage.setItem(LS.MARKERS, isActive ? '1' : '0');
+    const btn = $('#markersBtn'); if (btn) btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    renderArticles();
+}
+
+function initEvents() {
+    safeAddListener('#themeToggle', 'click', toggleTheme);
+    safeAddListener('#printBtn', 'click', () => window.print());
+    safeAddListener('#teacherModeBtn', 'click', () => setTeacherMode(!state.teacherMode));
+    safeAddListener('#markersBtn', 'click', () => setMarkersMode(!state.markersMode));
+    safeAddListener('#favFilterBtn', 'click', setFavFilterMode);
+    safeAddListener('#closeDialog', 'click', () => $('#articleDialog').close());
+    safeAddListener('#toggleExplanations', 'change', e => setTeacherMode(e.target.checked));
+
+    const searchInput = $('#searchInput');
+    const searchBtn = $('#searchTriggerBtn');
+    if (searchInput) searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') performSearch(searchInput.value); });
+    if (searchBtn) searchBtn.addEventListener('click', () => { if (searchInput) performSearch(searchInput.value); });
+
+    safeAddListener('#backToTop', 'click', scrollToTop);
+    safeAddListener('#btn-return', 'click', returnBack);
+
+    const content = $('#content');
+    if (content) {
+        content.addEventListener('click', e => {
+            if (e.target.closest('.term') || e.target.closest('.cross-link') || e.target.closest('button')) return;
+            const card = e.target.closest('.card');
+            if (card && e.altKey) openDialogById(card.dataset.articleId);
+        });
+        content.addEventListener('dblclick', e => {
+            if (e.target.closest('.term') || e.target.closest('.cross-link') || e.target.closest('button')) return;
+            const card = e.target.closest('.card');
+            if (card) openDialogById(card.dataset.articleId);
+        });
+    }
+
+    window.addEventListener('hashchange', () => {
+        const hash = location.hash.replace('#', ''); if (!hash) return;
+        const target = document.getElementById(hash);
+        if (target) { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); target.classList.add('highlight'); setTimeout(() => target.classList.remove('highlight'), 1500); }
+    });
+    window.addEventListener('scroll', updateScrollState);
+    window.addEventListener('keydown', e => {
+        if (e.key === '/' && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); $('#searchInput').focus(); }
+    });
+}
+
+function boot() {
+    applyTheme(true);
+    const teacherMode = localStorage.getItem(LS.TEACHER) === '1'; setTeacherMode(teacherMode);
+    const markersMode = localStorage.getItem(LS.MARKERS) === '1'; state.markersMode = markersMode;
+    const mBtn = $('#markersBtn'); if (mBtn) mBtn.setAttribute('aria-pressed', markersMode ? 'true' : 'false');
+
+    loadFavorites(); initFontSettings(); initSearchHistory(); initTimer(); initGame(); initGame23(); initDictionary(); initMap(); initMobileNav(); initEvents(); loadChapters();
+}
+
+document.addEventListener('DOMContentLoaded', boot);
