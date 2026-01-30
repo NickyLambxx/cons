@@ -244,10 +244,22 @@
   </template>
 
   <script src="app.js" defer></script>
+  
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => console.log('Ошибка PWA:', err));
+      // 1. Находим все регистрации и удаляем их
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        if(registrations.length) {
+          for(let registration of registrations) {
+            console.log('Unregistering SW:', registration);
+            registration.unregister();
+          }
+          // 2. Принудительная перезагрузка, чтобы сбросить кэш index.html
+          if (!sessionStorage.getItem('forceReload')) {
+             sessionStorage.setItem('forceReload', 'true');
+             window.location.reload(true);
+          }
+        }
       });
     }
   </script>
