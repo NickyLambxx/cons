@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prepmate-v5-pro-fixed'; // Изменил имя, чтобы браузер увидел обновление
+const CACHE_NAME = 'prepmate-v6-force-update'; // Новая версия
 const urlsToCache = [
   './',
   './index.html',
@@ -41,7 +41,7 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// ВАЖНО: Слушаем команду от страницы на обновление
+// Слушаем команду на обновление
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();

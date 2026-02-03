@@ -984,10 +984,10 @@ function initEvents() {
     });
 }
 
-// НОВОЕ: Регистрация SW и надежная обработка обновлений
+// НОВОЕ: Регистрация SW с защитой от кэша
 function initServiceWorker() {
     if ('serviceWorker' in navigator) {
-        // Перезагрузка при смене контроллера (когда новый SW стал активным)
+        // Перезагрузка при смене контроллера
         let refreshing;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (refreshing) return;
@@ -995,41 +995,40 @@ function initServiceWorker() {
             refreshing = true;
         });
 
-        navigator.serviceWorker.register('./sw.js').then(reg => {
-            // Функция для показа тоста
+        // ДОБАВИЛ: ?v=${Date.now()} чтобы обойти кэш браузера для самого sw.js
+        navigator.serviceWorker.register(`./sw.js?v=${Date.now()}`).then(reg => {
+            
             const showUpdateUI = (worker) => {
                 const toast = $('#updateNotification');
                 const btn = $('#reloadBtn');
                 if (toast && btn) {
-                    toast.hidden = false;
+                    toast.hidden = false; // Показываем тост
+                    
                     btn.onclick = () => {
-                        // Блокируем кнопку, чтобы не нажимали дважды
                         btn.disabled = true;
-                        btn.textContent = 'Ожидайте...';
-                        
-                        // Отправляем команду на активацию тому worker'у, который ждет
+                        btn.textContent = 'Обновление...';
+                        // Отправляем команду работнику
                         worker.postMessage({ type: 'SKIP_WAITING' });
                     };
                 }
             };
 
-            // 1. ВАЖНО: Проверяем, не ждет ли уже обновление активации
+            // Если обновление уже ждет (waiting)
             if (reg.waiting) {
                 showUpdateUI(reg.waiting);
                 return;
             }
 
-            // 2. Слушаем появление нового обновления
+            // Если обновление только качается
             reg.addEventListener('updatefound', () => {
                 const newWorker = reg.installing;
                 newWorker.addEventListener('statechange', () => {
-                    // Когда новый SW скачался и готов (installed), показываем кнопку
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                         showUpdateUI(newWorker);
                     }
                 });
             });
-        });
+        }).catch(err => console.error('SW Error:', err));
     }
 }
 
@@ -1050,7 +1049,7 @@ function boot() {
     initMobileNav(); 
     initEvents();
     initSpyScroll();
-    initServiceWorker(); // Запуск новой логики
+    initServiceWorker(); // Запуск
     loadChapters();
 }
 

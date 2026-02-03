@@ -813,7 +813,7 @@ mark {
     bottom: 50px;
 }
 
-/* УВЕДОМЛЕНИЕ ОБ ОБНОВЛЕНИИ (New) */
+/* УВЕДОМЛЕНИЕ ОБ ОБНОВЛЕНИИ (FIXED) */
 .toast-update {
     position: fixed;
     bottom: 20px;
@@ -829,6 +829,10 @@ mark {
     align-items: center;
     gap: 15px;
     animation: slideUp 0.3s ease-out;
+}
+
+.toast-update[hidden] {
+    display: none !important;
 }
 
 .toast-update button {
