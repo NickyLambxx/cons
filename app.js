@@ -546,17 +546,13 @@ function updateScrollState() {
     }
 }
 
-// НОВОЕ: Подсветка активной главы (Spy Scroll)
 function initSpyScroll() {
     const toc = $('#toc');
     const checkActiveChapter = debounce(() => {
         if (!toc) return;
-        // Находим все карточки статей
         const cards = $$('.card');
         if (cards.length === 0) return;
 
-        // Ищем карточку, которая ближе всего к верху экрана (но не ушла совсем)
-        // Для этого ищем первую карточку, чей низ ниже отступа хедера
         const headerOffset = 100;
         let activeCard = null;
         
@@ -574,12 +570,8 @@ function initSpyScroll() {
         const article = state.articles.find(a => a.id === articleId);
 
         if (article) {
-            // Убираем активный класс со всех глав
             $$('.toc-chapter').forEach(el => el.classList.remove('active'));
-            
-            // Ищем главу в TOC
             const chapters = $$('.toc-chapter');
-            // Проходимся и ищем текст
             chapters.forEach(ch => {
                 const titleSpan = ch.querySelector('.toc-chapter-header span:first-child');
                 if (titleSpan && titleSpan.textContent === article.chapterTitle) {
@@ -587,7 +579,7 @@ function initSpyScroll() {
                 }
             });
         }
-    }, 100); // Проверяем каждые 100мс при скролле
+    }, 100);
 
     window.addEventListener('scroll', checkActiveChapter);
 }
@@ -992,34 +984,51 @@ function initEvents() {
     });
 }
 
-// НОВОЕ: Регистрация SW и обработка обновлений
+// НОВОЕ: Регистрация SW и надежная обработка обновлений
 function initServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').then(reg => {
-            reg.addEventListener('updatefound', () => {
-                const newWorker = reg.installing;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        // Показываем уведомление
-                        const toast = $('#updateNotification');
-                        const btn = $('#reloadBtn');
-                        if (toast && btn) {
-                            toast.hidden = false;
-                            btn.onclick = () => {
-                                newWorker.postMessage({ type: 'SKIP_WAITING' });
-                            };
-                        }
-                    }
-                });
-            });
-        });
-
-        // Слушаем, когда SW обновился и стал активным
+        // Перезагрузка при смене контроллера (когда новый SW стал активным)
         let refreshing;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (refreshing) return;
             window.location.reload();
             refreshing = true;
+        });
+
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+            // Функция для показа тоста
+            const showUpdateUI = (worker) => {
+                const toast = $('#updateNotification');
+                const btn = $('#reloadBtn');
+                if (toast && btn) {
+                    toast.hidden = false;
+                    btn.onclick = () => {
+                        // Блокируем кнопку, чтобы не нажимали дважды
+                        btn.disabled = true;
+                        btn.textContent = 'Ожидайте...';
+                        
+                        // Отправляем команду на активацию тому worker'у, который ждет
+                        worker.postMessage({ type: 'SKIP_WAITING' });
+                    };
+                }
+            };
+
+            // 1. ВАЖНО: Проверяем, не ждет ли уже обновление активации
+            if (reg.waiting) {
+                showUpdateUI(reg.waiting);
+                return;
+            }
+
+            // 2. Слушаем появление нового обновления
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                newWorker.addEventListener('statechange', () => {
+                    // Когда новый SW скачался и готов (installed), показываем кнопку
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        showUpdateUI(newWorker);
+                    }
+                });
+            });
         });
     }
 }
@@ -1040,8 +1049,8 @@ function boot() {
     initMap(); 
     initMobileNav(); 
     initEvents();
-    initSpyScroll(); // Запуск слежения за главами
-    initServiceWorker(); // Запуск PWA логики
+    initSpyScroll();
+    initServiceWorker(); // Запуск новой логики
     loadChapters();
 }
 

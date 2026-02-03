@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prepmate-v5-pro'; // Увеличил версию
+const CACHE_NAME = 'prepmate-v5-pro-fixed'; // Изменил имя, чтобы браузер увидел обновление
 const urlsToCache = [
   './',
   './index.html',
@@ -19,7 +19,6 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
-  // Убрал self.skipWaiting() для безопасного обновления
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
@@ -42,7 +41,7 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Слушаем команду от страницы на обновление
+// ВАЖНО: Слушаем команду от страницы на обновление
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
