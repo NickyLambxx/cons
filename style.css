@@ -498,6 +498,7 @@ body {
     /* АНИМАЦИЯ ПОЯВЛЕНИЯ */
     animation: fadeIn 0.4s ease-out forwards;
     opacity: 0;
+    transition: transform 0.2s ease-out; /* Для свайпа */
 }
 
 @keyframes fadeIn {
@@ -580,7 +581,7 @@ body {
     font-size: 0.95em;
 }
 
-/* --- ЗАМЕТКИ (NEW) --- */
+/* --- ЗАМЕТКИ --- */
 .note-container {
     margin-top: 10px;
     padding: 10px;
@@ -605,7 +606,7 @@ body {
     outline: none;
 }
 
-/* --- ФЛЕШ КАРТОЧКИ (NEW) --- */
+/* --- ФЛЕШ КАРТОЧКИ --- */
 .flashcard-wrapper {
     padding: 20px;
     display: flex;
@@ -678,6 +679,44 @@ body {
     display: flex;
     align-items: center;
     gap: 20px;
+}
+
+/* --- CONTEXT MENU (NEW) --- */
+.context-menu {
+    position: fixed;
+    z-index: 10000;
+    background: var(--card);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    display: flex;
+    overflow: hidden;
+    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.context-menu button {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    border-right: 1px solid var(--border);
+    transition: background 0.2s;
+}
+
+.context-menu button:last-child {
+    border-right: none;
+}
+
+.context-menu button:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 /* Общее */
@@ -949,7 +988,7 @@ mark {
     bottom: 50px;
 }
 
-/* УВЕДОМЛЕНИЕ ОБ ОБНОВЛЕНИИ (FIXED) */
+/* УВЕДОМЛЕНИЕ ОБ ОБНОВЛЕНИИ */
 .toast-update {
     position: fixed;
     bottom: 20px;
@@ -1002,7 +1041,7 @@ dialog {
 dialog::backdrop {
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(5px);
-    cursor: pointer; /* Показываем, что можно кликнуть для закрытия */
+    cursor: pointer;
 }
 
 .large-dialog {
@@ -1042,7 +1081,7 @@ dialog::backdrop {
     cursor: pointer;
 }
 
-/* --- УЛУЧШЕННАЯ КАРТА РФ (С CSS ПЕРЕМЕННЫМИ) --- */
+/* --- УЛУЧШЕННАЯ КАРТА РФ --- */
 .map-wrapper {
     display: grid;
     grid-template-columns: 2.5fr 1fr;
@@ -1077,7 +1116,6 @@ dialog::backdrop {
     filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.2));
 }
 
-/* Общий стиль регионов */
 .region {
     stroke: var(--map-stroke);
     stroke-width: 2;
@@ -1086,7 +1124,6 @@ dialog::backdrop {
     opacity: 0.9;
 }
 
-/* Использование переменных для цветов */
 #reg-fe { fill: var(--map-fe); }
 #reg-sib { fill: var(--map-sib); }
 #reg-ural { fill: var(--map-ural); }
@@ -1104,7 +1141,6 @@ dialog::backdrop {
     filter: brightness(1.1);
 }
 
-/* Правая панель со списком */
 .map-info-panel {
     padding: 25px;
     border-left: 1px solid var(--border);
@@ -1210,7 +1246,7 @@ dialog::backdrop {
     text-align: center;
 }
 
-/* --- ЗАДАНИЕ 23 (Новый стиль) --- */
+/* --- ЗАДАНИЕ 23 --- */
 .game23-body {
     padding: 30px;
 }
@@ -1270,7 +1306,6 @@ dialog::backdrop {
     font-weight: bold;
 }
 
-/* Статусы проверки */
 .task23-option.correct {
     border-color: #22c55e;
     background: rgba(34, 197, 94, 0.1);
@@ -1395,198 +1430,43 @@ dialog::backdrop {
 }
 
 @keyframes shake {
-
-    0%,
-    100% {
-        transform: translateX(0);
-    }
-
-    25% {
-        transform: translateX(-5px);
-    }
-
-    75% {
-        transform: translateX(5px);
-    }
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
 }
 
 @media (max-width: 600px) {
-    .answers-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .mini-dialog {
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        right: auto;
-        width: 90%;
-    }
-
-    .dictionary-content {
-        grid-template-columns: 1fr;
-    }
-
-    .map-wrapper {
-        grid-template-columns: 1fr;
-        height: auto;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .map-container {
-        height: 350px;
-    }
-
-    .map-info-panel {
-        height: 300px;
-        border-left: none;
-        border-top: 1px solid var(--border);
-    }
-
-    #russiaMap text {
-        display: none;
-    }
-
-    /* Скрываем текст в SVG на всякий случай */
+    .answers-grid { grid-template-columns: 1fr; }
+    .mini-dialog { top: 50%; left: 50%; transform: translate(-50%, -50%); right: auto; width: 90%; }
+    .dictionary-content { grid-template-columns: 1fr; }
+    .map-wrapper { grid-template-columns: 1fr; height: auto; display: flex; flex-direction: column; }
+    .map-container { height: 350px; }
+    .map-info-panel { height: 300px; border-left: none; border-top: 1px solid var(--border); }
+    #russiaMap text { display: none; }
 }
 
 @media (max-width: 768px) {
-    .layout {
-        grid-template-columns: 1fr;
-    }
-
-    .sidebar {
-        position: fixed;
-        top: 70px;
-        left: 0;
-        width: 100%;
-        height: calc(100vh - 70px - var(--nav-height));
-        background: var(--bg);
-        z-index: 4000;
-        padding: 20px;
-        transform: translateX(-100%);
-        max-height: none;
-    }
-
-    .sidebar.visible {
-        transform: translateX(0);
-    }
-
-    .btn-up {
-        width: 50px;
-        height: 50px;
-        bottom: 80px;
-        right: 20px;
-        font-size: 24px;
-    }
-
-    .site-header .brand h1 {
-        display: none;
-    }
-
-    .logo {
-        height: 35px;
-    }
-
-    .btn-return {
-        bottom: 120px;
-    }
-
-    .mobile-nav {
-        display: flex;
-    }
-
-    .header-tools {
-        display: none;
-    }
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: fixed; top: 70px; left: 0; width: 100%; height: calc(100vh - 70px - var(--nav-height)); background: var(--bg); z-index: 4000; padding: 20px; transform: translateX(-100%); max-height: none; }
+    .sidebar.visible { transform: translateX(0); }
+    .btn-up { width: 50px; height: 50px; bottom: 80px; right: 20px; font-size: 24px; }
+    .site-header .brand h1 { display: none; }
+    .logo { height: 35px; }
+    .btn-return { bottom: 120px; }
+    .mobile-nav { display: flex; }
+    .header-tools { display: none; }
 }
 
 @media print {
-
-    .header-tools,
-    .sidebar,
-    .btn-up,
-    .btn-return,
-    #scrollProgress,
-    .meta,
-    .toggle,
-    .game-dialog,
-    #fontSettingsDialog,
-    #dictionaryDialog,
-    .mobile-nav,
-    #mapDialog,
-    #game23Dialog,
-    #flashcardsDialog,
-    #shareDialog,
-    .toast-update {
-        display: none !important;
-    }
-
-    body {
-        padding-top: 0;
-        padding-bottom: 0;
-        background: white;
-        color: black;
-        font-size: 12pt;
-    }
-
-    .layout {
-        display: block;
-        padding: 0;
-        margin: 0;
-    }
-
-    .site-header {
-        position: static;
-        border-bottom: 2px solid black;
-        box-shadow: none;
-        height: auto;
-        padding: 10px 0;
-    }
-
-    .logo-container {
-        position: static;
-        transform: none;
-        display: inline-block;
-    }
-
-    .card {
-        border: none;
-        border-bottom: 1px solid #ccc;
-        box-shadow: none;
-        background: white;
-        color: black;
-        break-inside: avoid;
-        padding: 10px 0;
-        animation: none !important;
-        opacity: 1 !important;
-    }
-
-    .card .title {
-        color: black;
-        text-decoration: underline;
-    }
-
-    details.explain {
-        display: block !important;
-        border: none;
-    }
-
-    details.explain[hidden] {
-        display: none !important;
-    }
-
-    .explain-body {
-        background: none;
-        border: 1px solid #eee;
-        padding: 10px;
-        color: #333;
-    }
-
-    :root {
-        --bg: #fff;
-        --text: #000;
-        --card: #fff;
-    }
+    .header-tools, .sidebar, .btn-up, .btn-return, #scrollProgress, .meta, .toggle, .game-dialog, #fontSettingsDialog, #dictionaryDialog, .mobile-nav, #mapDialog, #game23Dialog, #flashcardsDialog, #shareDialog, .toast-update, .context-menu { display: none !important; }
+    body { padding-top: 0; padding-bottom: 0; background: white; color: black; font-size: 12pt; }
+    .layout { display: block; padding: 0; margin: 0; }
+    .site-header { position: static; border-bottom: 2px solid black; box-shadow: none; height: auto; padding: 10px 0; }
+    .logo-container { position: static; transform: none; display: inline-block; }
+    .card { border: none; border-bottom: 1px solid #ccc; box-shadow: none; background: white; color: black; break-inside: avoid; padding: 10px 0; animation: none !important; opacity: 1 !important; }
+    .card .title { color: black; text-decoration: underline; }
+    details.explain { display: block !important; border: none; }
+    details.explain[hidden] { display: none !important; }
+    .explain-body { background: none; border: 1px solid #eee; padding: 10px; color: #333; }
+    :root { --bg: #fff; --text: #000; --card: #fff; }
 }

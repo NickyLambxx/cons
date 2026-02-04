@@ -94,6 +94,12 @@
   <button id="backToTop" class="btn-up" aria-label="Вернуться в начало">⬆</button>
   <button id="btn-return" class="btn-return" aria-label="Вернуться назад">↩ Вернуться назад</button>
 
+  <div id="contextMenu" class="context-menu" hidden>
+    <button id="ctxCopy">📋 Копировать</button>
+    <button id="ctxNote">📝 В заметку</button>
+    <button id="ctxDict">📖 Словарь</button>
+  </div>
+
   <div id="toast">Ссылка скопирована!</div>
   
   <div id="updateNotification" class="toast-update" hidden>
@@ -276,7 +282,8 @@
           <h3 class="title"></h3>
         </div>
         <div class="meta">
-          <button class="btn-note btn-ghost" title="Моя заметка">📝</button> <button class="btn-share btn-ghost" title="Создать цитату">📤</button>
+          <button class="btn-note btn-ghost" title="Моя заметка">📝</button>
+          <button class="btn-share btn-ghost" title="Создать цитату">📤</button>
           <button class="btn-audio btn-ghost" title="Прослушать статью">🔊</button>
           <button class="btn-fav btn-ghost" title="Добавить в избранное">☆</button>
           <a class="deeplink btn btn-ghost" title="Скопировать ссылку на статью">🔗</a>

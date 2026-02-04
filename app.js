@@ -26,7 +26,7 @@ const state = {
     showFavoritesOnly: false,
     articles: [],
     favorites: new Set(),
-    notes: {}, // NEW: Хранение заметок
+    notes: {}, 
     returnPosition: null,
     landingPosition: null,
     isJumping: false,
@@ -43,7 +43,7 @@ const LS = {
     TEACHER: 'ic-teacher-mode',
     MARKERS: 'ic-markers-mode',
     FAVORITES: 'ic-favorites',
-    NOTES: 'ic-user-notes', // NEW
+    NOTES: 'ic-user-notes',
     FONT: 'ic-font-settings',
     HIGHSCORE: 'ic-game-highscore',
     SEARCH: 'ic-search-history',
@@ -318,7 +318,7 @@ function checkTask23() {
     $('#nextTask23Btn').style.display = 'inline-block';
 }
 
-/* --- FLASHCARDS (NEW) --- */
+/* --- FLASHCARDS --- */
 const flashcards = {
     terms: [],
     index: 0
@@ -430,7 +430,7 @@ function initTimer() {
     setInterval(update, 1000 * 60 * 60);
 }
 
-/* --- ПОИСК --- */
+/* --- ПОИСК (FUZZY LOGIC NEW) --- */
 function initSearchHistory() {
     const stored = localStorage.getItem(LS.SEARCH);
     if (stored) state.searchHistory = JSON.parse(stored);
@@ -494,6 +494,61 @@ function performSearch(query) {
     saveSearchQuery(query);
     filterArticles(query);
     $('#searchHistory').hidden = true;
+}
+
+// Levenshtein Implementation for Fuzzy Search
+function levenshtein(a, b) {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+    const matrix = [];
+    for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+    for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+            if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1);
+            }
+        }
+    }
+    return matrix[b.length][a.length];
+}
+
+function filterArticles(query) {
+    query = query.trim().toLowerCase(); 
+    state.activeSearchQuery = query;
+
+    if (!query) { renderArticles(state.articles); return; }
+
+    const sourceList = state.showFavoritesOnly ? state.articles.filter(a => state.favorites.has(a.id)) : state.articles;
+    
+    // Fuzzy Filter Logic
+    const filtered = sourceList.filter(a => {
+        const t = a.title.toLowerCase();
+        const body = a.bodyHTML.replace(/<[^>]+>/g, ' ').toLowerCase();
+        
+        // Exact match (high priority)
+        if (t.includes(query) || body.includes(query)) return true;
+
+        // Fuzzy match (only if query is long enough)
+        if (query.length > 3) {
+            // Check words in title
+            const titleWords = t.split(/\s+/);
+            const bodyWords = body.split(/\s+/).slice(0, 100); // Check first 100 words for performance
+            
+            const matchWord = (word) => {
+                if (Math.abs(word.length - query.length) > 2) return false;
+                const dist = levenshtein(word, query);
+                return dist <= 2; // Allow 2 mistakes
+            };
+
+            return titleWords.some(matchWord) || bodyWords.some(matchWord);
+        }
+        return false;
+    });
+
+    renderArticles(filtered);
 }
 
 function processText(text) {
@@ -603,14 +658,6 @@ function updateScrollState() {
     if (btnUp) {
         if (scrollTop > 300) btnUp.classList.add('visible');
         else btnUp.classList.remove('visible');
-    }
-    if (state.returnPosition !== null && !state.isJumping && state.landingPosition !== null) {
-        const diff = Math.abs(scrollTop - state.landingPosition);
-        if (diff > 2500) {
-            hideReturnButton();
-            state.returnPosition = null;
-            state.landingPosition = null;
-        }
     }
 }
 
@@ -751,10 +798,12 @@ function renderArticles(list = state.articles) {
         $('.title', node).textContent = a.title;
 
         let processedBody = processText(a.bodyHTML);
-        if (state.activeSearchQuery) {
-            const escaped = state.activeSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const re = new RegExp(`(${escaped})`, 'gi');
-            processedBody = processedBody.replace(re, '<mark>$1</mark>');
+        // Highlight in Fuzzy Search
+        if (state.activeSearchQuery && state.activeSearchQuery.length > 2) {
+             // Simple highlight of the query itself
+             const escaped = state.activeSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+             const re = new RegExp(`(${escaped})`, 'gi');
+             processedBody = processedBody.replace(re, '<mark>$1</mark>');
         }
         $('.body', node).innerHTML = processedBody;
 
@@ -763,7 +812,7 @@ function renderArticles(list = state.articles) {
         let foundInExplain = false;
 
         if (a.explainHTML) {
-            if (state.activeSearchQuery) {
+             if (state.activeSearchQuery && state.activeSearchQuery.length > 2) {
                 const escaped = state.activeSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const re = new RegExp(`(${escaped})`, 'gi');
                 if (re.test(processedExplain)) foundInExplain = true;
@@ -838,7 +887,6 @@ function renderArticles(list = state.articles) {
     initDynamicEvents(container);
 }
 
-// --- GENERATE QUOTE IMAGE (NEW) ---
 function openShareDialog(title, text) {
     const dlg = $('#shareDialog');
     const canvas = $('#shareCanvas');
@@ -849,7 +897,6 @@ function openShareDialog(title, text) {
 
     safeAddListener('#closeShare', 'click', () => dlg.close());
     
-    // Download
     $('#downloadImgBtn').onclick = () => {
         const link = document.createElement('a');
         link.download = `constitution-${Date.now()}.png`;
@@ -857,7 +904,6 @@ function openShareDialog(title, text) {
         link.click();
     };
 
-    // Native Share
     $('#shareNativeBtn').onclick = () => {
         canvas.toBlob(blob => {
             const file = new File([blob], "quote.png", { type: "image/png" });
@@ -879,32 +925,27 @@ function generateQuoteImage(canvas, title, text) {
     const w = canvas.width;
     const h = canvas.height;
 
-    // Background (Gradient Dark)
     const grad = ctx.createLinearGradient(0, 0, 0, h);
     grad.addColorStop(0, '#12141a');
     grad.addColorStop(1, '#1e2330');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
 
-    // Border
     ctx.strokeStyle = '#2563eb';
     ctx.lineWidth = 20;
     ctx.strokeRect(40, 40, w - 80, h - 80);
 
-    // Title
     ctx.fillStyle = '#6ea8fe';
     ctx.font = 'bold 80px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(title, w / 2, 200);
 
-    // Body Text with wrapping
     ctx.fillStyle = '#e8ebf0';
     ctx.font = '50px sans-serif';
-    ctx.textAlign = 'center'; // Center align text
+    ctx.textAlign = 'center'; 
     
     wrapText(ctx, text, w / 2, 350, w - 200, 80);
 
-    // Footer
     ctx.fillStyle = '#9aa3af';
     ctx.font = 'italic 40px sans-serif';
     ctx.fillText('PrepMate — Интерактивная Конституция', w / 2, h - 100);
@@ -915,7 +956,6 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
     let line = '';
     let testLine = '';
     
-    // Ограничим длину текста, чтобы влезло
     if (words.length > 80) text = words.slice(0, 80).join(' ') + '...';
 
     for(let n = 0; n < words.length; n++) {
@@ -980,19 +1020,6 @@ function showToast(msg = "Ссылка скопирована!") {
     toast.textContent = msg;
     toast.className = "show";
     setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
-}
-
-function filterArticles(query) {
-    query = query.trim().toLowerCase(); state.activeSearchQuery = query;
-    if (!query) { renderArticles(state.articles); return; }
-    const sourceList = state.showFavoritesOnly ? state.articles.filter(a => state.favorites.has(a.id)) : state.articles;
-    const filtered = sourceList.filter(a => {
-        const t = a.title.toLowerCase();
-        const body = a.bodyHTML.replace(/<[^>]+>/g, ' ').toLowerCase();
-        const exp = (a.explainHTML || '').replace(/<[^>]+>/g, ' ').toLowerCase();
-        return t.includes(query) || body.includes(query) || exp.includes(query);
-    });
-    renderArticles(filtered);
 }
 
 function initDictionary() {
@@ -1138,6 +1165,132 @@ function setMarkersMode(isActive) {
     renderArticles();
 }
 
+/* --- SWIPE NAVIGATION (NEW) --- */
+function initSwipeNavigation() {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, {passive: true});
+
+    document.addEventListener('touchend', e => {
+        if (e.target.closest('.map-container') || e.target.closest('dialog[open]')) return;
+        
+        const touchEndX = e.changedTouches[0].screenX;
+        const touchEndY = e.changedTouches[0].screenY;
+        
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+
+        // Только горизонтальные свайпы
+        if (Math.abs(deltaX) > 100 && Math.abs(deltaY) < 50) {
+             const articles = $$('.card');
+             if (!articles.length) return;
+             
+             // Находим текущую видимую статью
+             const offset = 150;
+             const current = articles.find(card => {
+                 const rect = card.getBoundingClientRect();
+                 return rect.top >= 0 && rect.top < window.innerHeight / 2;
+             });
+
+             if (current) {
+                 if (deltaX < 0) {
+                     // Swipe Left -> Next
+                     const next = current.nextElementSibling;
+                     if (next && next.classList.contains('card')) {
+                         next.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                     }
+                 } else {
+                     // Swipe Right -> Prev
+                     const prev = current.previousElementSibling;
+                     if (prev && prev.classList.contains('card')) {
+                         prev.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                     }
+                 }
+             }
+        }
+    }, {passive: true});
+}
+
+/* --- CONTEXT MENU (NEW) --- */
+function initContextMenu() {
+    const menu = $('#contextMenu');
+    if (!menu) return;
+
+    // Скрытие меню при клике
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#contextMenu')) menu.hidden = true;
+    });
+
+    document.addEventListener('selectionchange', debounce(() => {
+        const selection = window.getSelection();
+        if (!selection.rangeCount || selection.isCollapsed) {
+            // menu.hidden = true; // Можно скрывать, но лучше оставить пока не кликнут
+            return;
+        }
+
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+
+        // Показываем только если выделение внутри контента
+        if (rect.top > 0 && rect.width > 0) {
+             const card = selection.anchorNode.parentElement.closest('.card');
+             if (!card) return;
+
+             menu.hidden = false;
+             // Позиционируем над выделением
+             let top = rect.top + window.scrollY - 50;
+             let left = rect.left + (rect.width / 2) - (menu.offsetWidth / 2);
+             
+             // Границы экрана
+             if (left < 10) left = 10;
+             if (left + menu.offsetWidth > window.innerWidth) left = window.innerWidth - menu.offsetWidth - 10;
+
+             menu.style.top = `${top}px`;
+             menu.style.left = `${left}px`;
+
+             // Actions
+             const text = selection.toString().trim();
+             
+             // Copy
+             $('#ctxCopy').onclick = () => {
+                 navigator.clipboard.writeText(text).then(() => showToast('Скопировано!'));
+                 menu.hidden = true;
+             };
+
+             // To Note
+             $('#ctxNote').onclick = () => {
+                 const cardId = card.dataset.articleId;
+                 const noteArea = card.querySelector('.note-area');
+                 const noteContainer = card.querySelector('.note-container');
+                 
+                 if (noteArea) {
+                     noteContainer.hidden = false;
+                     noteArea.value = (noteArea.value ? noteArea.value + '\n' : '') + text;
+                     saveNote(cardId, noteArea.value);
+                     card.querySelector('.btn-note').classList.add('active');
+                     noteArea.scrollIntoView({behavior: 'smooth', block: 'center'});
+                 }
+                 menu.hidden = true;
+             };
+
+             // Dictionary
+             $('#ctxDict').onclick = () => {
+                if (DICTIONARY[text.toLowerCase()]) {
+                    alert(`${text}: ${DICTIONARY[text.toLowerCase()]}`);
+                } else {
+                    // Open dict
+                    $('#dictionaryBtn').click();
+                }
+                menu.hidden = true;
+             };
+        }
+    }, 400));
+}
+
 function initEvents() {
     safeAddListener('#themeToggle', 'click', toggleTheme);
     safeAddListener('#printBtn', 'click', () => window.print());
@@ -1147,11 +1300,9 @@ function initEvents() {
     safeAddListener('#closeDialog', 'click', () => $('#articleDialog').close());
     safeAddListener('#toggleExplanations', 'change', e => setTeacherMode(e.target.checked));
 
-    // УЛУЧШЕНИЕ: Закрытие диалогов при клике на фон
     $$('dialog').forEach(dlg => {
         dlg.addEventListener('click', (e) => {
             const rect = dlg.getBoundingClientRect();
-            // Проверяем, был ли клик за пределами прямоугольника окна
             if (e.clientX < rect.left || e.clientX > rect.right || 
                 e.clientY < rect.top || e.clientY > rect.bottom) {
                 dlg.close();
@@ -1192,7 +1343,6 @@ function initEvents() {
     });
 }
 
-// НОВОЕ: Регистрация SW с правильной логикой обновления
 function initServiceWorker() {
     if ('serviceWorker' in navigator) {
         let refreshing;
@@ -1203,8 +1353,7 @@ function initServiceWorker() {
         });
 
         navigator.serviceWorker.register('./sw.js').then(reg => {
-            reg.update(); // Принудительная проверка обновлений
-
+            reg.update(); 
             const showUpdateUI = (worker) => {
                 const toast = $('#updateNotification');
                 const btn = $('#reloadBtn');
@@ -1217,12 +1366,7 @@ function initServiceWorker() {
                     };
                 }
             };
-
-            if (reg.waiting) {
-                showUpdateUI(reg.waiting);
-                return;
-            }
-
+            if (reg.waiting) { showUpdateUI(reg.waiting); return; }
             reg.addEventListener('updatefound', () => {
                 const newWorker = reg.installing;
                 newWorker.addEventListener('statechange', () => {
@@ -1242,18 +1386,20 @@ function boot() {
     const mBtn = $('#markersBtn'); if (mBtn) mBtn.setAttribute('aria-pressed', markersMode ? 'true' : 'false');
 
     loadFavorites(); 
-    loadNotes(); // NEW
+    loadNotes(); 
     initFontSettings(); 
     initSearchHistory(); 
     initTimer(); 
     initGame(); 
     initGame23(); 
-    initFlashcards(); // NEW
+    initFlashcards(); 
     initDictionary(); 
     initMap(); 
     initMobileNav(); 
     initEvents();
     initSpyScroll();
+    initSwipeNavigation(); // NEW
+    initContextMenu(); // NEW
     initServiceWorker(); 
     loadChapters();
 }
