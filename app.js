@@ -25,9 +25,9 @@ const state = {
     showFavoritesOnly: false,
     articles: [],
     favorites: new Set(),
-    favFolders: ['General'], // NEW: Список папок
-    articleFolders: {}, // NEW: Map articleId -> FolderName
-    currentFolderFilter: 'all', // NEW
+    favFolders: ['General'],
+    articleFolders: {}, 
+    currentFolderFilter: 'all',
     notes: {}, 
     returnPosition: null,
     landingPosition: null,
@@ -54,11 +54,11 @@ const LS = {
     TEACHER: 'ic-teacher-mode',
     MARKERS: 'ic-markers-mode',
     FAVORITES: 'ic-favorites',
-    FAV_FOLDERS: 'ic-fav-folders-list', // NEW
-    ARTICLE_FOLDERS: 'ic-article-folders-map', // NEW
+    FAV_FOLDERS: 'ic-fav-folders-list',
+    ARTICLE_FOLDERS: 'ic-article-folders-map',
     NOTES: 'ic-user-notes',
     FONT: 'ic-font-settings',
-    FONT_TYPE: 'ic-font-type', // NEW
+    FONT_TYPE: 'ic-font-type',
     HIGHSCORE: 'ic-game-highscore',
     SEARCH: 'ic-search-history',
     PROGRESS: 'ic-chapter-progress',
@@ -230,6 +230,16 @@ const TASKS_23 = [
             { id: 4, text: "Гарантия свободы совести и вероисповедания", correct: true },
             { id: 5, text: "Земля и другие природные ресурсы используются как основа жизни", correct: false }
         ]
+    },
+    {
+        question: "РФ — республиканская форма правления",
+        options: [
+            { id: 1, text: "Глава государства (Президент) избирается сроком на 6 лет", correct: true },
+            { id: 2, text: "Государственная Дума избирается сроком на 5 лет", correct: true },
+            { id: 3, text: "Единственным источником власти является многонациональный народ", correct: false },
+            { id: 4, text: "Высшим непосредственным выражением власти народа являются выборы", correct: true },
+            { id: 5, text: "Осуществление правосудия только судом", correct: false }
+        ]
     }
 ];
 
@@ -375,7 +385,7 @@ function renderFlashcard() {
     $('#fcNext').disabled = flashcards.index === flashcards.terms.length - 1;
 }
 
-/* --- ШРИФТЫ (UPDATED) --- */
+/* --- ШРИФТЫ --- */
 function initFontSettings() {
     const saved = JSON.parse(localStorage.getItem(LS.FONT));
     if (saved) {
@@ -602,7 +612,7 @@ function processText(text) {
     return text;
 }
 
-/* --- FAV FOLDERS LOGIC (NEW) --- */
+/* --- FAV FOLDERS LOGIC --- */
 function loadFavorites() {
     const stored = localStorage.getItem(LS.FAVORITES);
     if (stored) { state.favorites = new Set(JSON.parse(stored)); }
@@ -1305,6 +1315,27 @@ function initFoldersUI() {
     }
 }
 
+/* --- PWA INSTALL (UPDATED: SHOW BUTTON) --- */
+function initPWAInstall() {
+    let deferredPrompt;
+    const btn = $('#installBtn');
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        btn.hidden = false; // Show button in header
+    });
+
+    btn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            btn.hidden = true;
+        }
+    });
+}
+
 async function loadChapters() {
     const container = $('#content');
     const cachedData = localStorage.getItem(LS.CACHE_CHAPTERS);
@@ -1444,30 +1475,6 @@ function initContextMenu() {
     }, 500));
 }
 
-function initPWAInstall() {
-    let deferredPrompt;
-    const banner = $('#installBanner');
-    
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        banner.hidden = false;
-    });
-
-    safeAddListener('#installDismiss', 'click', () => {
-        banner.hidden = true;
-    });
-
-    safeAddListener('#installAccept', 'click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            deferredPrompt = null;
-        }
-        banner.hidden = true;
-    });
-}
-
 function initEvents() {
     safeAddListener('#themeToggle', 'click', toggleTheme);
     safeAddListener('#printBtn', 'click', () => window.print());
@@ -1575,7 +1582,7 @@ function boot() {
     initDictionary(); 
     initMap(); 
     initMobileNav(); 
-    initFoldersUI(); // NEW
+    initFoldersUI(); 
     initEvents();
     initSpyScroll();
     initContextMenu();
