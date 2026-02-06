@@ -11,7 +11,7 @@
     --scroll-track: #1a1d26;
     --scroll-thumb: #3e4658;
     --player-bg: #1a1d26;
-    
+
     /* Шрифты */
     --font-family-sans: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     --font-family-serif: 'Georgia', 'Times New Roman', serif;
@@ -32,14 +32,22 @@
     --player-height: 80px;
 
     /* Цвета карты (Темная тема - приглушенные) */
-    --map-fe: #2c5282;   /* Дальний восток */
-    --map-sib: #553c9a;  /* Сибирь */
-    --map-ural: #97266d; /* Урал */
-    --map-nw: #975a16;   /* Северо-Запад */
-    --map-cen: #276749;  /* Центр */
-    --map-vol: #dd6b20;  /* Поволжье */
-    --map-south: #2b6cb0;/* Юг */
-    --map-kav: #9b2c2c;  /* Кавказ */
+    --map-fe: #2c5282;
+    /* Дальний восток */
+    --map-sib: #553c9a;
+    /* Сибирь */
+    --map-ural: #97266d;
+    /* Урал */
+    --map-nw: #975a16;
+    /* Северо-Запад */
+    --map-cen: #276749;
+    /* Центр */
+    --map-vol: #dd6b20;
+    /* Поволжье */
+    --map-south: #2b6cb0;
+    /* Юг */
+    --map-kav: #9b2c2c;
+    /* Кавказ */
     --map-stroke: #1a202c;
     --map-hover-stroke: #fff;
 }
@@ -94,7 +102,8 @@ html {
 body {
     margin: 0;
     padding-top: 80px;
-    padding-bottom: var(--player-height); /* Отступ для плеера */
+    padding-bottom: var(--player-height);
+    /* Отступ для плеера */
     font-family: var(--current-font);
     font-size: var(--font-size);
     line-height: var(--line-height);
@@ -507,15 +516,22 @@ body {
     box-shadow: var(--shadow);
     padding: 20px;
     scroll-margin-top: 90px;
-    
+
     /* АНИМАЦИЯ ПОЯВЛЕНИЯ */
     animation: fadeIn 0.4s ease-out forwards;
     opacity: 0;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .card.highlight {
@@ -643,7 +659,7 @@ body {
     transform-style: preserve-3d;
     cursor: pointer;
     border-radius: 16px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 .flashcard.flipped {
@@ -676,7 +692,7 @@ body {
     transform: rotateY(180deg);
     color: var(--text);
     font-size: 1.1em;
-    background: linear-gradient(135deg, rgba(37,99,235,0.05), rgba(124,58,237,0.05));
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(124, 58, 237, 0.05));
     border-color: var(--accent);
 }
 
@@ -701,9 +717,10 @@ body {
     width: 100%;
     background: var(--card);
     border-top: 1px solid var(--border);
-    box-shadow: 0 -5px 25px rgba(0,0,0,0.5);
+    box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.5);
     z-index: 9999;
-    padding-bottom: 20px; /* Safe area */
+    padding-bottom: 20px;
+    /* Safe area */
     animation: slideUp 0.3s ease-out;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
@@ -739,7 +756,7 @@ body {
 }
 
 .sheet-btn:hover {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     color: var(--accent);
 }
 
@@ -752,7 +769,7 @@ body {
     height: var(--player-height);
     background: var(--player-bg);
     border-top: 1px solid var(--border);
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
     z-index: 6000;
     display: flex;
     flex-direction: column;
@@ -823,7 +840,8 @@ body {
 .player-bar {
     height: 3px;
     background: var(--accent);
-    width: 0%; /* Анимируется через JS */
+    width: 0%;
+    /* Анимируется через JS */
     position: absolute;
     top: 0;
     left: 0;
@@ -845,14 +863,15 @@ body {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     z-index: 8000;
     animation: slideUp 0.5s ease-out;
 }
 
 @media (max-width: 768px) {
     .install-banner {
-        bottom: 80px; /* Выше навигации */
+        bottom: 80px;
+        /* Выше навигации */
     }
 }
 
@@ -908,7 +927,7 @@ body {
     font-size: 14px;
 }
 
-.radio-label input:checked + span {
+.radio-label input:checked+span {
     background: var(--accent);
     color: white;
 }
@@ -929,7 +948,7 @@ body {
     height: 36px;
     font-size: 18px;
     background: var(--card);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .region-list {
@@ -1282,7 +1301,7 @@ mark {
     color: var(--text);
     padding: 15px 20px;
     border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -1309,8 +1328,15 @@ mark {
 }
 
 @keyframes slideUp {
-    from { transform: translateY(100%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 /* Модальные окна */
@@ -1408,14 +1434,37 @@ dialog::backdrop {
     opacity: 0.9;
 }
 
-#reg-fe { fill: var(--map-fe); }
-#reg-sib { fill: var(--map-sib); }
-#reg-ural { fill: var(--map-ural); }
-#reg-nw { fill: var(--map-nw); }
-#reg-cen { fill: var(--map-cen); }
-#reg-vol { fill: var(--map-vol); }
-#reg-south { fill: var(--map-south); }
-#reg-kav { fill: var(--map-kav); }
+#reg-fe {
+    fill: var(--map-fe);
+}
+
+#reg-sib {
+    fill: var(--map-sib);
+}
+
+#reg-ural {
+    fill: var(--map-ural);
+}
+
+#reg-nw {
+    fill: var(--map-nw);
+}
+
+#reg-cen {
+    fill: var(--map-cen);
+}
+
+#reg-vol {
+    fill: var(--map-vol);
+}
+
+#reg-south {
+    fill: var(--map-south);
+}
+
+#reg-kav {
+    fill: var(--map-kav);
+}
 
 .region:hover {
     opacity: 1;
@@ -1714,43 +1763,199 @@ dialog::backdrop {
 }
 
 @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
 }
 
 @media (max-width: 600px) {
-    .answers-grid { grid-template-columns: 1fr; }
-    .mini-dialog { top: 50%; left: 50%; transform: translate(-50%, -50%); right: auto; width: 90%; }
-    .dictionary-content { grid-template-columns: 1fr; }
-    .map-wrapper { grid-template-columns: 1fr; height: auto; display: flex; flex-direction: column; }
-    .map-container { height: 350px; }
-    .map-info-panel { height: 300px; border-left: none; border-top: 1px solid var(--border); }
-    #russiaMap text { display: none; }
+    .answers-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mini-dialog {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        right: auto;
+        width: 90%;
+    }
+
+    .dictionary-content {
+        grid-template-columns: 1fr;
+    }
+
+    .map-wrapper {
+        grid-template-columns: 1fr;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .map-container {
+        height: 350px;
+    }
+
+    .map-info-panel {
+        height: 300px;
+        border-left: none;
+        border-top: 1px solid var(--border);
+    }
+
+    #russiaMap text {
+        display: none;
+    }
 }
 
 @media (max-width: 768px) {
-    .layout { grid-template-columns: 1fr; }
-    .sidebar { position: fixed; top: 70px; left: 0; width: 100%; height: calc(100vh - 70px - var(--nav-height)); background: var(--bg); z-index: 4000; padding: 20px; transform: translateX(-100%); max-height: none; }
-    .sidebar.visible { transform: translateX(0); }
-    .btn-up { width: 50px; height: 50px; bottom: 80px; right: 20px; font-size: 24px; }
-    .site-header .brand h1 { display: none; }
-    .logo { height: 35px; }
-    .btn-return { bottom: 120px; }
-    .mobile-nav { display: flex; }
-    .header-tools { display: none; }
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 70px - var(--nav-height));
+        background: var(--bg);
+        z-index: 4000;
+        padding: 20px;
+        transform: translateX(-100%);
+        max-height: none;
+    }
+
+    .sidebar.visible {
+        transform: translateX(0);
+    }
+
+    .btn-up {
+        width: 50px;
+        height: 50px;
+        bottom: 80px;
+        right: 20px;
+        font-size: 24px;
+    }
+
+    .site-header .brand h1 {
+        display: none;
+    }
+
+    .logo {
+        height: 35px;
+    }
+
+    .btn-return {
+        bottom: 120px;
+    }
+
+    .mobile-nav {
+        display: flex;
+    }
+
+    .header-tools {
+        display: none;
+    }
 }
 
 @media print {
-    .header-tools, .sidebar, .btn-up, .btn-return, #scrollProgress, .meta, .toggle, .game-dialog, #fontSettingsDialog, #dictionaryDialog, .mobile-nav, #mapDialog, #game23Dialog, #flashcardsDialog, #shareDialog, .toast-update, .action-sheet, .audio-player, .install-banner { display: none !important; }
-    body { padding-top: 0; padding-bottom: 0; background: white; color: black; font-size: 12pt; }
-    .layout { display: block; padding: 0; margin: 0; }
-    .site-header { position: static; border-bottom: 2px solid black; box-shadow: none; height: auto; padding: 10px 0; }
-    .logo-container { position: static; transform: none; display: inline-block; }
-    .card { border: none; border-bottom: 1px solid #ccc; box-shadow: none; background: white; color: black; break-inside: avoid; padding: 10px 0; animation: none !important; opacity: 1 !important; }
-    .card .title { color: black; text-decoration: underline; }
-    details.explain { display: block !important; border: none; }
-    details.explain[hidden] { display: none !important; }
-    .explain-body { background: none; border: 1px solid #eee; padding: 10px; color: #333; }
-    :root { --bg: #fff; --text: #000; --card: #fff; }
+
+    .header-tools,
+    .sidebar,
+    .btn-up,
+    .btn-return,
+    #scrollProgress,
+    .meta,
+    .toggle,
+    .game-dialog,
+    #fontSettingsDialog,
+    #dictionaryDialog,
+    .mobile-nav,
+    #mapDialog,
+    #game23Dialog,
+    #flashcardsDialog,
+    #shareDialog,
+    .toast-update,
+    .action-sheet,
+    .audio-player,
+    .install-banner {
+        display: none !important;
+    }
+
+    body {
+        padding-top: 0;
+        padding-bottom: 0;
+        background: white;
+        color: black;
+        font-size: 12pt;
+    }
+
+    .layout {
+        display: block;
+        padding: 0;
+        margin: 0;
+    }
+
+    .site-header {
+        position: static;
+        border-bottom: 2px solid black;
+        box-shadow: none;
+        height: auto;
+        padding: 10px 0;
+    }
+
+    .logo-container {
+        position: static;
+        transform: none;
+        display: inline-block;
+    }
+
+    .card {
+        border: none;
+        border-bottom: 1px solid #ccc;
+        box-shadow: none;
+        background: white;
+        color: black;
+        break-inside: avoid;
+        padding: 10px 0;
+        animation: none !important;
+        opacity: 1 !important;
+    }
+
+    .card .title {
+        color: black;
+        text-decoration: underline;
+    }
+
+    details.explain {
+        display: block !important;
+        border: none;
+    }
+
+    details.explain[hidden] {
+        display: none !important;
+    }
+
+    .explain-body {
+        background: none;
+        border: 1px solid #eee;
+        padding: 10px;
+        color: #333;
+    }
+
+    :root {
+        --bg: #fff;
+        --text: #000;
+        --card: #fff;
+    }
 }

@@ -29,8 +29,9 @@
     </div>
 
     <div class="header-tools">
-      <button id="installBtn" class="btn btn-accent" hidden aria-label="Установить приложение" title="Установить как приложение">📲</button>
-      
+      <button id="installBtn" class="btn btn-accent" hidden aria-label="Установить приложение"
+        title="Установить как приложение">📲</button>
+
       <button id="openPlayerBtn" class="btn" aria-label="Открыть плеер" title="Аудио-плеер">🎧</button>
 
       <button id="flashcardsBtn" class="btn" aria-label="Карточки" title="Учить термины (Flashcards)">🗂️</button>
@@ -67,10 +68,10 @@
 
       <div id="favFoldersContainer" class="fav-folders" hidden>
         <div class="fav-actions">
-           <select id="folderSelectFilter" class="folder-select">
-               <option value="all">Все папки</option>
-           </select>
-           <button id="addFolderBtn" class="btn-mini" title="Создать папку">+</button>
+          <select id="folderSelectFilter" class="folder-select">
+            <option value="all">Все папки</option>
+          </select>
+          <button id="addFolderBtn" class="btn-mini" title="Создать папку">+</button>
         </div>
       </div>
 
@@ -108,30 +109,30 @@
   <div id="contextMenu" class="action-sheet" hidden>
     <div class="action-sheet-header">Выделен текст</div>
     <div class="action-sheet-body">
-        <button id="ctxCopy" class="sheet-btn">📋 Копировать</button>
-        <button id="ctxNote" class="sheet-btn">📝 В заметку</button>
-        <button id="ctxDict" class="sheet-btn">📖 Найти в словаре</button>
+      <button id="ctxCopy" class="sheet-btn">📋 Копировать</button>
+      <button id="ctxNote" class="sheet-btn">📝 В заметку</button>
+      <button id="ctxDict" class="sheet-btn">📖 Найти в словаре</button>
     </div>
   </div>
 
   <div id="audioPlayer" class="audio-player" hidden>
     <div class="player-info">
-        <span id="playerTitle">Название статьи</span>
+      <span id="playerTitle">Название статьи</span>
     </div>
     <div class="player-controls">
-        <button id="playerPrev" class="player-btn">⏮</button>
-        <button id="playerPlayPause" class="player-btn play">▶</button>
-        <button id="playerNext" class="player-btn">⏭</button>
-        <button id="playerRate" class="player-btn rate">x1.0</button>
-        <button id="playerClose" class="player-btn close">✕</button>
+      <button id="playerPrev" class="player-btn">⏮</button>
+      <button id="playerPlayPause" class="player-btn play">▶</button>
+      <button id="playerNext" class="player-btn">⏭</button>
+      <button id="playerRate" class="player-btn rate">x1.0</button>
+      <button id="playerClose" class="player-btn close">✕</button>
     </div>
     <div class="player-progress">
-        <div id="playerBar" class="player-bar"></div>
+      <div id="playerBar" class="player-bar"></div>
     </div>
   </div>
 
   <div id="toast">Ссылка скопирована!</div>
-  
+
   <div id="updateNotification" class="toast-update" hidden>
     <span>Доступна новая версия приложения!</span>
     <button id="reloadBtn">Обновить</button>
@@ -147,22 +148,25 @@
     <div class="map-wrapper">
       <div class="map-container" id="mapContainer">
         <div class="map-zoom-controls">
-            <button id="zoomIn" class="btn">+</button>
-            <button id="zoomOut" class="btn">-</button>
-            <button id="zoomReset" class="btn">⟲</button>
+          <button id="zoomIn" class="btn">+</button>
+          <button id="zoomOut" class="btn">-</button>
+          <button id="zoomReset" class="btn">⟲</button>
         </div>
         <h4 class="map-instruction">Нажмите на федеральный округ</h4>
         <div id="zoomLayer" style="transition: transform 0.2s ease-out; transform-origin: center;">
-            <svg id="russiaMap" viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">
-            <path class="region" id="reg-fe" d="M650,50 L950,50 L980,150 L900,450 L750,500 L600,350 L650,200 Z" data-name="Дальневосточный ФО" />
-            <path class="region" id="reg-sib" d="M450,100 L650,50 L650,200 L600,350 L750,500 L500,550 L400,450 Z" data-name="Сибирский ФО" />
+          <svg id="russiaMap" viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">
+            <path class="region" id="reg-fe" d="M650,50 L950,50 L980,150 L900,450 L750,500 L600,350 L650,200 Z"
+              data-name="Дальневосточный ФО" />
+            <path class="region" id="reg-sib" d="M450,100 L650,50 L650,200 L600,350 L750,500 L500,550 L400,450 Z"
+              data-name="Сибирский ФО" />
             <path class="region" id="reg-ural" d="M350,100 L450,100 L400,450 L300,400 Z" data-name="Уральский ФО" />
             <path class="region" id="reg-nw" d="M150,50 L350,100 L300,250 L100,200 Z" data-name="Северо-Западный ФО" />
             <path class="region" id="reg-cen" d="M100,200 L300,250 L280,350 L100,300 Z" data-name="Центральный ФО" />
-            <path class="region" id="reg-vol" d="M280,350 L300,250 L300,400 L350,450 L250,450 Z" data-name="Приволжский ФО" />
+            <path class="region" id="reg-vol" d="M280,350 L300,250 L300,400 L350,450 L250,450 Z"
+              data-name="Приволжский ФО" />
             <path class="region" id="reg-south" d="M50,300 L100,300 L100,450 L50,400 Z" data-name="Южный ФО" />
             <path class="region" id="reg-kav" d="M50,400 L100,450 L80,480 L40,450 Z" data-name="Северо-Кавказский ФО" />
-            </svg>
+          </svg>
         </div>
       </div>
       <div id="mapInfoPanel" class="map-info-panel">
@@ -196,36 +200,37 @@
       <button id="closeFlashcards" class="btn-ghost">✕</button>
     </div>
     <div class="flashcard-wrapper">
-        <div class="flashcard-container">
-            <div id="flashcard" class="flashcard">
-                <div class="front">
-                    <div id="fcTerm">Термин</div>
-                    <div class="hint">Нажмите, чтобы перевернуть</div>
-                </div>
-                <div class="back">
-                    <div id="fcDef">Определение</div>
-                </div>
-            </div>
+      <div class="flashcard-container">
+        <div id="flashcard" class="flashcard">
+          <div class="front">
+            <div id="fcTerm">Термин</div>
+            <div class="hint">Нажмите, чтобы перевернуть</div>
+          </div>
+          <div class="back">
+            <div id="fcDef">Определение</div>
+          </div>
         </div>
-        <div class="flashcard-controls">
-            <button id="fcPrev" class="btn">← Назад</button>
-            <span id="fcCounter">1 / 10</span>
-            <button id="fcNext" class="btn">Вперед →</button>
-        </div>
+      </div>
+      <div class="flashcard-controls">
+        <button id="fcPrev" class="btn">← Назад</button>
+        <span id="fcCounter">1 / 10</span>
+        <button id="fcNext" class="btn">Вперед →</button>
+      </div>
     </div>
   </dialog>
 
   <dialog id="shareDialog" class="mini-dialog" style="width: 90%; max-width: 400px;">
     <header class="dialog-header">
-        <h3>Поделиться цитатой</h3>
-        <button id="closeShare" class="btn btn-ghost">✕</button>
+      <h3>Поделиться цитатой</h3>
+      <button id="closeShare" class="btn btn-ghost">✕</button>
     </header>
     <div style="padding: 20px; text-align: center;">
-        <canvas id="shareCanvas" width="1080" height="1920" style="width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px;"></canvas>
-        <div style="display: grid; gap: 10px;">
-            <button id="downloadImgBtn" class="btn btn-primary">⬇ Скачать картинку</button>
-            <button id="shareNativeBtn" class="btn">📤 Отправить</button>
-        </div>
+      <canvas id="shareCanvas" width="1080" height="1920"
+        style="width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px;"></canvas>
+      <div style="display: grid; gap: 10px;">
+        <button id="downloadImgBtn" class="btn btn-primary">⬇ Скачать картинку</button>
+        <button id="shareNativeBtn" class="btn">📤 Отправить</button>
+      </div>
     </div>
   </dialog>
 
@@ -240,18 +245,18 @@
   <dialog id="fontSettingsDialog" class="mini-dialog">
     <form method="dialog">
       <h3>Настройки текста</h3>
-      
+
       <div class="setting-group">
         <label>Тип шрифта:</label>
         <div class="font-family-switch">
-             <label class="radio-label">
-                 <input type="radio" name="fontType" value="sans" checked id="fontSansBtn">
-                 <span>Sans</span>
-             </label>
-             <label class="radio-label">
-                 <input type="radio" name="fontType" value="serif" id="fontSerifBtn">
-                 <span style="font-family: serif;">Serif</span>
-             </label>
+          <label class="radio-label">
+            <input type="radio" name="fontType" value="sans" checked id="fontSansBtn">
+            <span>Sans</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="fontType" value="serif" id="fontSerifBtn">
+            <span style="font-family: serif;">Serif</span>
+          </label>
         </div>
       </div>
 
@@ -309,7 +314,7 @@
         </menu>
       </header>
       <article id="dialogBody"></article>
-      </form>
+    </form>
   </dialog>
 
   <template id="articleCardTmpl">
@@ -327,18 +332,18 @@
           <a class="deeplink btn btn-ghost" title="Скопировать ссылку на статью">🔗</a>
         </div>
       </header>
-      
+
       <div class="fav-folder-selector" hidden>
         <span class="muted" style="font-size:12px">Папка: </span>
         <select class="card-folder-select">
-            <option value="General">Общее</option>
+          <option value="General">Общее</option>
         </select>
       </div>
 
       <div class="body"></div>
-      
+
       <div class="note-container" hidden>
-          <textarea class="note-area" placeholder="Ваша заметка..."></textarea>
+        <textarea class="note-area" placeholder="Ваша заметка..."></textarea>
       </div>
 
       <details class="explain">

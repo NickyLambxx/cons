@@ -25,9 +25,9 @@ const state = {
     articles: [],
     favorites: new Set(),
     favFolders: ['General'],
-    articleFolders: {}, 
+    articleFolders: {},
     currentFolderFilter: 'all',
-    notes: {}, 
+    notes: {},
     returnPosition: null,
     landingPosition: null,
     isJumping: false,
@@ -582,7 +582,7 @@ function initFlashcards() {
     });
 
     safeAddListener('#closeFlashcards', 'click', () => $('#flashcardsDialog').close());
-    
+
     safeAddListener('#fcNext', 'click', () => {
         if (flashcards.index < flashcards.terms.length - 1) {
             $('#flashcard').classList.remove('flipped');
@@ -611,7 +611,7 @@ function initFlashcards() {
 function renderFlashcard() {
     if (flashcards.terms.length === 0) return;
     const term = flashcards.terms[flashcards.index];
-    
+
     $('#fcTerm').textContent = term.charAt(0).toUpperCase() + term.slice(1);
     $('#fcDef').textContent = DICTIONARY[term];
     $('#fcCounter').textContent = `${flashcards.index + 1} / ${flashcards.terms.length}`;
@@ -780,24 +780,24 @@ function levenshtein(a, b) {
 }
 
 function filterArticles(query) {
-    query = query.trim().toLowerCase(); 
+    query = query.trim().toLowerCase();
     state.activeSearchQuery = query;
 
     if (!query) { renderArticles(state.articles); return; }
 
     const sourceList = state.showFavoritesOnly ? state.articles.filter(a => state.favorites.has(a.id)) : state.articles;
-    
+
     // Fuzzy Filter Logic
     const filtered = sourceList.filter(a => {
         const t = a.title.toLowerCase();
         const body = a.bodyHTML.replace(/<[^>]+>/g, ' ').toLowerCase();
-        
+
         if (t.includes(query) || body.includes(query)) return true;
 
         if (query.length > 3) {
             const titleWords = t.split(/\s+/);
-            const bodyWords = body.split(/\s+/).slice(0, 100); 
-            
+            const bodyWords = body.split(/\s+/).slice(0, 100);
+
             const matchWord = (word) => {
                 if (Math.abs(word.length - query.length) > 2) return false;
                 const dist = levenshtein(word, query);
@@ -851,7 +851,7 @@ function processText(text) {
 function loadFavorites() {
     const stored = localStorage.getItem(LS.FAVORITES);
     if (stored) { state.favorites = new Set(JSON.parse(stored)); }
-    
+
     const storedFolders = localStorage.getItem(LS.FAV_FOLDERS);
     if (storedFolders) { state.favFolders = JSON.parse(storedFolders); }
 
@@ -890,7 +890,7 @@ function setFavFilterMode() {
     state.showFavoritesOnly = !state.showFavoritesOnly;
     const btn = $('#favFilterBtn');
     const folderUI = $('#favFoldersContainer');
-    
+
     if (state.showFavoritesOnly) {
         btn.setAttribute('aria-pressed', 'true');
         btn.innerHTML = `⭐ Скрыть избранное <span class="badge">${state.favorites.size}</span>`;
@@ -976,7 +976,7 @@ function initSpyScroll() {
 
         const headerOffset = 100;
         let activeCard = null;
-        
+
         for (let card of cards) {
             const rect = card.getBoundingClientRect();
             if (rect.bottom > headerOffset) {
@@ -1134,9 +1134,9 @@ function renderArticles(list = state.articles) {
 
         let processedBody = processText(a.bodyHTML);
         if (state.activeSearchQuery && state.activeSearchQuery.length > 2) {
-             const escaped = state.activeSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-             const re = new RegExp(`(${escaped})`, 'gi');
-             processedBody = processedBody.replace(re, '<mark>$1</mark>');
+            const escaped = state.activeSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp(`(${escaped})`, 'gi');
+            processedBody = processedBody.replace(re, '<mark>$1</mark>');
         }
         $('.body', node).innerHTML = processedBody;
 
@@ -1145,14 +1145,14 @@ function renderArticles(list = state.articles) {
         let foundInExplain = false;
 
         if (a.explainHTML) {
-             if (state.activeSearchQuery && state.activeSearchQuery.length > 2) {
+            if (state.activeSearchQuery && state.activeSearchQuery.length > 2) {
                 const escaped = state.activeSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const re = new RegExp(`(${escaped})`, 'gi');
                 if (re.test(processedExplain)) foundInExplain = true;
                 processedExplain = processedExplain.replace(re, '<mark>$1</mark>');
             }
             $('.explain-body', node).innerHTML = processedExplain;
-            
+
             // ALWAYS VISIBLE (removed TeacherMode check)
             if (foundInExplain) { explain.open = true; }
         } else { explain.hidden = true; }
@@ -1164,8 +1164,8 @@ function renderArticles(list = state.articles) {
         favBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleFavorite(a.id); });
 
         const audioBtn = $('.btn-audio', node);
-        audioBtn.addEventListener('click', (e) => { 
-            e.stopPropagation(); 
+        audioBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             playArticle(a.id);
         });
 
@@ -1186,7 +1186,7 @@ function renderArticles(list = state.articles) {
         const noteBtn = $('.btn-note', node);
         const noteContainer = $('.note-container', node);
         const noteArea = $('.note-area', node);
-        
+
         if (state.notes[a.id]) {
             noteArea.value = state.notes[a.id];
             noteContainer.hidden = false;
@@ -1229,7 +1229,7 @@ function openShareDialog(title, text) {
     dlg.showModal();
 
     safeAddListener('#closeShare', 'click', () => dlg.close());
-    
+
     $('#downloadImgBtn').onclick = () => {
         const link = document.createElement('a');
         link.download = `constitution-${Date.now()}.png`;
@@ -1275,8 +1275,8 @@ function generateQuoteImage(canvas, title, text) {
 
     ctx.fillStyle = '#e8ebf0';
     ctx.font = '50px sans-serif';
-    ctx.textAlign = 'center'; 
-    
+    ctx.textAlign = 'center';
+
     wrapText(ctx, text, w / 2, 350, w - 200, 80);
 
     ctx.fillStyle = '#9aa3af';
@@ -1288,10 +1288,10 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
     const words = text.split(' ');
     let line = '';
     let testLine = '';
-    
+
     if (words.length > 80) text = words.slice(0, 80).join(' ') + '...';
 
-    for(let n = 0; n < words.length; n++) {
+    for (let n = 0; n < words.length; n++) {
         testLine = line + words[n] + ' ';
         let metrics = ctx.measureText(testLine);
         let testWidth = metrics.width;
@@ -1432,7 +1432,7 @@ function playArticle(id) {
 
     window.speechSynthesis.cancel();
     state.audio.currentArticleId = id;
-    
+
     const text = article.bodyHTML.replace(/<[^>]+>/g, ' ');
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'ru-RU';
@@ -1480,7 +1480,7 @@ function initMap() {
     // Zoom Controls
     safeAddListener('#zoomIn', 'click', () => changeZoom(0.3));
     safeAddListener('#zoomOut', 'click', () => changeZoom(-0.3));
-    safeAddListener('#zoomReset', 'click', () => { state.mapZoom = 1; state.mapPan = {x:0,y:0}; updateMapTransform(); });
+    safeAddListener('#zoomReset', 'click', () => { state.mapZoom = 1; state.mapPan = { x: 0, y: 0 }; updateMapTransform(); });
 
     // Click on region
     $$('.region').forEach(reg => {
@@ -1558,7 +1558,7 @@ function initFoldersUI() {
 function initPWAInstall() {
     let deferredPrompt;
     const btn = $('#installBtn');
-    
+
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -1581,11 +1581,11 @@ function initEvents() {
     safeAddListener('#markersBtn', 'click', () => setMarkersMode(!state.markersMode));
     safeAddListener('#favFilterBtn', 'click', setFavFilterMode);
     safeAddListener('#closeDialog', 'click', () => $('#articleDialog').close());
-    
+
     $$('dialog').forEach(dlg => {
         dlg.addEventListener('click', (e) => {
             const rect = dlg.getBoundingClientRect();
-            if (e.clientX < rect.left || e.clientX > rect.right || 
+            if (e.clientX < rect.left || e.clientX > rect.right ||
                 e.clientY < rect.top || e.clientY > rect.bottom) {
                 dlg.close();
             }
@@ -1637,7 +1637,7 @@ function initServiceWorker() {
         });
 
         navigator.serviceWorker.register('./sw.js').then(reg => {
-            reg.update(); 
+            reg.update();
             const showUpdateUI = (worker) => {
                 const toast = $('#updateNotification');
                 const btn = $('#reloadBtn');
@@ -1680,7 +1680,7 @@ async function loadChapters() {
             'chapters/chapter4.html', 'chapters/chapter5.html', 'chapters/chapter6.html',
             'chapters/chapter7.html', 'chapters/chapter8.html', 'chapters/chapter9.html'
         ];
-        
+
         const results = await Promise.allSettled(files.map(f => fetch(f).then(r => {
             if (!r.ok) throw new Error(`HTTP ${r.status}`);
             return r.text();
@@ -1697,7 +1697,7 @@ async function loadChapters() {
                 doc.querySelectorAll('article.interactive-article, article').forEach(artNode => {
                     const id = artNode.id || `article-${index}-${Math.random().toString(36).slice(2, 7)}`;
                     const title = artNode.getAttribute('data-title') || artNode.querySelector('h3')?.textContent?.trim() || 'Статья';
-                    
+
                     // Парсинг пояснений
                     let explain = artNode.getAttribute('data-comment') || '';
                     const explainNode = artNode.querySelector('.explanation-source');
@@ -1722,7 +1722,7 @@ async function loadChapters() {
         } else if (!cachedData) {
             throw new Error("Не удалось загрузить ни одной главы.");
         }
-        
+
         if (container) container.classList.remove('loading');
         updateScrollState();
     } catch (e) {
@@ -1748,24 +1748,24 @@ function boot() {
     const markersMode = localStorage.getItem(LS.MARKERS) === '1'; state.markersMode = markersMode;
     const mBtn = $('#markersBtn'); if (mBtn) mBtn.setAttribute('aria-pressed', markersMode ? 'true' : 'false');
 
-    loadFavorites(); 
-    loadNotes(); 
-    initFontSettings(); 
-    initSearchHistory(); 
-    initTimer(); 
-    initGame(); 
-    initGame23(); 
-    initFlashcards(); 
-    initDictionary(); 
-    initMap(); 
-    initMobileNav(); 
-    initFoldersUI(); 
+    loadFavorites();
+    loadNotes();
+    initFontSettings();
+    initSearchHistory();
+    initTimer();
+    initGame();
+    initGame23();
+    initFlashcards();
+    initDictionary();
+    initMap();
+    initMobileNav();
+    initFoldersUI();
     initEvents();
     initSpyScroll();
     initContextMenu();
     initAudioPlayer();
     initPWAInstall();
-    initServiceWorker(); 
+    initServiceWorker();
     loadChapters();
 }
 
