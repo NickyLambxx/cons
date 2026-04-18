@@ -1630,14 +1630,25 @@ function generateQuoteImage(canvas, title, text) {
     ctx.lineTo(w - 120, lineY);
     ctx.stroke();
 
-    // Основной текст — обрезаем если слишком длинный
+    // Основной текст — автоподбор размера шрифта чтобы всё влезло
     let bodyText = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    if (bodyText.length > 400) bodyText = bodyText.slice(0, 397) + '…';
+
+    const availH = h - lineY - 200; // высота под текст (за вычетом футера)
+    const maxW = w - 180;
+    let fontSize = 52;
+    // Уменьшаем шрифт пока текст не влезет
+    while (fontSize >= 28) {
+        ctx.font = `${fontSize}px sans-serif`;
+        const lh = fontSize * 1.55;
+        const lines = countLines(ctx, bodyText, maxW);
+        if (lines * lh <= availH) break;
+        fontSize -= 2;
+    }
+    const lineHeightBody = fontSize * 1.55;
 
     ctx.fillStyle = '#dce6f5';
-    ctx.font = '46px sans-serif';
     ctx.textAlign = 'center';
-    const bodyEndY = wrapTextCentered(ctx, bodyText, w / 2, lineY + 80, w - 180, 72);
+    const bodyEndY = wrapTextCentered(ctx, bodyText, w / 2, lineY + 80, maxW, lineHeightBody);
 
     // Логотип PrepMate внизу
     const logoImg = new Image();
@@ -1662,6 +1673,23 @@ function generateQuoteImage(canvas, title, text) {
         ctx.textAlign = 'center';
         ctx.fillText('PrepMate — Конституция РФ', w / 2, footerY);
     };
+}
+
+// Считает количество строк при заданном ctx.font и maxWidth
+function countLines(ctx, text, maxWidth) {
+    const words = text.split(' ');
+    let line = '';
+    let count = 1;
+    for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+            line = words[n] + ' ';
+            count++;
+        } else {
+            line = testLine;
+        }
+    }
+    return count;
 }
 
 // Возвращает Y после последней строки

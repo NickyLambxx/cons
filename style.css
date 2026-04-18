@@ -220,8 +220,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    max-height: calc(100vh - 110px);
-    overflow-y: auto;
     padding-right: 5px;
     transition: transform 0.3s;
 }
@@ -1856,12 +1854,16 @@ dialog::backdrop {
         grid-template-columns: 1fr;
     }
 
-    /* mini-dialog — по центру */
+    /* mini-dialog — по центру экрана */
     .mini-dialog {
-        left: 10px;
-        right: 10px;
-        width: auto;
-        max-width: none;
+        position: fixed;
+        top: 50% !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translate(-50%, -50%) !important;
+        width: calc(100vw - 32px) !important;
+        max-width: 420px;
+        margin: 0;
     }
 
     /* Задание 23 — меньше padding */
