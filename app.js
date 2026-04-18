@@ -824,14 +824,7 @@ function processText(text) {
         return prefix + linkedList;
     });
 
-    for (let term in DICTIONARY) {
-        const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`(${safeTerm}[а-я]*)`, 'gi');
-        text = text.replace(regex, (match) => {
-            if (match.includes('<') || match.includes('>')) return match;
-            return `<span class="term" data-term="${term}">${match}</span>`;
-        });
-    }
+    // Терминология убрана - используется словарь вместо выделения в тексте
 
     if (state.markersMode) {
         const escapeReg = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1163,11 +1156,6 @@ function renderArticles(list = state.articles) {
         if (isFav) favBtn.classList.add('active');
         favBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleFavorite(a.id); });
 
-        const audioBtn = $('.btn-audio', node);
-        audioBtn.addEventListener('click', (e) => { 
-            e.stopPropagation(); 
-            playArticle(a.id);
-        });
 
         const shareBtn = $('.btn-share', node);
         shareBtn.addEventListener('click', (e) => {
@@ -1308,25 +1296,6 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
 }
 
 function initDynamicEvents(container) {
-    const tooltip = $('#tooltip');
-    container.querySelectorAll('.term').forEach(term => {
-        term.addEventListener('mouseenter', (e) => {
-            const def = DICTIONARY[term.dataset.term];
-            if (def && tooltip) {
-                tooltip.textContent = '';
-                const titleEl = document.createElement('b');
-                titleEl.textContent = term.dataset.term;
-                tooltip.appendChild(titleEl);
-                const defEl = document.createElement('div');
-                defEl.textContent = def;
-                tooltip.appendChild(defEl);
-                tooltip.classList.add('show');
-                moveTooltip(e);
-            }
-        });
-        term.addEventListener('mousemove', (e) => { if (tooltip) moveTooltip(e); });
-        term.addEventListener('mouseleave', () => { if (tooltip) tooltip.classList.remove('show'); });
-    });
     container.querySelectorAll('.cross-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault(); e.stopPropagation();
@@ -1378,103 +1347,6 @@ function initDictionary() {
     safeAddListener('#closeDictionary', 'click', () => $('#dictionaryDialog').close());
 }
 
-function initAudioPlayer() {
-    const player = $('#audioPlayer');
-    const playBtn = $('#playerPlayPause');
-    const rateBtn = $('#playerRate');
-    const bar = $('#playerBar');
-
-    if (!player) return;
-
-    // Toggle Player Visibility Button
-    safeAddListener('#openPlayerBtn', 'click', () => {
-        player.hidden = !player.hidden;
-    });
-
-    safeAddListener('#playerPlayPause', 'click', () => {
-        if (window.speechSynthesis.speaking) {
-            if (window.speechSynthesis.paused) {
-                window.speechSynthesis.resume();
-                playBtn.textContent = '⏸';
-            } else {
-                window.speechSynthesis.pause();
-                playBtn.textContent = '▶';
-            }
-        } else if (state.audio.currentArticleId) {
-            playArticle(state.audio.currentArticleId);
-        }
-    });
-
-    safeAddListener('#playerClose', 'click', () => {
-        window.speechSynthesis.cancel();
-        player.hidden = true;
-    });
-
-    safeAddListener('#playerRate', 'click', () => {
-        const rates = [1.0, 1.5, 2.0];
-        let idx = rates.indexOf(state.audio.rate);
-        state.audio.rate = rates[(idx + 1) % rates.length];
-        rateBtn.textContent = `x${state.audio.rate}`;
-        if (window.speechSynthesis.speaking) {
-            window.speechSynthesis.cancel();
-            playArticle(state.audio.currentArticleId);
-        }
-    });
-
-    safeAddListener('#playerNext', 'click', playNextArticle);
-    safeAddListener('#playerPrev', 'click', playPrevArticle);
-
-    setInterval(() => {
-        if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-            const w = parseFloat(bar.style.width) || 0;
-            bar.style.width = ((w + 1) % 100) + '%';
-        }
-    }, 100);
-}
-
-function playArticle(id) {
-    const article = state.articles.find(a => a.id === id);
-    if (!article) return;
-
-    window.speechSynthesis.cancel();
-    state.audio.currentArticleId = id;
-    
-    const text = article.bodyHTML.replace(/<[^>]+>/g, ' ');
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ru-RU';
-    utterance.rate = state.audio.rate;
-
-    utterance.onstart = () => {
-        $('#audioPlayer').hidden = false;
-        $('#playerTitle').textContent = article.title;
-        $('#playerPlayPause').textContent = '⏸';
-        state.audio.isPlaying = true;
-    };
-
-    utterance.onend = () => {
-        $('#playerPlayPause').textContent = '▶';
-        state.audio.isPlaying = false;
-        playNextArticle();
-    };
-
-    window.speechSynthesis.speak(utterance);
-}
-
-function playNextArticle() {
-    if (!state.audio.currentArticleId) return;
-    const idx = state.articles.findIndex(a => a.id === state.audio.currentArticleId);
-    if (idx !== -1 && idx < state.articles.length - 1) {
-        playArticle(state.articles[idx + 1].id);
-    }
-}
-
-function playPrevArticle() {
-    if (!state.audio.currentArticleId) return;
-    const idx = state.articles.findIndex(a => a.id === state.audio.currentArticleId);
-    if (idx > 0) {
-        playArticle(state.articles[idx - 1].id);
-    }
-}
 
 /* --- IMPROVED MAP LOGIC (ZOOM) --- */
 function initMap() {
@@ -1816,9 +1688,8 @@ function boot() {
     initEvents();
     initSpyScroll();
     // initContextMenu(); // Функция не найдена в исходнике, закомментировал
-    initAudioPlayer();
     initPWAInstall();
-    initServiceWorker(); 
+    initServiceWorker();
     loadChapters();
 }
 
