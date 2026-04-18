@@ -20,7 +20,6 @@ function debounce(func, wait) {
 }
 
 const state = {
-    markersMode: false,
     showFavoritesOnly: false,
     articles: [],
     favorites: new Set(),
@@ -49,7 +48,6 @@ const state = {
 
 const LS = {
     THEME: 'ic-theme',
-    MARKERS: 'ic-markers-mode',
     FAVORITES: 'ic-favorites',
     FAV_FOLDERS: 'ic-fav-folders-list',
     ARTICLE_FOLDERS: 'ic-article-folders-map',
@@ -146,52 +144,6 @@ const DICTIONARY = {
     "конституционный строй": "Система общественных отношений, урегулированных нормами Конституции и составляющих основу государственного устройства РФ. Положения главы 1 Конституции о конституционном строе не могут быть пересмотрены Федеральным Собранием (ст. 16)."
 };
 
-const MARKERS = {
-    // Ст. 71 — исключительное ведение РФ
-    federal: [
-        'принятие и изменение конституции', 'федеральное устройство', 'гражданство',
-        'внешняя политика', 'международные отношения', 'международные договоры',
-        'оборона', 'безопасность', 'оборонное производство',
-        'судоустройство', 'прокуратура',
-        'уголовное', 'уголовно-процессуальное', 'уголовно-исполнительное',
-        'гражданское', 'гражданско-процессуальное', 'арбитражное',
-        'федеральный бюджет', 'федеральные налоги', 'федеральные сборы',
-        'финансовое', 'валютное', 'кредитное', 'таможенное',
-        'денежная эмиссия', 'федеральные банки',
-        'ядерная энергетика', 'ядерные материалы', 'радиоактивные отходы',
-        'деятельность в космосе', 'космос',
-        'федеральный транспорт', 'федеральные пути сообщения',
-        'информация', 'связь', 'деятельность в области связи',
-        'геодезия', 'картография', 'метеорология',
-        'официальный статистический учёт', 'государственная статистика',
-        'стандарты', 'эталоны', 'метрологическая служба',
-        'государственные награды',
-        'патентное', 'авторское', 'интеллектуальная собственность',
-        'внешнеэкономические отношения'
-    ],
-    // Ст. 72 — совместное ведение РФ и субъектов
-    joint: [
-        'обеспечение соответствия конституций', 'обеспечение законности',
-        'защита прав и свобод', 'защита прав национальных меньшинств',
-        'режим пограничных зон',
-        'природопользование', 'охрана окружающей среды', 'экологическая безопасность',
-        'охрана памятников истории', 'охрана памятников культуры',
-        'общие вопросы воспитания', 'общие вопросы образования',
-        'общие вопросы науки', 'общие вопросы культуры',
-        'физическая культура', 'спорт',
-        'координация вопросов здравоохранения',
-        'защита семьи', 'материнство', 'отцовство', 'детство',
-        'социальная защита', 'социальное обеспечение',
-        'административное', 'трудовое', 'семейное', 'жилищное',
-        'земельное', 'водное', 'лесное',
-        'законодательство о недрах', 'об охране окружающей среды',
-        'адвокатура', 'нотариат',
-        'кадры судебных органов', 'кадры правоохранительных органов',
-        'установление общих принципов организации системы органов',
-        'разграничение государственной собственности',
-        'природные ресурсы'
-    ]
-};
 
 /* --- ДАННЫЕ ДЛЯ КАРТЫ --- */
 const FEDERAL_DISTRICTS = {
@@ -1260,19 +1212,6 @@ function processText(text) {
         return prefix + linkedList;
     });
 
-    // Терминология убрана - используется словарь вместо выделения в тексте
-
-    if (state.markersMode) {
-        const escapeReg = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        MARKERS.federal.forEach(word => {
-            const regex = new RegExp(`(${escapeReg(word)})`, 'gi');
-            text = text.replace(regex, '<span class="mark-fed">$1</span>');
-        });
-        MARKERS.joint.forEach(word => {
-            const regex = new RegExp(`(${escapeReg(word)})`, 'gi');
-            text = text.replace(regex, '<span class="mark-joint">$1</span>');
-        });
-    }
     return text;
 }
 
@@ -1889,18 +1828,9 @@ function initPWAInstall() {
     });
 }
 
-function setMarkersMode(enabled) {
-    state.markersMode = enabled;
-    localStorage.setItem(LS.MARKERS, enabled ? '1' : '0');
-    const btn = $('#markersBtn');
-    if (btn) btn.setAttribute('aria-pressed', enabled ? 'true' : 'false');
-    renderArticles();
-}
-
 function initEvents() {
     safeAddListener('#themeToggle', 'click', toggleTheme);
     safeAddListener('#printBtn', 'click', () => window.print());
-    safeAddListener('#markersBtn', 'click', () => setMarkersMode(!state.markersMode));
     safeAddListener('#favFilterBtn', 'click', setFavFilterMode);
     safeAddListener('#closeDialog', 'click', () => $('#articleDialog').close());
     
@@ -2106,9 +2036,6 @@ function boot() {
     if (window.speechSynthesis) window.speechSynthesis.cancel(); // Force stop audio
 
     applyTheme(true);
-    const markersMode = localStorage.getItem(LS.MARKERS) === '1'; state.markersMode = markersMode;
-    const mBtn = $('#markersBtn'); if (mBtn) mBtn.setAttribute('aria-pressed', markersMode ? 'true' : 'false');
-
     loadFavorites(); 
     loadNotes(); 
     initFontSettings(); 

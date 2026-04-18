@@ -17,11 +17,6 @@
     --font-family-serif: 'Georgia', 'Times New Roman', serif;
     --current-font: var(--font-family-sans);
 
-    --mark-fed-bg: rgba(220, 38, 38, 0.2);
-    --mark-fed-text: #fca5a5;
-    --mark-joint-bg: rgba(22, 163, 74, 0.2);
-    --mark-joint-text: #86efac;
-
     --highlight-bg: #fff176;
     --highlight-text: #000;
 
@@ -65,11 +60,6 @@
     --scroll-track: #e2e8f0;
     --scroll-thumb: #94a3b8;
     --player-bg: #fff;
-
-    --mark-fed-bg: #fee2e2;
-    --mark-fed-text: #991b1b;
-    --mark-joint-bg: #dcfce7;
-    --mark-joint-text: #166534;
 
     --highlight-bg: #fef08a;
 
@@ -1043,22 +1033,6 @@ body {
 
 .cross-link:hover {
     border-bottom-color: var(--accent);
-}
-
-.mark-fed {
-    background-color: var(--mark-fed-bg);
-    color: var(--mark-fed-text);
-    padding: 2px 4px;
-    border-radius: 4px;
-    font-weight: 600;
-}
-
-.mark-joint {
-    background-color: var(--mark-joint-bg);
-    color: var(--mark-joint-text);
-    padding: 2px 4px;
-    border-radius: 4px;
-    font-weight: 600;
 }
 
 mark {
