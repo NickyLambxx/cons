@@ -638,7 +638,7 @@ function initFontSettings() {
 
     safeAddListener('#fontBtn', 'click', () => {
         const dlg = $('#fontSettingsDialog');
-        if (dlg) dlg.open ? dlg.close() : dlg.show();
+        if (dlg) dlg.open ? dlg.close() : dlg.showModal();
     });
 
     safeAddListener('#fontInc', 'click', () => changeFont(1));
@@ -780,24 +780,24 @@ function levenshtein(a, b) {
 }
 
 function filterArticles(query) {
-    query = query.trim().toLowerCase(); 
+    query = query.trim().toLowerCase();
     state.activeSearchQuery = query;
 
     if (!query) { renderArticles(state.articles); return; }
 
     const sourceList = state.showFavoritesOnly ? state.articles.filter(a => state.favorites.has(a.id)) : state.articles;
-    
+
     // Fuzzy Filter Logic
     const filtered = sourceList.filter(a => {
         const t = a.title.toLowerCase();
         const body = a.bodyHTML.replace(/<[^>]+>/g, ' ').toLowerCase();
-        
+
         if (t.includes(query) || body.includes(query)) return true;
 
         if (query.length > 3) {
             const titleWords = t.split(/\s+/);
-            const bodyWords = body.split(/\s+/).slice(0, 100); 
-            
+            const bodyWords = body.split(/\s+/);
+
             const matchWord = (word) => {
                 if (Math.abs(word.length - query.length) > 2) return false;
                 const dist = levenshtein(word, query);
@@ -1135,7 +1135,7 @@ function renderArticles(list = state.articles) {
         let processedBody = processText(a.bodyHTML);
         if (state.activeSearchQuery && state.activeSearchQuery.length > 2) {
              const escaped = state.activeSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-             const re = new RegExp(`(${escaped})`, 'gi');
+             const re = new RegExp(`(${escaped})(?![^<]*>)`, 'gi');
              processedBody = processedBody.replace(re, '<mark>$1</mark>');
         }
         $('.body', node).innerHTML = processedBody;
@@ -1147,7 +1147,7 @@ function renderArticles(list = state.articles) {
         if (a.explainHTML) {
              if (state.activeSearchQuery && state.activeSearchQuery.length > 2) {
                 const escaped = state.activeSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const re = new RegExp(`(${escaped})`, 'gi');
+                const re = new RegExp(`(${escaped})(?![^<]*>)`, 'gi');
                 if (re.test(processedExplain)) foundInExplain = true;
                 processedExplain = processedExplain.replace(re, '<mark>$1</mark>');
             }
@@ -1209,7 +1209,7 @@ function renderArticles(list = state.articles) {
             const mapBtn = document.createElement('button');
             mapBtn.className = 'btn btn-primary';
             mapBtn.style.marginTop = '10px';
-            mapBtn.innerHTML = '🗺️ Открыть карту РФ';
+            mapBtn.textContent = '🗺️ Открыть карту РФ';
             mapBtn.onclick = () => $('#mapDialog').showModal();
             $('.body', node).appendChild(mapBtn);
         }
@@ -1313,7 +1313,13 @@ function initDynamicEvents(container) {
         term.addEventListener('mouseenter', (e) => {
             const def = DICTIONARY[term.dataset.term];
             if (def && tooltip) {
-                tooltip.innerHTML = `<b>${term.dataset.term}</b>${def}`;
+                tooltip.textContent = '';
+                const titleEl = document.createElement('b');
+                titleEl.textContent = term.dataset.term;
+                tooltip.appendChild(titleEl);
+                const defEl = document.createElement('div');
+                defEl.textContent = def;
+                tooltip.appendChild(defEl);
                 tooltip.classList.add('show');
                 moveTooltip(e);
             }
@@ -1351,8 +1357,8 @@ function moveTooltip(e) {
 function showToast(msg = "Ссылка скопирована!") {
     const toast = $('#toast'); if (!toast) return;
     toast.textContent = msg;
-    toast.className = "show";
-    setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    toast.classList.add("show");
+    setTimeout(() => { toast.classList.remove("show"); }, 3000);
 }
 
 function initDictionary() {
@@ -1558,7 +1564,7 @@ function initFoldersUI() {
 function initPWAInstall() {
     let deferredPrompt;
     const btn = $('#installBtn');
-    
+
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -1573,6 +1579,14 @@ function initPWAInstall() {
             btn.hidden = true;
         }
     });
+}
+
+function setMarkersMode(enabled) {
+    state.markersMode = enabled;
+    localStorage.setItem(LS.MARKERS, enabled ? '1' : '0');
+    const btn = $('#markersBtn');
+    if (btn) btn.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    renderArticles();
 }
 
 function initEvents() {
