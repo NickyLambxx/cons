@@ -1467,30 +1467,6 @@ function renderArticles(list = state.articles) {
         card.dataset.articleId = a.id;
         card.id = a.id;
 
-        // FOLDER UI
-        const folderSelector = $('.fav-folder-selector', node);
-        const cardFolderSelect = $('.card-folder-select', node);
-        if (state.favorites.has(a.id)) {
-            folderSelector.hidden = false;
-            // Populate options
-            cardFolderSelect.innerHTML = '';
-            state.favFolders.forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f;
-                opt.textContent = f;
-                if (state.articleFolders[a.id] === f) opt.selected = true;
-                cardFolderSelect.appendChild(opt);
-            });
-            // Change listener
-            cardFolderSelect.addEventListener('change', (e) => {
-                state.articleFolders[a.id] = e.target.value;
-                saveFolders();
-                if (state.showFavoritesOnly) renderArticles(); // re-render to apply filter
-            });
-        } else {
-            folderSelector.hidden = true;
-        }
-
         const crumbs = $('.breadcrumbs', node);
         const chShort = a.chapterTitle.split('.')[0] || a.chapterTitle;
         crumbs.textContent = `${chShort.trim()} > ${a.title}`;
@@ -1615,10 +1591,10 @@ function openShareDialog(title, text) {
 
 function generateQuoteImage(canvas, title, text) {
     const ctx = canvas.getContext('2d');
-    const w = canvas.width;
-    const h = canvas.height;
+    const w = canvas.width;  // 800
+    const h = canvas.height; // 1000
 
-    // Градиентный фон: тёмно-синий → фиолетовый
+    // Фон: тёмно-синий → фиолетовый
     const grad = ctx.createLinearGradient(0, 0, w, h);
     grad.addColorStop(0, '#0d0f2b');
     grad.addColorStop(0.5, '#1a1040');
@@ -1626,71 +1602,84 @@ function generateQuoteImage(canvas, title, text) {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
 
-    // Декоративная рамка
+    // Рамка
     const borderGrad = ctx.createLinearGradient(0, 0, w, h);
     borderGrad.addColorStop(0, '#6ea8fe');
     borderGrad.addColorStop(1, '#9b59b6');
     ctx.strokeStyle = borderGrad;
-    ctx.lineWidth = 16;
-    ctx.strokeRect(50, 50, w - 100, h - 100);
+    ctx.lineWidth = 14;
+    ctx.strokeRect(40, 40, w - 80, h - 80);
 
-    // Тонкая внутренняя рамка
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(70, 70, w - 140, h - 140);
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(58, 58, w - 116, h - 116);
 
-    // Заголовок статьи — крупно, по центру
+    // Заголовок
     ctx.fillStyle = '#6ea8fe';
-    ctx.font = 'bold 90px sans-serif';
+    ctx.font = 'bold 72px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
-    // Перенос заголовка если длинный
-    wrapText(ctx, title, w / 2, 240, w - 240, 110);
+    const titleY = wrapTextCentered(ctx, title, w / 2, 180, w - 200, 88);
 
-    // Горизонтальная линия под заголовком
-    const titleLines = Math.ceil(ctx.measureText(title).width / (w - 240));
-    const lineY = 240 + titleLines * 110 + 20;
-    ctx.strokeStyle = 'rgba(110, 168, 254, 0.4)';
-    ctx.lineWidth = 3;
+    // Линия под заголовком
+    const lineY = titleY + 30;
+    ctx.strokeStyle = 'rgba(110, 168, 254, 0.35)';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(160, lineY);
-    ctx.lineTo(w - 160, lineY);
+    ctx.moveTo(120, lineY);
+    ctx.lineTo(w - 120, lineY);
     ctx.stroke();
 
-    // Основной текст цитаты — белый, читаемый
-    ctx.fillStyle = '#e8ebf0';
-    ctx.font = '58px sans-serif';
-    ctx.textAlign = 'center';
-    wrapText(ctx, text, w / 2, lineY + 100, w - 220, 90);
+    // Основной текст — обрезаем если слишком длинный
+    let bodyText = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (bodyText.length > 400) bodyText = bodyText.slice(0, 397) + '…';
 
-    // Логотип внизу — курсив, маленький
-    ctx.fillStyle = 'rgba(155, 163, 175, 0.75)';
-    ctx.font = 'italic 42px sans-serif';
+    ctx.fillStyle = '#dce6f5';
+    ctx.font = '46px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('PrepMate — Конституция РФ', w / 2, h - 110);
+    const bodyEndY = wrapTextCentered(ctx, bodyText, w / 2, lineY + 80, w - 180, 72);
+
+    // Логотип PrepMate внизу
+    const logoImg = new Image();
+    logoImg.src = './logo.png';
+    const footerY = Math.max(bodyEndY + 60, h - 160);
+
+    logoImg.onload = () => {
+        // Лого слева от текста
+        const logoH = 36;
+        const logoW = logoImg.width * (logoH / logoImg.height);
+        const totalW = logoW + 12 + ctx.measureText('PrepMate — Конституция РФ').width;
+        const startX = (w - totalW) / 2;
+        ctx.drawImage(logoImg, startX, footerY - logoH + 4, logoW, logoH);
+        ctx.fillStyle = 'rgba(160, 174, 192, 0.8)';
+        ctx.font = 'italic 34px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('PrepMate — Конституция РФ', startX + logoW + 12, footerY);
+    };
+    logoImg.onerror = () => {
+        ctx.fillStyle = 'rgba(160, 174, 192, 0.8)';
+        ctx.font = 'italic 34px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('PrepMate — Конституция РФ', w / 2, footerY);
+    };
 }
 
-function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+// Возвращает Y после последней строки
+function wrapTextCentered(ctx, text, x, y, maxWidth, lineHeight) {
     const words = text.split(' ');
     let line = '';
-    let testLine = '';
-    
-    if (words.length > 80) text = words.slice(0, 80).join(' ') + '...';
-
-    for(let n = 0; n < words.length; n++) {
-        testLine = line + words[n] + ' ';
-        let metrics = ctx.measureText(testLine);
-        let testWidth = metrics.width;
-        if (testWidth > maxWidth && n > 0) {
-            ctx.fillText(line, x, y);
+    for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+            ctx.fillText(line.trim(), x, y);
             line = words[n] + ' ';
             y += lineHeight;
-        }
-        else {
+        } else {
             line = testLine;
         }
     }
-    ctx.fillText(line, x, y);
+    if (line.trim()) ctx.fillText(line.trim(), x, y);
+    return y;
 }
 
 function initDynamicEvents(container) {

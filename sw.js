@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prep-mate-v2'; // Изменили версию v1 -> v2 для сброса кэша
+const CACHE_NAME = 'prep-mate-v3'; // v3: убраны маркеры, аудио, папки
 const ASSETS = [
   './',
   './index.html',
