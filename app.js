@@ -1630,8 +1630,13 @@ function generateQuoteImage(canvas, title, text) {
     ctx.lineTo(w - 120, lineY);
     ctx.stroke();
 
-    // Основной текст — автоподбор размера шрифта чтобы всё влезло
-    let bodyText = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    // Основной текст — сохраняем разрывы параграфов, автоподбор шрифта
+    let bodyText = text
+        .replace(/<\/p>\s*<p[^>]*>/gi, '\n')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/[ \t]+/g, ' ')
+        .trim();
 
     const availH = h - lineY - 200; // высота под текст (за вычетом футера)
     const maxW = w - 180;
@@ -1675,39 +1680,48 @@ function generateQuoteImage(canvas, title, text) {
     };
 }
 
-// Считает количество строк при заданном ctx.font и maxWidth
+// Считает количество строк (с учётом \n как принудительного переноса)
 function countLines(ctx, text, maxWidth) {
-    const words = text.split(' ');
-    let line = '';
-    let count = 1;
-    for (let n = 0; n < words.length; n++) {
-        const testLine = line + words[n] + ' ';
-        if (ctx.measureText(testLine).width > maxWidth && n > 0) {
-            line = words[n] + ' ';
-            count++;
-        } else {
-            line = testLine;
+    let count = 0;
+    for (const para of text.split('\n')) {
+        const words = para.trim().split(' ').filter(Boolean);
+        if (!words.length) { count++; continue; }
+        let line = '';
+        for (const word of words) {
+            const testLine = line + word + ' ';
+            if (ctx.measureText(testLine).width > maxWidth && line) {
+                count++;
+                line = word + ' ';
+            } else {
+                line = testLine;
+            }
         }
+        count++;
     }
     return count;
 }
 
-// Возвращает Y после последней строки
+// Рисует текст с переносами по словам и по \n (с отступом между параграфами)
 function wrapTextCentered(ctx, text, x, y, maxWidth, lineHeight) {
-    const words = text.split(' ');
-    let line = '';
-    for (let n = 0; n < words.length; n++) {
-        const testLine = line + words[n] + ' ';
-        if (ctx.measureText(testLine).width > maxWidth && n > 0) {
-            ctx.fillText(line.trim(), x, y);
-            line = words[n] + ' ';
-            y += lineHeight;
-        } else {
-            line = testLine;
+    const paras = text.split('\n');
+    for (let p = 0; p < paras.length; p++) {
+        if (p > 0) y += lineHeight * 0.45; // дополнительный отступ между пунктами
+        const words = paras[p].trim().split(' ').filter(Boolean);
+        if (!words.length) continue;
+        let line = '';
+        for (const word of words) {
+            const testLine = line + word + ' ';
+            if (ctx.measureText(testLine).width > maxWidth && line) {
+                ctx.fillText(line.trim(), x, y);
+                line = word + ' ';
+                y += lineHeight;
+            } else {
+                line = testLine;
+            }
         }
+        if (line.trim()) { ctx.fillText(line.trim(), x, y); y += lineHeight; }
     }
-    if (line.trim()) ctx.fillText(line.trim(), x, y);
-    return y;
+    return y - lineHeight;
 }
 
 function initDynamicEvents(container) {
@@ -1821,11 +1835,46 @@ function updateMapTransform() {
     }
 }
 
+function closeMobileExtras() {
+    $('#mobileToolsSheet').hidden = true;
+    $('#sidebarPanel')?.classList.remove('visible');
+}
+
 function initMobileNav() {
-    safeAddListener('#navHome', 'click', () => { $('#mobileToolsSheet').hidden = true; scrollToTop(); });
-    safeAddListener('#navSearch', 'click', () => { $('#mobileToolsSheet').hidden = true; $('#searchInput').focus(); scrollToTop(); });
-    safeAddListener('#navFav', 'click', () => { $('#mobileToolsSheet').hidden = true; setFavFilterMode(); $('#navFav').classList.toggle('active'); });
-    safeAddListener('#navMenu', 'click', () => { $('#mobileToolsSheet').hidden = true; $('#sidebarPanel').classList.toggle('visible'); });
+    safeAddListener('#navHome', 'click', () => {
+        closeMobileExtras();
+        if (state.showFavoritesOnly) setFavFilterMode();
+        scrollToTop();
+        $$('.nav-item').forEach(b => b.classList.remove('active'));
+        $('#navHome').classList.add('active');
+    });
+
+    safeAddListener('#navSearch', 'click', () => {
+        closeMobileExtras();
+        if (state.showFavoritesOnly) setFavFilterMode();
+        $$('.nav-item').forEach(b => b.classList.remove('active'));
+        $('#navSearch').classList.add('active');
+        // Скроллим к поиску и фокусируем
+        const input = $('#searchInput');
+        if (input) {
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => input.focus(), 300);
+        }
+    });
+
+    safeAddListener('#navFav', 'click', () => {
+        closeMobileExtras();
+        setFavFilterMode();
+        $$('.nav-item').forEach(b => b.classList.remove('active'));
+        if (state.showFavoritesOnly) $('#navFav').classList.add('active');
+    });
+
+    safeAddListener('#navMenu', 'click', () => {
+        $('#mobileToolsSheet').hidden = true;
+        $('#sidebarPanel').classList.toggle('visible');
+        $$('.nav-item').forEach(b => b.classList.remove('active'));
+        if ($('#sidebarPanel').classList.contains('visible')) $('#navMenu').classList.add('active');
+    });
 
     safeAddListener('#navTools', 'click', () => {
         const sheet = $('#mobileToolsSheet');

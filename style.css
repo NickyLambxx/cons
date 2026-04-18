@@ -211,6 +211,7 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
+    align-items: start;
 }
 
 .sidebar {
@@ -1794,8 +1795,11 @@ dialog::backdrop {
         background: var(--bg);
         z-index: 4000;
         padding: 20px;
+        padding-bottom: 30px;
         transform: translateX(-100%);
         max-height: none;
+        overflow-y: auto; /* скролл внутри сайдбара */
+        -webkit-overflow-scrolling: touch;
     }
 
     .sidebar.visible {
