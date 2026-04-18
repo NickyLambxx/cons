@@ -87,6 +87,7 @@ body.serif-mode {
 
 html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
 }
 
 body {
@@ -100,6 +101,7 @@ body {
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 @media (max-width: 768px) {
@@ -985,15 +987,6 @@ body {
     color: var(--text);
 }
 
-.btn-mini {
-    padding: 0 12px;
-    font-size: 20px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--card);
-    color: var(--accent);
-    cursor: pointer;
-}
 
 .fav-folder-selector {
     margin-top: 10px;
@@ -1150,7 +1143,6 @@ mark {
 }
 
 .btn-fav,
-.btn-audio,
 .btn-share,
 .btn-note {
     font-size: 22px;
@@ -1159,7 +1151,6 @@ mark {
 }
 
 .btn-fav:hover,
-.btn-audio:hover,
 .btn-share:hover,
 .btn-note:hover {
     transform: scale(1.2);
@@ -1174,8 +1165,7 @@ mark {
     color: #fff176;
 }
 
-.btn-fav.active,
-.btn-audio.active {
+.btn-fav.active {
     color: var(--fav-color);
 }
 
@@ -1840,6 +1830,115 @@ dialog::backdrop {
     .header-tools {
         display: none;
     }
+
+    /* Карта — вертикально */
+    .map-wrapper {
+        grid-template-columns: 1fr;
+    }
+    .map-container {
+        height: 300px;
+    }
+    .map-info-panel {
+        height: auto;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        padding-top: 12px;
+    }
+
+    /* Сетка ответов — одна колонка */
+    .answers-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Словарь — одна колонка */
+    .dictionary-content {
+        grid-template-columns: 1fr;
+    }
+
+    /* mini-dialog — по центру */
+    .mini-dialog {
+        left: 10px;
+        right: 10px;
+        width: auto;
+        max-width: none;
+    }
+
+    /* Задание 23 — меньше padding */
+    .game23-body {
+        padding: 15px;
+    }
+
+    /* Вопрос 23 — перенос длинных слов */
+    .task23-question {
+        word-break: break-word;
+        overflow-wrap: break-word;
+        font-size: 1.2em;
+    }
+
+    /* Диалоги — ограничить высоту */
+    dialog {
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+    .large-dialog {
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+
+    /* Флэш-карточки */
+    .flashcard-container {
+        height: 220px;
+    }
+}
+
+/* --- MOBILE TOOLS BOTTOM SHEET --- */
+.mobile-sheet {
+    position: fixed;
+    bottom: var(--nav-height);
+    left: 0;
+    right: 0;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    z-index: 4500;
+    box-shadow: 0 -5px 30px rgba(0,0,0,0.4);
+    padding: 16px;
+    animation: slideUp 0.25s ease;
+}
+
+.mobile-sheet[hidden] {
+    display: none !important;
+}
+
+.mobile-sheet-header {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--text);
+    text-align: center;
+}
+
+.mobile-sheet-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.sheet-tool-btn {
+    background: var(--border);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 10px;
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    text-align: left;
+    font-weight: 500;
+}
+
+.sheet-tool-btn:active {
+    background: var(--accent);
+    color: white;
 }
 
 @media print {

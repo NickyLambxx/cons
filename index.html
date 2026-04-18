@@ -67,7 +67,6 @@
           <select id="folderSelectFilter" class="folder-select">
             <option value="all">Все папки</option>
           </select>
-          <button id="addFolderBtn" class="btn-mini" title="Создать папку">+</button>
         </div>
       </div>
 
@@ -81,8 +80,9 @@
       <section class="sources">
         <h2>Источники</h2>
         <ul>
-          <li><a href="https://pravo.gov.ru/constitution/" target="_blank" rel="noopener">Официальный интернет‑портал
-              правовой информации</a></li>
+          <li><a href="http://www.consultant.ru/document/cons_doc_LAW_28399/" target="_blank" rel="noopener">КонсультантПлюс — Конституция РФ</a></li>
+          <li><a href="http://publication.pravo.gov.ru/document/0001202210060013" target="_blank" rel="noopener">Официальный интернет-портал правовой информации</a></li>
+          <li><a href="https://www.garant.ru/doc/constitution/" target="_blank" rel="noopener">ГАРАНТ — Конституция РФ</a></li>
         </ul>
       </section>
     </aside>
@@ -96,8 +96,21 @@
     <button class="nav-item" id="navHome">🏠<br>Главная</button>
     <button class="nav-item" id="navSearch">🔍<br>Поиск</button>
     <button class="nav-item" id="navFav">⭐<br>Избранное</button>
+    <button class="nav-item" id="navTools">🛠️<br>Инструменты</button>
     <button class="nav-item" id="navMenu">☰<br>Меню</button>
   </nav>
+
+  <div id="mobileToolsSheet" class="mobile-sheet" hidden>
+    <div class="mobile-sheet-header">Инструменты</div>
+    <div class="mobile-sheet-body">
+      <button class="sheet-tool-btn" id="mobileFlashcards">🗂️ Карточки терминов</button>
+      <button class="sheet-tool-btn" id="mobileDictionary">📖 Словарь</button>
+      <button class="sheet-tool-btn" id="mobileGame23">📋 Задание №23</button>
+      <button class="sheet-tool-btn" id="mobileGame">🎮 Тренажёр полномочий</button>
+      <button class="sheet-tool-btn" id="mobileFontBtn">Aa Настройки текста</button>
+      <button class="sheet-tool-btn" id="mobileTheme">🌓 Сменить тему</button>
+    </div>
+  </div>
 
   <button id="backToTop" class="btn-up" aria-label="Вернуться в начало">⬆</button>
   <button id="btn-return" class="btn-return" aria-label="Вернуться назад">↩ Вернуться назад</button>
@@ -308,7 +321,6 @@
         <div class="meta">
           <button class="btn-note btn-ghost" title="Моя заметка">📝</button>
           <button class="btn-share btn-ghost" title="Создать цитату">📤</button>
-          <button class="btn-audio btn-ghost" title="Прослушать статью">🔊</button>
           <button class="btn-fav btn-ghost" title="Добавить в избранное">☆</button>
           <a class="deeplink btn btn-ghost" title="Скопировать ссылку на статью">🔗</a>
         </div>

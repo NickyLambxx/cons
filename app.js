@@ -35,13 +35,6 @@ const state = {
     searchHistory: [],
     progress: {},
     activeSearchQuery: '',
-    speech: null,
-    audio: {
-        currentArticleId: null,
-        isPlaying: false,
-        rate: 1.0,
-        utterance: null
-    },
     mapZoom: 1,
     mapPan: { x: 0, y: 0 }
 };
@@ -1059,6 +1052,10 @@ function applyFontSettings() {
     document.documentElement.style.setProperty('--font-size', state.fontSize + 'px');
     document.documentElement.style.setProperty('--line-height', state.lineHeight);
     localStorage.setItem(LS.FONT, JSON.stringify({ size: state.fontSize, height: state.lineHeight }));
+    const sizeVal = $('#fontSizeVal');
+    const lhVal = $('#lhVal');
+    if (sizeVal) sizeVal.textContent = state.fontSize + 'px';
+    if (lhVal) lhVal.textContent = state.lineHeight.toFixed(1);
 }
 
 /* --- ТАЙМЕР --- */
@@ -1621,30 +1618,56 @@ function generateQuoteImage(canvas, title, text) {
     const w = canvas.width;
     const h = canvas.height;
 
-    const grad = ctx.createLinearGradient(0, 0, 0, h);
-    grad.addColorStop(0, '#12141a');
-    grad.addColorStop(1, '#1e2330');
+    // Градиентный фон: тёмно-синий → фиолетовый
+    const grad = ctx.createLinearGradient(0, 0, w, h);
+    grad.addColorStop(0, '#0d0f2b');
+    grad.addColorStop(0.5, '#1a1040');
+    grad.addColorStop(1, '#2a0a3c');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
 
-    ctx.strokeStyle = '#2563eb';
-    ctx.lineWidth = 20;
-    ctx.strokeRect(40, 40, w - 80, h - 80);
+    // Декоративная рамка
+    const borderGrad = ctx.createLinearGradient(0, 0, w, h);
+    borderGrad.addColorStop(0, '#6ea8fe');
+    borderGrad.addColorStop(1, '#9b59b6');
+    ctx.strokeStyle = borderGrad;
+    ctx.lineWidth = 16;
+    ctx.strokeRect(50, 50, w - 100, h - 100);
 
+    // Тонкая внутренняя рамка
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(70, 70, w - 140, h - 140);
+
+    // Заголовок статьи — крупно, по центру
     ctx.fillStyle = '#6ea8fe';
-    ctx.font = 'bold 80px sans-serif';
+    ctx.font = 'bold 90px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(title, w / 2, 200);
+    ctx.textBaseline = 'alphabetic';
+    // Перенос заголовка если длинный
+    wrapText(ctx, title, w / 2, 240, w - 240, 110);
 
+    // Горизонтальная линия под заголовком
+    const titleLines = Math.ceil(ctx.measureText(title).width / (w - 240));
+    const lineY = 240 + titleLines * 110 + 20;
+    ctx.strokeStyle = 'rgba(110, 168, 254, 0.4)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(160, lineY);
+    ctx.lineTo(w - 160, lineY);
+    ctx.stroke();
+
+    // Основной текст цитаты — белый, читаемый
     ctx.fillStyle = '#e8ebf0';
-    ctx.font = '50px sans-serif';
-    ctx.textAlign = 'center'; 
-    
-    wrapText(ctx, text, w / 2, 350, w - 200, 80);
+    ctx.font = '58px sans-serif';
+    ctx.textAlign = 'center';
+    wrapText(ctx, text, w / 2, lineY + 100, w - 220, 90);
 
-    ctx.fillStyle = '#9aa3af';
-    ctx.font = 'italic 40px sans-serif';
-    ctx.fillText('PrepMate — Интерактивная Конституция', w / 2, h - 100);
+    // Логотип внизу — курсив, маленький
+    ctx.fillStyle = 'rgba(155, 163, 175, 0.75)';
+    ctx.font = 'italic 42px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('PrepMate — Конституция РФ', w / 2, h - 110);
 }
 
 function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
@@ -1782,23 +1805,31 @@ function updateMapTransform() {
 }
 
 function initMobileNav() {
-    safeAddListener('#navHome', 'click', () => scrollToTop());
-    safeAddListener('#navSearch', 'click', () => { $('#searchInput').focus(); scrollToTop(); });
-    safeAddListener('#navFav', 'click', () => { setFavFilterMode(); $('#navFav').classList.toggle('active'); });
-    safeAddListener('#navMenu', 'click', () => { $('#sidebarPanel').classList.toggle('visible'); });
+    safeAddListener('#navHome', 'click', () => { $('#mobileToolsSheet').hidden = true; scrollToTop(); });
+    safeAddListener('#navSearch', 'click', () => { $('#mobileToolsSheet').hidden = true; $('#searchInput').focus(); scrollToTop(); });
+    safeAddListener('#navFav', 'click', () => { $('#mobileToolsSheet').hidden = true; setFavFilterMode(); $('#navFav').classList.toggle('active'); });
+    safeAddListener('#navMenu', 'click', () => { $('#mobileToolsSheet').hidden = true; $('#sidebarPanel').classList.toggle('visible'); });
+
+    safeAddListener('#navTools', 'click', () => {
+        const sheet = $('#mobileToolsSheet');
+        if (sheet) {
+            sheet.hidden = !sheet.hidden;
+            // Закрыть сайдбар если открыт
+            $('#sidebarPanel')?.classList.remove('visible');
+        }
+    });
+
+    // Кнопки в sheet — дублируем функции из header-tools
+    safeAddListener('#mobileFlashcards', 'click', () => { $('#mobileToolsSheet').hidden = true; $('#flashcardsBtn')?.click(); });
+    safeAddListener('#mobileDictionary', 'click', () => { $('#mobileToolsSheet').hidden = true; $('#dictionaryBtn')?.click(); });
+    safeAddListener('#mobileGame23', 'click', () => { $('#mobileToolsSheet').hidden = true; $('#game23Btn')?.click(); });
+    safeAddListener('#mobileGame', 'click', () => { $('#mobileToolsSheet').hidden = true; $('#gameBtn')?.click(); });
+    safeAddListener('#mobileFontBtn', 'click', () => { $('#mobileToolsSheet').hidden = true; $('#fontBtn')?.click(); });
+    safeAddListener('#mobileTheme', 'click', () => { $('#mobileToolsSheet').hidden = true; toggleTheme(); });
 }
 
 /* --- INIT FOLDERS UI HANDLERS --- */
 function initFoldersUI() {
-    safeAddListener('#addFolderBtn', 'click', () => {
-        const name = prompt("Введите название новой папки:");
-        if (name && !state.favFolders.includes(name)) {
-            state.favFolders.push(name);
-            saveFolders();
-            renderFolderSelect();
-        }
-    });
-
     const select = $('#folderSelectFilter');
     if (select) {
         select.addEventListener('change', (e) => {
@@ -2033,8 +2064,6 @@ function openDialogById(id) {
 }
 
 function boot() {
-    if (window.speechSynthesis) window.speechSynthesis.cancel(); // Force stop audio
-
     applyTheme(true);
     loadFavorites(); 
     loadNotes(); 
