@@ -213,16 +213,21 @@ body {
     align-items: start;
 }
 
+/* Sidebar — обычный grid-элемент, sticky в inner-обёртке */
 .sidebar {
-    position: sticky;
-    top: 90px;
     align-self: start;
     margin: 0;
+    min-width: 0;
+    transition: transform 0.3s;
+}
+
+.sidebar-inner {
+    position: sticky;
+    top: 90px;
     display: flex;
     flex-direction: column;
     gap: 16px;
     padding-right: 5px;
-    transition: transform 0.3s;
 }
 
 .content {
@@ -1901,6 +1906,13 @@ dialog::backdrop {
     /* Поиск в сайдбаре скрыт на мобильном (есть отдельная вкладка) */
     .sidebar .search-container {
         display: none;
+    }
+
+    /* На мобильном sidebar-inner — просто flex-контейнер без sticky */
+    .sidebar-inner {
+        position: static;
+        top: auto;
+        min-height: 100%;
     }
 }
 

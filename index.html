@@ -48,43 +48,45 @@
 
   <main class="layout" role="main">
     <aside id="sidebarPanel" class="sidebar" aria-label="Оглавление">
-      <div id="egeTimer" class="ege-timer">Загрузка таймера...</div>
+      <div class="sidebar-inner">
+        <div id="egeTimer" class="ege-timer">Загрузка таймера...</div>
 
-      <div class="search-container">
-        <div class="search-box">
-          <input id="searchInput" type="search" placeholder="Поиск по статьям…" aria-label="Поиск" autocomplete="off" />
-          <button id="searchTriggerBtn" class="btn-search" title="Найти">🔍</button>
+        <div class="search-container">
+          <div class="search-box">
+            <input id="searchInput" type="search" placeholder="Поиск по статьям…" aria-label="Поиск" autocomplete="off" />
+            <button id="searchTriggerBtn" class="btn-search" title="Найти">🔍</button>
+          </div>
+          <div id="searchHistory" class="search-history" hidden></div>
         </div>
-        <div id="searchHistory" class="search-history" hidden></div>
-      </div>
 
-      <button id="favFilterBtn" class="btn btn-block" aria-pressed="false">
-        ⭐ Избранное <span id="favCount" class="badge">0</span>
-      </button>
+        <button id="favFilterBtn" class="btn btn-block" aria-pressed="false">
+          ⭐ Избранное <span id="favCount" class="badge">0</span>
+        </button>
 
-      <div id="favFoldersContainer" class="fav-folders" hidden>
-        <div class="fav-actions">
-          <select id="folderSelectFilter" class="folder-select">
-            <option value="all">Все папки</option>
-          </select>
+        <div id="favFoldersContainer" class="fav-folders" hidden>
+          <div class="fav-actions">
+            <select id="folderSelectFilter" class="folder-select">
+              <option value="all">Все папки</option>
+            </select>
+          </div>
         </div>
+
+        <nav id="toc" class="toc" aria-label="Навигация по главам"></nav>
+
+        <a href="https://t.me/Nicky_Lambx" target="_blank" rel="noopener"
+          class="btn btn-block btn-secondary feedback-btn">
+          🐞 Нашли ошибку?
+        </a>
+
+        <section class="sources">
+          <h2>Источники</h2>
+          <ul>
+            <li><a href="http://www.consultant.ru/document/cons_doc_LAW_28399/" target="_blank" rel="noopener">КонсультантПлюс — Конституция РФ</a></li>
+            <li><a href="http://publication.pravo.gov.ru/document/0001202210060013" target="_blank" rel="noopener">Официальный интернет-портал правовой информации</a></li>
+            <li><a href="https://www.garant.ru/doc/constitution/" target="_blank" rel="noopener">ГАРАНТ — Конституция РФ</a></li>
+          </ul>
+        </section>
       </div>
-
-      <nav id="toc" class="toc" aria-label="Навигация по главам"></nav>
-
-      <a href="https://t.me/Nicky_Lambx" target="_blank" rel="noopener"
-        class="btn btn-block btn-secondary feedback-btn">
-        🐞 Нашли ошибку?
-      </a>
-
-      <section class="sources">
-        <h2>Источники</h2>
-        <ul>
-          <li><a href="http://www.consultant.ru/document/cons_doc_LAW_28399/" target="_blank" rel="noopener">КонсультантПлюс — Конституция РФ</a></li>
-          <li><a href="http://publication.pravo.gov.ru/document/0001202210060013" target="_blank" rel="noopener">Официальный интернет-портал правовой информации</a></li>
-          <li><a href="https://www.garant.ru/doc/constitution/" target="_blank" rel="noopener">ГАРАНТ — Конституция РФ</a></li>
-        </ul>
-      </section>
     </aside>
 
     <section id="content" class="content" tabindex="-1" aria-live="polite">

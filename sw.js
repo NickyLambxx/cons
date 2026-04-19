@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prep-mate-v6'; // v6: тетрадная цитата, двойной тап домой, инструменты
+const CACHE_NAME = 'prep-mate-v7'; // v7: враппер выравнивание, лого цитата, инструменты
 const ASSETS = [
   './',
   './index.html',

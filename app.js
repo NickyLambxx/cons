@@ -1731,8 +1731,8 @@ function generateQuoteImage(canvas, title, text) {
     }
 
     // === ШТАМП PrepMate (нижний правый угол) ===
-    ctx.fillStyle = 'rgba(90,90,140,0.55)';
-    ctx.font = 'italic 14px sans-serif';
+    ctx.fillStyle = 'rgba(26,35,126,0.82)';
+    ctx.font = 'italic bold 14px sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText('PrepMate — Конституция РФ', W - 12, H - 8);
 }
@@ -1956,14 +1956,13 @@ function initMobileNav() {
 
     safeAddListener('#navTools', 'click', () => {
         const sheet = $('#mobileToolsSheet');
-        // Закрыть поисковый оверлей если открыт
-        const overlay = $('#mobileSearchOverlay');
-        if (overlay) overlay.hidden = true;
-        if (sheet) {
-            sheet.hidden = !sheet.hidden;
-            $('#sidebarPanel')?.classList.remove('visible');
-        }
-        $$('.nav-item').forEach(b => b.classList.remove('active'));
+        if (!sheet) return;
+        const willShow = sheet.hidden;
+        // Закрыть только сайдбар (поиск и избранное не трогаем)
+        $('#sidebarPanel')?.classList.remove('visible');
+        sheet.hidden = !sheet.hidden;
+        // Убрать active только с кнопки Меню если она активна
+        if (willShow) $('#navMenu')?.classList.remove('active');
     });
 
     // Кнопки в sheet — дублируем функции из header-tools
