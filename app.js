@@ -1730,10 +1730,32 @@ function generateQuoteImage(canvas, title, text) {
         y += CELL;
     }
 
+    // === ДИАГОНАЛЬНЫЙ ВОДЯНОЙ ЗНАК ===
+    ctx.save();
+    ctx.globalAlpha = 0.055;
+    ctx.fillStyle = '#1a237e';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const wmAngle = -Math.PI / 6; // -30°
+    const wmSpX = 200;
+    const wmSpY = 80;
+    for (let wx = -wmSpX; wx < W + wmSpX; wx += wmSpX) {
+        for (let wy = -wmSpY; wy < H + wmSpY; wy += wmSpY) {
+            ctx.save();
+            ctx.translate(wx, wy);
+            ctx.rotate(wmAngle);
+            ctx.fillText('PrepMate', 0, 0);
+            ctx.restore();
+        }
+    }
+    ctx.restore();
+
     // === ШТАМП PrepMate (нижний правый угол) ===
     ctx.fillStyle = 'rgba(26,35,126,0.82)';
     ctx.font = 'italic bold 14px sans-serif';
     ctx.textAlign = 'right';
+    ctx.textBaseline = 'alphabetic';
     ctx.fillText('PrepMate — Конституция РФ', W - 12, H - 8);
 }
 
@@ -1957,12 +1979,9 @@ function initMobileNav() {
     safeAddListener('#navTools', 'click', () => {
         const sheet = $('#mobileToolsSheet');
         if (!sheet) return;
-        const willShow = sheet.hidden;
-        // Закрыть только сайдбар (поиск и избранное не трогаем)
-        $('#sidebarPanel')?.classList.remove('visible');
+        // Просто переключаем sheet — ничего больше не трогаем.
+        // Sheet имеет z-index 4700 → появляется поверх поиска, меню, избранного.
         sheet.hidden = !sheet.hidden;
-        // Убрать active только с кнопки Меню если она активна
-        if (willShow) $('#navMenu')?.classList.remove('active');
     });
 
     // Кнопки в sheet — дублируем функции из header-tools
