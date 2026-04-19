@@ -1571,34 +1571,69 @@ function renderArticles(list = state.articles) {
     initDynamicEvents(container);
 }
 
+let _shareTitle = '';
+
+function trimQuoteText(rawHtml) {
+    return rawHtml
+        .replace(/<\/p>\s*<p[^>]*>/gi, '\n')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/[ \t]+/g, ' ')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+}
+
 function openShareDialog(title, text) {
     const dlg = $('#shareDialog');
     const canvas = $('#shareCanvas');
     if (!dlg || !canvas) return;
 
-    generateQuoteImage(canvas, title, text);
+    _shareTitle = title;
+
+    // Очищаем и обрабатываем текст
+    let bodyText = trimQuoteText(text);
+
+    // Обрезаем до ~280 символов по границе слова
+    if (bodyText.length > 280) {
+        const cut = bodyText.lastIndexOf(' ', 280);
+        bodyText = bodyText.substring(0, cut > 0 ? cut : 280).trim() + '…';
+    }
+
+    const quoteEdit = $('#quoteEditText');
+    if (quoteEdit) quoteEdit.value = bodyText;
+
+    // Квадратный canvas 1080×1080
+    canvas.width = 1080;
+    canvas.height = 1080;
+    generateQuoteImage(canvas, title, bodyText);
     dlg.showModal();
 
     safeAddListener('#closeShare', 'click', () => dlg.close());
-    
+
+    $('#regenerateQuoteBtn').onclick = () => {
+        const txt = ($('#quoteEditText')?.value || '').trim();
+        if (!txt) return;
+        canvas.width = 1080;
+        canvas.height = 1080;
+        generateQuoteImage(canvas, _shareTitle, txt);
+    };
+
     $('#downloadImgBtn').onclick = () => {
         const link = document.createElement('a');
-        link.download = `constitution-${Date.now()}.png`;
+        link.download = `quote-${Date.now()}.png`;
         link.href = canvas.toDataURL();
         link.click();
     };
 
     $('#shareNativeBtn').onclick = () => {
         canvas.toBlob(blob => {
-            const file = new File([blob], "quote.png", { type: "image/png" });
-            if (navigator.share) {
-                navigator.share({
-                    files: [file],
-                    title: 'Цитата из Конституции',
-                    text: `${title}\n${text.substring(0, 50)}...`
-                }).catch(console.error);
+            const file = new File([blob], 'quote.png', { type: 'image/png' });
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({ files: [file], title: 'Конституция РФ', text: _shareTitle }).catch(console.error);
+            } else if (navigator.share) {
+                navigator.share({ title: 'Конституция РФ', text: `${_shareTitle}\n${$('#quoteEditText')?.value || ''}` }).catch(console.error);
             } else {
-                showToast("Ваш браузер не поддерживает отправку картинок");
+                showToast('Ваш браузер не поддерживает отправку');
             }
         });
     };
@@ -1606,8 +1641,10 @@ function openShareDialog(title, text) {
 
 function generateQuoteImage(canvas, title, text) {
     const ctx = canvas.getContext('2d');
-    const w = canvas.width;  // 800
-    const h = canvas.height; // 1000
+    const w = 1080;
+    const h = 1080;
+    canvas.width = w;
+    canvas.height = h;
 
     // Фон: тёмно-синий → фиолетовый
     const grad = ctx.createLinearGradient(0, 0, w, h);
@@ -1617,82 +1654,86 @@ function generateQuoteImage(canvas, title, text) {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
 
-    // Рамка
+    // Декоративные полосы-акценты
+    ctx.fillStyle = 'rgba(110,168,254,0.07)';
+    ctx.fillRect(0, 0, w, 4);
+    ctx.fillRect(0, h - 4, w, 4);
+
+    // Рамка градиентная
     const borderGrad = ctx.createLinearGradient(0, 0, w, h);
     borderGrad.addColorStop(0, '#6ea8fe');
     borderGrad.addColorStop(1, '#9b59b6');
     ctx.strokeStyle = borderGrad;
-    ctx.lineWidth = 14;
-    ctx.strokeRect(40, 40, w - 80, h - 80);
+    ctx.lineWidth = 10;
+    ctx.strokeRect(30, 30, w - 60, h - 60);
 
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(58, 58, w - 116, h - 116);
+    // Внутренняя рамка
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(44, 44, w - 88, h - 88);
+
+    // Кавычки-декор
+    ctx.fillStyle = 'rgba(110,168,254,0.12)';
+    ctx.font = 'bold 220px serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText('\u201C', 50, 55);
 
     // Заголовок
     ctx.fillStyle = '#6ea8fe';
-    ctx.font = 'bold 72px sans-serif';
+    ctx.font = 'bold 58px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
-    const titleY = wrapTextCentered(ctx, title, w / 2, 180, w - 200, 88);
+    const titleY = wrapTextCentered(ctx, title, w / 2, 170, w - 160, 72);
 
-    // Линия под заголовком
-    const lineY = titleY + 30;
-    ctx.strokeStyle = 'rgba(110, 168, 254, 0.35)';
+    // Линия-разделитель
+    const lineY = titleY + 28;
+    const lineGrad = ctx.createLinearGradient(100, 0, w - 100, 0);
+    lineGrad.addColorStop(0, 'rgba(110,168,254,0)');
+    lineGrad.addColorStop(0.3, 'rgba(110,168,254,0.5)');
+    lineGrad.addColorStop(0.7, 'rgba(155,89,182,0.5)');
+    lineGrad.addColorStop(1, 'rgba(155,89,182,0)');
+    ctx.strokeStyle = lineGrad;
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(120, lineY);
-    ctx.lineTo(w - 120, lineY);
+    ctx.moveTo(100, lineY);
+    ctx.lineTo(w - 100, lineY);
     ctx.stroke();
 
-    // Основной текст — сохраняем разрывы параграфов, автоподбор шрифта
-    let bodyText = text
-        .replace(/<\/p>\s*<p[^>]*>/gi, '\n')
-        .replace(/<br\s*\/?>/gi, '\n')
-        .replace(/<[^>]+>/g, '')
-        .replace(/[ \t]+/g, ' ')
-        .trim();
+    // Основной текст — уже обрезан до ~280 символов
+    const bodyText = String(text || '').trim();
+    const maxW = w - 160;
+    const availH = h - lineY - 170;
 
-    const availH = h - lineY - 220; // высота под текст (за вычетом футера)
-    const maxW = w - 180;
-    let fontSize = 44;
-    // Уменьшаем шрифт пока текст не влезет
-    while (fontSize >= 20) {
+    let fontSize = 46;
+    while (fontSize >= 26) {
         ctx.font = `${fontSize}px sans-serif`;
-        const lh = fontSize * 1.25;
+        const lh = fontSize * 1.35;
         const lines = countLines(ctx, bodyText, maxW);
         if (lines * lh <= availH) break;
         fontSize -= 2;
     }
-    const lineHeightBody = fontSize * 1.25;
+    const lineHeightBody = fontSize * 1.35;
 
     ctx.fillStyle = '#dce6f5';
     ctx.textAlign = 'center';
-    const bodyEndY = wrapTextCentered(ctx, bodyText, w / 2, lineY + 80, maxW, lineHeightBody);
+    ctx.textBaseline = 'alphabetic';
+    wrapTextCentered(ctx, bodyText, w / 2, lineY + 70, maxW, lineHeightBody);
 
-    // Логотип PrepMate внизу
-    const logoImg = new Image();
-    logoImg.src = './logo.png';
-    const footerY = Math.max(bodyEndY + 60, h - 160);
+    // Футер: PrepMate
+    const footerY = h - 55;
+    ctx.fillStyle = 'rgba(140, 160, 190, 0.75)';
+    ctx.font = 'italic 30px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('PrepMate — Конституция РФ', w / 2, footerY);
 
-    logoImg.onload = () => {
-        // Лого слева от текста
-        const logoH = 36;
-        const logoW = logoImg.width * (logoH / logoImg.height);
-        const totalW = logoW + 12 + ctx.measureText('PrepMate — Конституция РФ').width;
-        const startX = (w - totalW) / 2;
-        ctx.drawImage(logoImg, startX, footerY - logoH + 4, logoW, logoH);
-        ctx.fillStyle = 'rgba(160, 174, 192, 0.8)';
-        ctx.font = 'italic 34px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('PrepMate — Конституция РФ', startX + logoW + 12, footerY);
-    };
-    logoImg.onerror = () => {
-        ctx.fillStyle = 'rgba(160, 174, 192, 0.8)';
-        ctx.font = 'italic 34px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('PrepMate — Конституция РФ', w / 2, footerY);
-    };
+    // Полоса под футером
+    ctx.strokeStyle = 'rgba(110,168,254,0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(200, footerY + 10);
+    ctx.lineTo(w - 200, footerY + 10);
+    ctx.stroke();
 }
 
 // Считает количество строк (с учётом \n как принудительного переноса)
@@ -1873,7 +1914,10 @@ function initMobileNav() {
         $('#navSearch').classList.add('active');
         const overlay = $('#mobileSearchOverlay');
         overlay.hidden = false;
-        setTimeout(() => $('#mobileSearchInput')?.focus(), 100);
+        const mobileInput2 = $('#mobileSearchInput');
+        if (mobileInput2) mobileInput2.value = '';
+        showMobileSearchHistory();
+        setTimeout(() => mobileInput2?.focus(), 100);
     });
 
     safeAddListener('#navFav', 'click', () => {
@@ -1885,6 +1929,8 @@ function initMobileNav() {
 
     safeAddListener('#navMenu', 'click', () => {
         $('#mobileToolsSheet').hidden = true;
+        const overlay = $('#mobileSearchOverlay');
+        if (overlay) overlay.hidden = true;
         $('#sidebarPanel').classList.toggle('visible');
         $$('.nav-item').forEach(b => b.classList.remove('active'));
         if ($('#sidebarPanel').classList.contains('visible')) $('#navMenu').classList.add('active');
@@ -1920,14 +1966,14 @@ function initMobileNav() {
         mobileInput.addEventListener('input', debounce((e) => {
             const q = e.target.value.trim();
             const container = $('#mobileSearchResults');
-            if (!q || q.length < 2) { container.innerHTML = ''; return; }
+            if (!q || q.length < 2) { showMobileSearchHistory(); return; }
             const results = state.articles.filter(a => {
                 const t = a.title.toLowerCase();
                 const b = a.bodyHTML.replace(/<[^>]+>/g, ' ').toLowerCase();
                 return t.includes(q.toLowerCase()) || b.includes(q.toLowerCase());
             }).slice(0, 15);
             container.innerHTML = results.length
-                ? results.map(a => `<div class="mobile-search-result-item" data-id="${a.id}"><strong>${a.title}</strong>${a.chapterTitle}</div>`).join('')
+                ? results.map(a => `<div class="mobile-search-result-item" data-id="${a.id}"><strong>${a.title}</strong><span style="color:var(--muted);font-size:12px;margin-left:6px">${a.chapterTitle}</span></div>`).join('')
                 : '<div style="padding:20px;text-align:center;color:var(--muted)">Ничего не найдено</div>';
             container.querySelectorAll('.mobile-search-result-item').forEach(el => {
                 el.addEventListener('click', () => {
@@ -1953,6 +1999,32 @@ function initMobileNav() {
             }
         });
     }
+}
+
+function showMobileSearchHistory() {
+    const container = $('#mobileSearchResults');
+    if (!container) return;
+    if (!state.searchHistory || !state.searchHistory.length) {
+        container.innerHTML = '<div style="padding:30px 20px;text-align:center;color:var(--muted);font-size:14px">Начните вводить запрос...</div>';
+        return;
+    }
+    container.innerHTML =
+        '<div style="padding:6px 4px 8px;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px">Недавние запросы</div>' +
+        state.searchHistory.map(q =>
+            `<div class="mobile-search-result-item mobile-history-item" data-q="${q}" style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:16px;opacity:0.5">🕐</span>
+                <span>${q}</span>
+            </div>`
+        ).join('');
+    container.querySelectorAll('.mobile-history-item').forEach(el => {
+        el.addEventListener('click', () => {
+            const q = el.dataset.q;
+            $('#mobileSearchInput').value = q;
+            $('#mobileSearchOverlay').hidden = true;
+            $$('.nav-item').forEach(b => b.classList.remove('active'));
+            filterArticles(q);
+        });
+    });
 }
 
 /* --- INIT FOLDERS UI HANDLERS --- */

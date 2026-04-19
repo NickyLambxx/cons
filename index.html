@@ -203,7 +203,7 @@
     <div class="game-header">
       <h3>Карточки терминов</h3>
       <div style="display:flex;gap:8px;align-items:center">
-        <button id="resetFlashcards" class="btn btn-secondary" style="font-size:12px">🔄 Сначала</button>
+        <button id="resetFlashcards" class="btn btn-secondary" style="font-size:12px">🔄</button>
         <button id="closeFlashcards" class="btn-ghost">✕</button>
       </div>
     </div>
@@ -227,15 +227,24 @@
     </div>
   </dialog>
 
-  <dialog id="shareDialog" class="mini-dialog" style="width: 90%; max-width: 400px;">
+  <dialog id="shareDialog" class="mini-dialog" style="width: 95%; max-width: 520px;">
     <header class="dialog-header">
       <h3>Поделиться цитатой</h3>
       <button id="closeShare" class="btn btn-ghost">✕</button>
     </header>
-    <div style="padding: 20px; text-align: center;">
-      <canvas id="shareCanvas" width="1080" height="1920"
-        style="width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px;"></canvas>
-      <div style="display: grid; gap: 10px;">
+    <div style="padding: 16px;">
+      <div style="margin-bottom: 12px;">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">
+          Текст цитаты — можно сократить:
+        </label>
+        <textarea id="quoteEditText" rows="4"
+          style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--text);font-size:14px;resize:vertical;font-family:inherit;line-height:1.5"
+          placeholder="Введите или отредактируйте текст..."></textarea>
+      </div>
+      <canvas id="shareCanvas" width="1080" height="1080"
+        style="width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; display:block;"></canvas>
+      <div style="display: grid; gap: 8px;">
+        <button id="regenerateQuoteBtn" class="btn btn-secondary">🔄 Обновить превью</button>
         <button id="downloadImgBtn" class="btn btn-primary">⬇ Скачать картинку</button>
         <button id="shareNativeBtn" class="btn">📤 Отправить</button>
       </div>

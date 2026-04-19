@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prep-mate-v4'; // v4: выравнивание, поиск, прогресс тренажёров
+const CACHE_NAME = 'prep-mate-v5'; // v5: цитата редактор, история поиска, выравнивание
 const ASSETS = [
   './',
   './index.html',
