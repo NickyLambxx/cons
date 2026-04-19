@@ -1732,7 +1732,7 @@ function generateQuoteImage(canvas, title, text) {
 
     // === ДИАГОНАЛЬНЫЙ ВОДЯНОЙ ЗНАК ===
     ctx.save();
-    ctx.globalAlpha = 0.055;
+    ctx.globalAlpha = 0.12;
     ctx.fillStyle = '#1a237e';
     ctx.font = 'bold 18px sans-serif';
     ctx.textAlign = 'center';

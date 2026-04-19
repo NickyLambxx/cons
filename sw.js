@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prep-mate-v8'; // v8: водяной знак цитата, инструменты z-index, navTools
+const CACHE_NAME = 'prep-mate-v9'; // v9: OG-image, водяной знак 12%, og-теги
 const ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const ASSETS = [
   './manifest.json',
   './logo.png',
   './favicon.ico',
+  './og-image.png',
   // Главы (можно добавить сюда, но лучше динамически)
   './chapters/chapter1.html',
   './chapters/chapter2.html',
