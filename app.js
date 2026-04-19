@@ -1573,7 +1573,7 @@ function renderArticles(list = state.articles) {
 
 let _shareTitle = '';
 
-function trimQuoteText(rawHtml) {
+function cleanHtmlToText(rawHtml) {
     return rawHtml
         .replace(/<\/p>\s*<p[^>]*>/gi, '\n')
         .replace(/<br\s*\/?>/gi, '\n')
@@ -1589,22 +1589,11 @@ function openShareDialog(title, text) {
     if (!dlg || !canvas) return;
 
     _shareTitle = title;
-
-    // Очищаем и обрабатываем текст
-    let bodyText = trimQuoteText(text);
-
-    // Обрезаем до ~280 символов по границе слова
-    if (bodyText.length > 280) {
-        const cut = bodyText.lastIndexOf(' ', 280);
-        bodyText = bodyText.substring(0, cut > 0 ? cut : 280).trim() + '…';
-    }
+    const bodyText = cleanHtmlToText(text);
 
     const quoteEdit = $('#quoteEditText');
     if (quoteEdit) quoteEdit.value = bodyText;
 
-    // Квадратный canvas 1080×1080
-    canvas.width = 1080;
-    canvas.height = 1080;
     generateQuoteImage(canvas, title, bodyText);
     dlg.showModal();
 
@@ -1612,10 +1601,7 @@ function openShareDialog(title, text) {
 
     $('#regenerateQuoteBtn').onclick = () => {
         const txt = ($('#quoteEditText')?.value || '').trim();
-        if (!txt) return;
-        canvas.width = 1080;
-        canvas.height = 1080;
-        generateQuoteImage(canvas, _shareTitle, txt);
+        if (txt) generateQuoteImage(canvas, _shareTitle, txt);
     };
 
     $('#downloadImgBtn').onclick = () => {
@@ -1639,101 +1625,116 @@ function openShareDialog(title, text) {
     };
 }
 
-function generateQuoteImage(canvas, title, text) {
-    const ctx = canvas.getContext('2d');
-    const w = 1080;
-    const h = 1080;
-    canvas.width = w;
-    canvas.height = h;
-
-    // Фон: тёмно-синий → фиолетовый
-    const grad = ctx.createLinearGradient(0, 0, w, h);
-    grad.addColorStop(0, '#0d0f2b');
-    grad.addColorStop(0.5, '#1a1040');
-    grad.addColorStop(1, '#2a0a3c');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, w, h);
-
-    // Декоративные полосы-акценты
-    ctx.fillStyle = 'rgba(110,168,254,0.07)';
-    ctx.fillRect(0, 0, w, 4);
-    ctx.fillRect(0, h - 4, w, 4);
-
-    // Рамка градиентная
-    const borderGrad = ctx.createLinearGradient(0, 0, w, h);
-    borderGrad.addColorStop(0, '#6ea8fe');
-    borderGrad.addColorStop(1, '#9b59b6');
-    ctx.strokeStyle = borderGrad;
-    ctx.lineWidth = 10;
-    ctx.strokeRect(30, 30, w - 60, h - 60);
-
-    // Внутренняя рамка
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(44, 44, w - 88, h - 88);
-
-    // Кавычки-декор
-    ctx.fillStyle = 'rgba(110,168,254,0.12)';
-    ctx.font = 'bold 220px serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.fillText('\u201C', 50, 55);
-
-    // Заголовок
-    ctx.fillStyle = '#6ea8fe';
-    ctx.font = 'bold 58px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic';
-    const titleY = wrapTextCentered(ctx, title, w / 2, 170, w - 160, 72);
-
-    // Линия-разделитель
-    const lineY = titleY + 28;
-    const lineGrad = ctx.createLinearGradient(100, 0, w - 100, 0);
-    lineGrad.addColorStop(0, 'rgba(110,168,254,0)');
-    lineGrad.addColorStop(0.3, 'rgba(110,168,254,0.5)');
-    lineGrad.addColorStop(0.7, 'rgba(155,89,182,0.5)');
-    lineGrad.addColorStop(1, 'rgba(155,89,182,0)');
-    ctx.strokeStyle = lineGrad;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(100, lineY);
-    ctx.lineTo(w - 100, lineY);
-    ctx.stroke();
-
-    // Основной текст — уже обрезан до ~280 символов
-    const bodyText = String(text || '').trim();
-    const maxW = w - 160;
-    const availH = h - lineY - 170;
-
-    let fontSize = 46;
-    while (fontSize >= 26) {
-        ctx.font = `${fontSize}px sans-serif`;
-        const lh = fontSize * 1.35;
-        const lines = countLines(ctx, bodyText, maxW);
-        if (lines * lh <= availH) break;
-        fontSize -= 2;
+// Вспомогательная функция: разбивает текст на строки с переносом
+function wrapToLines(ctx, text, maxWidth) {
+    const lines = [];
+    for (const para of text.split('\n')) {
+        const trimmed = para.trim();
+        if (!trimmed) { lines.push(''); continue; }
+        const words = trimmed.split(' ');
+        let line = '';
+        for (const word of words) {
+            const test = line ? line + ' ' + word : word;
+            if (ctx.measureText(test).width > maxWidth && line) {
+                lines.push(line);
+                line = word;
+            } else {
+                line = test;
+            }
+        }
+        if (line) lines.push(line);
     }
-    const lineHeightBody = fontSize * 1.35;
+    return lines;
+}
 
-    ctx.fillStyle = '#dce6f5';
-    ctx.textAlign = 'center';
+function generateQuoteImage(canvas, title, text) {
+    // --- Константы тетради ---
+    const CELL     = 26;        // размер клетки в px
+    const W        = 820;       // ширина листа (≈ A5 landscape)
+    const MARG_L   = 80;        // красная полоса (левый отступ)
+    const MARG_R   = 40;        // правый отступ
+    const MARG_T   = CELL * 3;  // верхний отступ (3 клетки)
+    const MARG_B   = CELL * 3;  // нижний отступ
+    const FONT_SZ  = 20;        // размер шрифта (влезет в клетку CELL=26)
+    const FONT     = `${FONT_SZ}px "Georgia","Times New Roman",serif`;
+    const FONT_B   = `bold ${FONT_SZ}px "Georgia","Times New Roman",serif`;
+    const TEXT_W   = W - MARG_L - MARG_R - 10;
+
+    // --- Временный контекст для измерений ---
+    const tmp = document.createElement('canvas');
+    tmp.width = W; tmp.height = 10;
+    const tc = tmp.getContext('2d');
+
+    tc.font = FONT_B;
+    const titleLines = wrapToLines(tc, title, TEXT_W);
+
+    tc.font = FONT;
+    const bodyLines = wrapToLines(tc, String(text || '').trim(), TEXT_W);
+
+    // Итоговый список строк: заголовок, пустая, текст статьи, пустая
+    const allLines = [...titleLines, '', ...bodyLines];
+
+    // --- Высота холста ---
+    const H = MARG_T + allLines.length * CELL + MARG_B;
+    canvas.width  = W;
+    canvas.height = H;
+
+    const ctx = canvas.getContext('2d');
+
+    // === ФОНОВАЯ БУМАГА ===
+    ctx.fillStyle = '#fdf8ee'; // тёплый кремовый
+    ctx.fillRect(0, 0, W, H);
+
+    // Лёгкая тень по краям (книжный эффект)
+    const shadow = ctx.createLinearGradient(0, 0, 18, 0);
+    shadow.addColorStop(0, 'rgba(0,0,0,0.07)');
+    shadow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = shadow;
+    ctx.fillRect(0, 0, 18, H);
+    const shadow2 = ctx.createLinearGradient(W - 18, 0, W, 0);
+    shadow2.addColorStop(0, 'rgba(0,0,0,0)');
+    shadow2.addColorStop(1, 'rgba(0,0,0,0.05)');
+    ctx.fillStyle = shadow2;
+    ctx.fillRect(W - 18, 0, 18, H);
+
+    // === КЛЕТКА ===
+    ctx.strokeStyle = 'rgba(130, 190, 220, 0.5)';
+    ctx.lineWidth = 0.8;
+    // Горизонтальные
+    for (let y = CELL; y < H; y += CELL) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    // Вертикальные
+    for (let x = CELL; x < W; x += CELL) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+
+    // === КРАСНАЯ ПОЛОСА (поля) ===
+    ctx.strokeStyle = 'rgba(215, 55, 55, 0.5)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.moveTo(MARG_L, 0); ctx.lineTo(MARG_L, H); ctx.stroke();
+
+    // === ТЕКСТ ===
     ctx.textBaseline = 'alphabetic';
-    wrapTextCentered(ctx, bodyText, w / 2, lineY + 70, maxW, lineHeightBody);
+    ctx.textAlign = 'left';
+    // Первая строка: снизу первой клетки отступа + шрифт
+    let y = MARG_T;
 
-    // Футер: PrepMate
-    const footerY = h - 55;
-    ctx.fillStyle = 'rgba(140, 160, 190, 0.75)';
-    ctx.font = 'italic 30px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('PrepMate — Конституция РФ', w / 2, footerY);
+    for (let i = 0; i < allLines.length; i++) {
+        const line = allLines[i];
+        if (!line) { y += CELL; continue; }
+        const isTitleLine = i < titleLines.length;
+        ctx.font = isTitleLine ? FONT_B : FONT;
+        ctx.fillStyle = isTitleLine ? '#1a237e' : '#1c1c2e';
+        ctx.fillText(line, MARG_L + 8, y);
+        y += CELL;
+    }
 
-    // Полоса под футером
-    ctx.strokeStyle = 'rgba(110,168,254,0.2)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(200, footerY + 10);
-    ctx.lineTo(w - 200, footerY + 10);
-    ctx.stroke();
+    // === ШТАМП PrepMate (нижний правый угол) ===
+    ctx.fillStyle = 'rgba(90,90,140,0.55)';
+    ctx.font = 'italic 14px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('PrepMate — Конституция РФ', W - 12, H - 8);
 }
 
 // Считает количество строк (с учётом \n как принудительного переноса)
@@ -1899,9 +1900,26 @@ function closeMobileExtras() {
 }
 
 function initMobileNav() {
+    let _lastHomeClick = 0;
+
     safeAddListener('#navHome', 'click', () => {
+        const now = Date.now();
+        const isDoubleTap = (now - _lastHomeClick) < 600;
+        _lastHomeClick = now;
+
         closeMobileExtras();
         if (state.showFavoritesOnly) setFavFilterMode();
+
+        if (isDoubleTap && state.activeSearchQuery) {
+            // Двойной тап — сбросить поиск и показать все статьи
+            filterArticles('');
+            const si = $('#searchInput');
+            if (si) si.value = '';
+            const mi = $('#mobileSearchInput');
+            if (mi) mi.value = '';
+            showToast('Поиск сброшен');
+        }
+
         scrollToTop();
         $$('.nav-item').forEach(b => b.classList.remove('active'));
         $('#navHome').classList.add('active');
@@ -1938,11 +1956,14 @@ function initMobileNav() {
 
     safeAddListener('#navTools', 'click', () => {
         const sheet = $('#mobileToolsSheet');
+        // Закрыть поисковый оверлей если открыт
+        const overlay = $('#mobileSearchOverlay');
+        if (overlay) overlay.hidden = true;
         if (sheet) {
             sheet.hidden = !sheet.hidden;
-            // Закрыть сайдбар если открыт
             $('#sidebarPanel')?.classList.remove('visible');
         }
+        $$('.nav-item').forEach(b => b.classList.remove('active'));
     });
 
     // Кнопки в sheet — дублируем функции из header-tools
