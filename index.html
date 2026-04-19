@@ -112,6 +112,14 @@
     </div>
   </div>
 
+  <div id="mobileSearchOverlay" class="mobile-search-overlay" hidden>
+    <div class="mobile-search-header">
+      <input id="mobileSearchInput" type="search" placeholder="Статья, слово, номер…" autocomplete="off" />
+      <button id="mobileSearchClose" class="btn-ghost">✕</button>
+    </div>
+    <div id="mobileSearchResults" class="mobile-search-results"></div>
+  </div>
+
   <button id="backToTop" class="btn-up" aria-label="Вернуться в начало">⬆</button>
   <button id="btn-return" class="btn-return" aria-label="Вернуться назад">↩ Вернуться назад</button>
 
@@ -173,7 +181,10 @@
   <dialog id="game23Dialog" class="large-dialog">
     <div class="game-header">
       <h3>Задание №23 ЕГЭ (Конституция)</h3>
-      <button id="closeGame23" class="btn-ghost">✕</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="resetGame23" class="btn btn-secondary" style="font-size:12px;margin-left:8px">🔄</button>
+        <button id="closeGame23" class="btn-ghost">✕</button>
+      </div>
     </div>
     <div class="game23-body">
       <p class="game23-task">На основе положений Конституции РФ сформулируйте и подтвердите характеристику:</p>
@@ -191,7 +202,10 @@
   <dialog id="flashcardsDialog" class="large-dialog">
     <div class="game-header">
       <h3>Карточки терминов</h3>
-      <button id="closeFlashcards" class="btn-ghost">✕</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="resetFlashcards" class="btn btn-secondary" style="font-size:12px">🔄 Сначала</button>
+        <button id="closeFlashcards" class="btn-ghost">✕</button>
+      </div>
     </div>
     <div class="flashcard-wrapper">
       <div class="flashcard-container">

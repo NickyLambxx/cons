@@ -92,7 +92,7 @@ html {
 
 body {
     margin: 0;
-    padding-top: 80px;
+    padding-top: 70px;
     padding-bottom: var(--player-height);
     /* Отступ для плеера */
     font-family: var(--current-font);
@@ -102,7 +102,6 @@ body {
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
-    scrollbar-gutter: stable; /* Предотвращает прыжок контента при открытии диалогов */
 }
 
 @media (max-width: 768px) {
@@ -216,7 +215,7 @@ body {
 
 .sidebar {
     position: sticky;
-    top: 90px;
+    top: 80px;
     align-self: start;
     display: flex;
     flex-direction: column;
@@ -1946,6 +1945,72 @@ dialog::backdrop {
 .sheet-tool-btn:active {
     background: var(--accent);
     color: white;
+}
+
+/* --- MOBILE SEARCH OVERLAY --- */
+.mobile-search-overlay {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    bottom: var(--nav-height);
+    background: var(--bg);
+    z-index: 4500;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    gap: 12px;
+}
+
+.mobile-search-overlay[hidden] { display: none; }
+
+.mobile-search-header {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.mobile-search-header input {
+    flex: 1;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 16px;
+}
+
+.mobile-search-header input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.mobile-search-results {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mobile-search-result-item {
+    padding: 14px 16px;
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.mobile-search-result-item strong {
+    display: block;
+    color: var(--accent);
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.mobile-search-result-item:active {
+    background: var(--border);
 }
 
 @media print {

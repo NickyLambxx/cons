@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prep-mate-v3'; // v3: убраны маркеры, аудио, папки
+const CACHE_NAME = 'prep-mate-v4'; // v4: выравнивание, поиск, прогресс тренажёров
 const ASSETS = [
   './',
   './index.html',

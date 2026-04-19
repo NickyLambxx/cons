@@ -856,17 +856,27 @@ const TASKS_23 = [
     }
 ];
 
-const game23 = { currentTaskIndex: 0, selectedIds: new Set() };
+const game23 = { currentTaskIndex: 0, selectedIds: new Set(), initialized: false };
 
 function initGame23() {
     safeAddListener('#game23Btn', 'click', () => {
-        game23.currentTaskIndex = 0;
-        // Перемешать порядок заданий при каждом открытии
-        TASKS_23.sort(() => Math.random() - 0.5);
+        // Инициализировать только при первом открытии
+        if (!game23.initialized) {
+            TASKS_23.sort(() => Math.random() - 0.5);
+            game23.initialized = true;
+        }
         renderTask23();
         $('#game23Dialog').showModal();
     });
     safeAddListener('#closeGame23', 'click', () => $('#game23Dialog').close());
+
+    safeAddListener('#resetGame23', 'click', () => {
+        game23.currentTaskIndex = 0;
+        game23.selectedIds = new Set();
+        TASKS_23.sort(() => Math.random() - 0.5);
+        renderTask23();
+        $('#task23Feedback').textContent = '';
+    });
 
     safeAddListener('#checkTask23Btn', 'click', checkTask23);
     safeAddListener('#nextTask23Btn', 'click', () => {
@@ -956,14 +966,23 @@ const flashcards = {
 
 function initFlashcards() {
     safeAddListener('#flashcardsBtn', 'click', () => {
-        flashcards.terms = Object.keys(DICTIONARY).sort(() => Math.random() - 0.5);
-        flashcards.index = 0;
+        // Инициализировать только если пусто (первое открытие)
+        if (flashcards.terms.length === 0) {
+            flashcards.terms = Object.keys(DICTIONARY).sort(() => Math.random() - 0.5);
+            flashcards.index = 0;
+        }
         renderFlashcard();
         $('#flashcardsDialog').showModal();
     });
 
     safeAddListener('#closeFlashcards', 'click', () => $('#flashcardsDialog').close());
-    
+
+    safeAddListener('#resetFlashcards', 'click', () => {
+        flashcards.terms = Object.keys(DICTIONARY).sort(() => Math.random() - 0.5);
+        flashcards.index = 0;
+        renderFlashcard();
+    });
+
     safeAddListener('#fcNext', 'click', () => {
         if (flashcards.index < flashcards.terms.length - 1) {
             $('#flashcard').classList.remove('flipped');
@@ -1254,17 +1273,13 @@ function updateFavCount() {
 function setFavFilterMode() {
     state.showFavoritesOnly = !state.showFavoritesOnly;
     const btn = $('#favFilterBtn');
-    const folderUI = $('#favFoldersContainer');
-    
+
     if (state.showFavoritesOnly) {
         btn.setAttribute('aria-pressed', 'true');
         btn.innerHTML = `⭐ Скрыть избранное <span class="badge">${state.favorites.size}</span>`;
-        folderUI.hidden = false;
-        renderFolderSelect();
     } else {
         btn.setAttribute('aria-pressed', 'false');
         btn.innerHTML = `⭐ Избранное <span class="badge">${state.favorites.size}</span>`;
-        folderUI.hidden = true;
         state.currentFolderFilter = 'all'; // reset
     }
 
@@ -1638,18 +1653,18 @@ function generateQuoteImage(canvas, title, text) {
         .replace(/[ \t]+/g, ' ')
         .trim();
 
-    const availH = h - lineY - 200; // высота под текст (за вычетом футера)
+    const availH = h - lineY - 220; // высота под текст (за вычетом футера)
     const maxW = w - 180;
-    let fontSize = 52;
+    let fontSize = 44;
     // Уменьшаем шрифт пока текст не влезет
-    while (fontSize >= 28) {
+    while (fontSize >= 20) {
         ctx.font = `${fontSize}px sans-serif`;
-        const lh = fontSize * 1.55;
+        const lh = fontSize * 1.25;
         const lines = countLines(ctx, bodyText, maxW);
         if (lines * lh <= availH) break;
         fontSize -= 2;
     }
-    const lineHeightBody = fontSize * 1.55;
+    const lineHeightBody = fontSize * 1.25;
 
     ctx.fillStyle = '#dce6f5';
     ctx.textAlign = 'center';
@@ -1838,6 +1853,8 @@ function updateMapTransform() {
 function closeMobileExtras() {
     $('#mobileToolsSheet').hidden = true;
     $('#sidebarPanel')?.classList.remove('visible');
+    const overlay = $('#mobileSearchOverlay');
+    if (overlay) overlay.hidden = true;
 }
 
 function initMobileNav() {
@@ -1854,12 +1871,9 @@ function initMobileNav() {
         if (state.showFavoritesOnly) setFavFilterMode();
         $$('.nav-item').forEach(b => b.classList.remove('active'));
         $('#navSearch').classList.add('active');
-        // Скроллим к поиску и фокусируем
-        const input = $('#searchInput');
-        if (input) {
-            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setTimeout(() => input.focus(), 300);
-        }
+        const overlay = $('#mobileSearchOverlay');
+        overlay.hidden = false;
+        setTimeout(() => $('#mobileSearchInput')?.focus(), 100);
     });
 
     safeAddListener('#navFav', 'click', () => {
@@ -1892,6 +1906,53 @@ function initMobileNav() {
     safeAddListener('#mobileGame', 'click', () => { $('#mobileToolsSheet').hidden = true; $('#gameBtn')?.click(); });
     safeAddListener('#mobileFontBtn', 'click', () => { $('#mobileToolsSheet').hidden = true; $('#fontBtn')?.click(); });
     safeAddListener('#mobileTheme', 'click', () => { $('#mobileToolsSheet').hidden = true; toggleTheme(); });
+
+    // Закрытие мобильного поиска
+    safeAddListener('#mobileSearchClose', 'click', () => {
+        $('#mobileSearchOverlay').hidden = true;
+        $$('.nav-item').forEach(b => b.classList.remove('active'));
+        $('#navHome').classList.add('active');
+    });
+
+    // Поиск при вводе (с задержкой)
+    const mobileInput = $('#mobileSearchInput');
+    if (mobileInput) {
+        mobileInput.addEventListener('input', debounce((e) => {
+            const q = e.target.value.trim();
+            const container = $('#mobileSearchResults');
+            if (!q || q.length < 2) { container.innerHTML = ''; return; }
+            const results = state.articles.filter(a => {
+                const t = a.title.toLowerCase();
+                const b = a.bodyHTML.replace(/<[^>]+>/g, ' ').toLowerCase();
+                return t.includes(q.toLowerCase()) || b.includes(q.toLowerCase());
+            }).slice(0, 15);
+            container.innerHTML = results.length
+                ? results.map(a => `<div class="mobile-search-result-item" data-id="${a.id}"><strong>${a.title}</strong>${a.chapterTitle}</div>`).join('')
+                : '<div style="padding:20px;text-align:center;color:var(--muted)">Ничего не найдено</div>';
+            container.querySelectorAll('.mobile-search-result-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    $('#mobileSearchOverlay').hidden = true;
+                    $$('.nav-item').forEach(b => b.classList.remove('active'));
+                    state.showFavoritesOnly = false;
+                    renderArticles(state.articles);
+                    setTimeout(() => {
+                        const target = document.getElementById(el.dataset.id);
+                        if (target) { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); target.classList.add('highlight'); setTimeout(() => target.classList.remove('highlight'), 1500); }
+                    }, 300);
+                });
+            });
+        }, 300));
+        mobileInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const q = mobileInput.value.trim();
+                if (q) {
+                    $('#mobileSearchOverlay').hidden = true;
+                    $$('.nav-item').forEach(b => b.classList.remove('active'));
+                    filterArticles(q);
+                }
+            }
+        });
+    }
 }
 
 /* --- INIT FOLDERS UI HANDLERS --- */
