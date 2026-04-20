@@ -76,6 +76,13 @@
           <div id="searchHistory" class="search-history" hidden></div>
         </div>
 
+        <div class="progress-summary" id="progressSummary" title="Прочитано статей">
+          <span id="progressText">0 / 0 статей прочитано</span>
+          <div class="progress-summary-bar"><div class="progress-summary-fill" id="progressFill" style="width:0%"></div></div>
+        </div>
+
+        <button id="notesBtn" class="btn btn-block">📝 Мои заметки <span id="notesCount" class="badge" hidden>0</span></button>
+
         <button id="favFilterBtn" class="btn btn-block" aria-pressed="false">
           ⭐ Избранное <span id="favCount" class="badge">0</span>
         </button>
@@ -126,6 +133,7 @@
       <button class="sheet-tool-btn" id="mobileDictionary">📖 Словарь</button>
       <button class="sheet-tool-btn" id="mobileGame23">📋 Задание №23</button>
       <button class="sheet-tool-btn" id="mobileGame">🎮 Тренажёр полномочий</button>
+      <button class="sheet-tool-btn" id="mobileNotesBtn">📝 Мои заметки</button>
       <button class="sheet-tool-btn" id="mobileFontBtn">Aa Настройки текста</button>
       <button class="sheet-tool-btn" id="mobileTheme">🌓 Сменить тему</button>
     </div>
@@ -246,6 +254,14 @@
     </div>
   </dialog>
 
+  <dialog id="notesDialog" class="mini-dialog" style="width:95%;max-width:600px">
+    <header class="dialog-header">
+      <h3>📝 Мои заметки</h3>
+      <button id="closeNotes" class="btn btn-secondary">Закрыть</button>
+    </header>
+    <div id="notesDialogBody" style="max-height:65vh;overflow-y:auto;padding:4px 0"></div>
+  </dialog>
+
   <dialog id="shareDialog" class="mini-dialog" style="width: 95%; max-width: 520px;">
     <header class="dialog-header">
       <h3>Поделиться цитатой</h3>
@@ -260,11 +276,15 @@
           style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--text);font-size:14px;resize:vertical;font-family:inherit;line-height:1.5"
           placeholder="Введите или отредактируйте текст..."></textarea>
       </div>
-      <canvas id="shareCanvas" width="1080" height="1080"
-        style="width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; display:block;"></canvas>
+      <canvas id="shareCanvas" width="1080" height="1080" style="display:none"></canvas>
+      <img id="sharePreviewImg" alt="Цитата"
+        style="width:100%;height:auto;border-radius:8px;border:1px solid var(--border);margin-bottom:12px;display:block;touch-action:manipulation" />
+      <p id="shareLongPressHint" style="display:none;text-align:center;font-size:12px;color:var(--muted);margin-top:-6px;margin-bottom:10px">
+        💡 Удержите картинку для сохранения в галерею
+      </p>
       <div style="display: grid; gap: 8px;">
         <button id="regenerateQuoteBtn" class="btn btn-secondary">🔄 Обновить превью</button>
-        <button id="downloadImgBtn" class="btn btn-primary">⬇ Скачать картинку</button>
+        <button id="downloadImgBtn" class="btn btn-primary">⬇ Скачать / Сохранить</button>
         <button id="shareNativeBtn" class="btn">📤 Отправить</button>
       </div>
     </div>
@@ -381,6 +401,10 @@
         <summary>Пояснение</summary>
         <div class="explain-body"></div>
       </details>
+
+      <footer class="card-footer">
+        <button class="btn-read" title="Отметить как прочитанное">✓ Прочитал</button>
+      </footer>
     </article>
   </template>
 

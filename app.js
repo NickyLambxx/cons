@@ -1315,12 +1315,117 @@ function renderFolderSelect() {
 function loadNotes() {
     const stored = localStorage.getItem(LS.NOTES);
     try { if (stored) state.notes = JSON.parse(stored); } catch (e) { localStorage.removeItem(LS.NOTES); }
+    updateNotesBadge();
 }
 
 function saveNote(id, text) {
     if (!text.trim()) delete state.notes[id];
     else state.notes[id] = text;
     localStorage.setItem(LS.NOTES, JSON.stringify(state.notes));
+    updateNotesBadge();
+}
+
+function updateNotesBadge() {
+    const count = Object.keys(state.notes).length;
+    const badge = $('#notesCount');
+    if (badge) { badge.textContent = count; badge.hidden = count === 0; }
+}
+
+/* --- ПРОГРЕСС ЧТЕНИЯ --- */
+function loadProgress() {
+    try {
+        const stored = localStorage.getItem(LS.PROGRESS);
+        if (stored) state.progress = JSON.parse(stored);
+    } catch (e) { localStorage.removeItem(LS.PROGRESS); }
+}
+
+function toggleProgress(id) {
+    if (state.progress[id]) delete state.progress[id];
+    else state.progress[id] = 1;
+    localStorage.setItem(LS.PROGRESS, JSON.stringify(state.progress));
+
+    // Обновить кнопку на карточке
+    const card = document.getElementById(id);
+    if (card) {
+        const btn = card.querySelector('.btn-read');
+        if (btn) setReadBtn(btn, !!state.progress[id]);
+    }
+    updateProgressUI();
+}
+
+function setReadBtn(btn, isRead) {
+    if (isRead) {
+        btn.classList.add('read');
+        btn.textContent = '✓ Прочитано';
+    } else {
+        btn.classList.remove('read');
+        btn.textContent = '✓ Прочитал';
+    }
+}
+
+function updateProgressUI() {
+    const total = state.articles.length;
+    if (total === 0) return;
+    const done = Object.keys(state.progress).length;
+    const pct = Math.round(done / total * 100);
+
+    const txt = $('#progressText');
+    if (txt) txt.textContent = `${done} / ${total} статей прочитано`;
+    const fill = $('#progressFill');
+    if (fill) fill.style.width = `${pct}%`;
+
+    // Обновить прогресс-бары в TOC
+    const chapters = {};
+    state.articles.forEach(a => {
+        if (!chapters[a.chapterTitle]) chapters[a.chapterTitle] = { total: 0, done: 0 };
+        chapters[a.chapterTitle].total++;
+        if (state.progress[a.id]) chapters[a.chapterTitle].done++;
+    });
+    Object.keys(chapters).forEach(ch => {
+        const { total: t, done: d } = chapters[ch];
+        const slug = ch.replace(/[^а-яёa-z0-9]/gi, '-');
+        const pEl = $(`#toc-prog-${slug}`);
+        if (pEl) pEl.textContent = `${d}/${t}`;
+        const barEl = $(`#toc-bar-${slug}`);
+        if (barEl) barEl.style.width = `${Math.round(d / t * 100)}%`;
+    });
+}
+
+/* --- ПАНЕЛЬ ЗАМЕТОК --- */
+function openNotesPanel() {
+    const dlg = $('#notesDialog');
+    if (!dlg) return;
+    const body = $('#notesDialogBody');
+    const articles = state.articles.filter(a => state.notes[a.id]);
+
+    if (articles.length === 0) {
+        body.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted)">Нет заметок. Нажмите 📝 на любой статье, чтобы добавить.</div>';
+    } else {
+        body.innerHTML = articles.map(a => `
+            <div class="notes-list-item" data-id="${a.id}">
+                <div class="notes-list-title">${a.title}</div>
+                <div class="notes-list-preview">${state.notes[a.id]}</div>
+            </div>`).join('');
+        body.querySelectorAll('.notes-list-item').forEach(el => {
+            el.addEventListener('click', () => {
+                dlg.close();
+                // Закрыть мобильное меню если открыто
+                $('#sidebarPanel')?.classList.remove('visible');
+                $('#mobileToolsSheet').hidden = true;
+                const target = document.getElementById(el.dataset.id);
+                if (target) {
+                    setTimeout(() => {
+                        const offset = 80;
+                        const pos = target.getBoundingClientRect().top + window.scrollY - offset;
+                        window.scrollTo({ top: pos, behavior: 'smooth' });
+                        target.classList.add('highlight');
+                        setTimeout(() => target.classList.remove('highlight'), 1500);
+                    }, 100);
+                }
+            });
+        });
+    }
+    dlg.showModal();
 }
 
 function applyTheme(init = false) {
@@ -1425,12 +1530,19 @@ function buildTOC() {
     });
 
     Object.keys(chapters).forEach(chTitle => {
+        const slug = chTitle.replace(/[^а-яёa-z0-9]/gi, '-');
+        const chArts = chapters[chTitle];
         const li = document.createElement('li');
         li.className = 'toc-chapter';
         const header = document.createElement('div');
         header.className = 'toc-chapter-header';
-        header.innerHTML = `<span>${chTitle}</span><span class="toc-toggle-icon">▼</span>`;
+        header.innerHTML = `<span>${chTitle}</span><span class="toc-chapter-progress" id="toc-prog-${slug}">0/${chArts.length}</span><span class="toc-toggle-icon">▼</span>`;
         header.addEventListener('click', () => { li.classList.toggle('open'); });
+
+        // Прогресс-бар под заголовком главы
+        const progressBar = document.createElement('div');
+        progressBar.className = 'toc-progress-bar';
+        progressBar.innerHTML = `<div class="toc-progress-bar-fill" id="toc-bar-${slug}" style="width:0%"></div>`;
 
         const subUl = document.createElement('ul');
         subUl.className = 'toc-articles';
@@ -1459,9 +1571,13 @@ function buildTOC() {
             subUl.append(subLi);
         });
         li.append(header);
+        li.append(progressBar);
         li.append(subUl);
         ul.append(li);
     });
+
+    // Отрисовать актуальный прогресс
+    updateProgressUI();
 }
 
 function renderArticles(list = state.articles) {
@@ -1579,6 +1695,16 @@ function renderArticles(list = state.articles) {
             $('.body', node).appendChild(mapBtn);
         }
 
+        // Кнопка "Прочитал"
+        const readBtn = $('.btn-read', node);
+        if (readBtn) {
+            setReadBtn(readBtn, !!state.progress[a.id]);
+            readBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleProgress(a.id);
+            });
+        }
+
         container.append(node);
     });
 
@@ -1597,6 +1723,16 @@ function cleanHtmlToText(rawHtml) {
         .trim();
 }
 
+const isMobileDevice = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+function updateSharePreview(canvas) {
+    const img = $('#sharePreviewImg');
+    if (img) img.src = canvas.toDataURL('image/png');
+    // Показываем подсказку для мобильных
+    const hint = $('#shareLongPressHint');
+    if (hint) hint.style.display = isMobileDevice() ? 'block' : 'none';
+}
+
 function openShareDialog(title, text) {
     const dlg = $('#shareDialog');
     const canvas = $('#shareCanvas');
@@ -1609,20 +1745,33 @@ function openShareDialog(title, text) {
     if (quoteEdit) quoteEdit.value = bodyText;
 
     generateQuoteImage(canvas, title, bodyText);
+    updateSharePreview(canvas);
     dlg.showModal();
 
     safeAddListener('#closeShare', 'click', () => dlg.close());
 
     $('#regenerateQuoteBtn').onclick = () => {
         const txt = ($('#quoteEditText')?.value || '').trim();
-        if (txt) generateQuoteImage(canvas, _shareTitle, txt);
+        if (txt) { generateQuoteImage(canvas, _shareTitle, txt); updateSharePreview(canvas); }
     };
 
     $('#downloadImgBtn').onclick = () => {
-        const link = document.createElement('a');
-        link.download = `quote-${Date.now()}.png`;
-        link.href = canvas.toDataURL();
-        link.click();
+        const mobile = isMobileDevice();
+        canvas.toBlob(blob => {
+            const file = new File([blob], 'quote-constitution.png', { type: 'image/png' });
+            // На мобиле с поддержкой Share API — сохраняем через него (попадает в галерею)
+            if (mobile && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({ files: [file], title: 'Цитата из Конституции РФ' })
+                    .catch(err => { if (err.name !== 'AbortError') console.error(err); });
+            } else {
+                // Desktop или iOS без Share API — обычное скачивание
+                const link = document.createElement('a');
+                link.download = `quote-constitution-${Date.now()}.png`;
+                link.href = URL.createObjectURL(blob);
+                link.click();
+                setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+            }
+        });
     };
 
     $('#shareNativeBtn').onclick = () => {
@@ -2119,6 +2268,9 @@ function initEvents() {
     safeAddListener('#printBtn', 'click', () => window.print());
     safeAddListener('#favFilterBtn', 'click', setFavFilterMode);
     safeAddListener('#closeDialog', 'click', () => $('#articleDialog').close());
+    safeAddListener('#notesBtn', 'click', openNotesPanel);
+    safeAddListener('#mobileNotesBtn', 'click', () => { $('#mobileToolsSheet').hidden = true; openNotesPanel(); });
+    safeAddListener('#closeNotes', 'click', () => $('#notesDialog').close());
     
     $$('dialog').forEach(dlg => {
         dlg.addEventListener('click', (e) => {
@@ -2320,8 +2472,9 @@ function openDialogById(id) {
 
 function boot() {
     applyTheme(true);
-    loadFavorites(); 
-    loadNotes(); 
+    loadFavorites();
+    loadNotes();
+    loadProgress();
     initFontSettings(); 
     initSearchHistory(); 
     initTimer(); 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prep-mate-v14'; // v14: защита JSON.parse, clipboard catch, CSS кнопка сброса
+const CACHE_NAME = 'prep-mate-v15'; // v15: прогресс чтения, панель заметок, превью картинки цитаты
 const ASSETS = [
   './',
   './index.html',
