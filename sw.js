@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prep-mate-v9'; // v9: OG-image, водяной знак 12%, og-теги
+const CACHE_NAME = 'prep-mate-v10'; // v10: OG-image бейджи, водяной знак 15%
 const ASSETS = [
   './',
   './index.html',
