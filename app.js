@@ -1190,9 +1190,21 @@ function levenshtein(a, b) {
     return matrix[b.length][a.length];
 }
 
+function updateMobileSearchBanner(query) {
+    const banner = $('#mobileSearchBanner');
+    if (!banner) return;
+    if (query) {
+        $('#mobileSearchBannerText').textContent = `Поиск: «${query}»`;
+        banner.hidden = false;
+    } else {
+        banner.hidden = true;
+    }
+}
+
 function filterArticles(query) {
     query = query.trim().toLowerCase();
     state.activeSearchQuery = query;
+    updateMobileSearchBanner(query);
 
     if (!query) { renderArticles(state.articles); return; }
 
@@ -1661,7 +1673,22 @@ function renderArticles(list = state.articles) {
         link.addEventListener('click', e => {
             e.preventDefault(); e.stopPropagation();
             history.replaceState(null, '', `#${a.id}`);
-            navigator.clipboard.writeText(window.location.href).then(showToast).catch(() => showToast('Ссылка скопирована'));
+            const articleUrl = location.href;
+            const snippet = a.bodyHTML.replace(/<[^>]+>/g, ' ').trim().slice(0, 120).trim() + '…';
+
+            if (isMobileDevice() && navigator.share) {
+                // На мобиле — нативный шаринг с заголовком и отрывком
+                navigator.share({
+                    title: `${a.title} — Конституция РФ`,
+                    text: snippet,
+                    url: articleUrl
+                }).catch(err => { if (err.name !== 'AbortError') console.error(err); });
+            } else {
+                // На десктопе — копируем + информативный тост
+                navigator.clipboard.writeText(articleUrl)
+                    .then(() => showToast(`Ссылка на «${a.title}» скопирована`))
+                    .catch(() => showToast(`Ссылка на «${a.title}» скопирована`));
+            }
         });
 
         const noteBtn = $('.btn-note', node);
@@ -2085,29 +2112,20 @@ function closeMobileExtras() {
 }
 
 function initMobileNav() {
-    let _lastHomeClick = 0;
-
     safeAddListener('#navHome', 'click', () => {
-        const now = Date.now();
-        const isDoubleTap = (now - _lastHomeClick) < 600;
-        _lastHomeClick = now;
-
         closeMobileExtras();
         if (state.showFavoritesOnly) setFavFilterMode();
-
-        if (isDoubleTap && state.activeSearchQuery) {
-            // Двойной тап — сбросить поиск и показать все статьи
-            filterArticles('');
-            const si = $('#searchInput');
-            if (si) si.value = '';
-            const mi = $('#mobileSearchInput');
-            if (mi) mi.value = '';
-            showToast('Поиск сброшен');
-        }
-
         scrollToTop();
         $$('.nav-item').forEach(b => b.classList.remove('active'));
         $('#navHome').classList.add('active');
+    });
+
+    // Сброс поиска через баннер (без double-tap — он вызывает зум)
+    safeAddListener('#mobileSearchBannerClear', 'click', () => {
+        filterArticles('');
+        const si = $('#searchInput'); if (si) si.value = '';
+        const mi = $('#mobileSearchInput'); if (mi) mi.value = '';
+        showToast('Поиск сброшен');
     });
 
     safeAddListener('#navSearch', 'click', () => {
@@ -2271,6 +2289,15 @@ function initEvents() {
     safeAddListener('#notesBtn', 'click', openNotesPanel);
     safeAddListener('#mobileNotesBtn', 'click', () => { $('#mobileToolsSheet').hidden = true; openNotesPanel(); });
     safeAddListener('#closeNotes', 'click', () => $('#notesDialog').close());
+    safeAddListener('#resetProgressBtn', 'click', () => {
+        if (!confirm('Сбросить весь прогресс чтения?')) return;
+        state.progress = {};
+        localStorage.removeItem(LS.PROGRESS);
+        // Обновить все кнопки на карточках
+        $$('.btn-read').forEach(btn => setReadBtn(btn, false));
+        updateProgressUI();
+        showToast('Прогресс сброшен');
+    });
     
     $$('dialog').forEach(dlg => {
         dlg.addEventListener('click', (e) => {
@@ -2435,12 +2462,26 @@ async function loadChapters() {
         if (newArticles.length > 0) {
             state.articles = newArticles;
             try { localStorage.setItem(LS.CACHE_CHAPTERS, JSON.stringify(newArticles)); } catch (e) { }
-            
+
             // Безопасный рендер
             try { renderArticles(); } catch(e) { console.error('Render error:', e); }
             try { buildTOC(); } catch(e) { console.error('TOC error:', e); }
-            
+
             applyFontSettings();
+
+            // Прокрутить к статье если открыли по прямой ссылке (#article-id)
+            const hash = location.hash.replace('#', '');
+            if (hash) {
+                setTimeout(() => {
+                    const target = document.getElementById(hash);
+                    if (target) {
+                        const pos = target.getBoundingClientRect().top + window.scrollY - 90;
+                        window.scrollTo({ top: pos, behavior: 'smooth' });
+                        target.classList.add('highlight');
+                        setTimeout(() => target.classList.remove('highlight'), 2000);
+                    }
+                }, 300);
+            }
         } else if (!cachedData) {
             throw new Error("Не удалось загрузить ни одной главы (пустой результат).");
         }

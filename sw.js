@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prep-mate-v15'; // v15: прогресс чтения, панель заметок, превью картинки цитаты
+const CACHE_NAME = 'prep-mate-v16'; // v16: сброс прогресса, баннер поиска, deeplink нативный шаринг
 const ASSETS = [
   './',
   './index.html',

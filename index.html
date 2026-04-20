@@ -77,7 +77,10 @@
         </div>
 
         <div class="progress-summary" id="progressSummary" title="Прочитано статей">
-          <span id="progressText">0 / 0 статей прочитано</span>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span id="progressText">0 / 0 статей прочитано</span>
+            <button id="resetProgressBtn" class="btn-reset-highscore" title="Сбросить прогресс чтения">🔄</button>
+          </div>
           <div class="progress-summary-bar"><div class="progress-summary-fill" id="progressFill" style="width:0%"></div></div>
         </div>
 
@@ -112,6 +115,11 @@
         </section>
       </div>
     </aside>
+
+    <div id="mobileSearchBanner" class="mobile-search-banner" hidden>
+      <span id="mobileSearchBannerText">Поиск: …</span>
+      <button id="mobileSearchBannerClear" class="mobile-search-banner-clear">✕ Сбросить</button>
+    </div>
 
     <section id="content" class="content" tabindex="-1" aria-live="polite">
       <div class="loading">Загрузка глав…</div>
