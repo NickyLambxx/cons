@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prep-mate-v13'; // v13: saveSearchQuery принимает 1 символ
+const CACHE_NAME = 'prep-mate-v14'; // v14: защита JSON.parse, clipboard catch, CSS кнопка сброса
 const ASSETS = [
   './',
   './index.html',

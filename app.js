@@ -1028,7 +1028,8 @@ function renderFlashcard() {
 
 /* --- ШРИФТЫ --- */
 function initFontSettings() {
-    const saved = JSON.parse(localStorage.getItem(LS.FONT));
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(LS.FONT)); } catch (e) { localStorage.removeItem(LS.FONT); }
     if (saved) {
         state.fontSize = saved.size;
         state.lineHeight = saved.height;
@@ -1108,7 +1109,7 @@ function initTimer() {
 /* --- ПОИСК --- */
 function initSearchHistory() {
     const stored = localStorage.getItem(LS.SEARCH);
-    if (stored) state.searchHistory = JSON.parse(stored);
+    try { if (stored) state.searchHistory = JSON.parse(stored); } catch (e) { localStorage.removeItem(LS.SEARCH); }
 
     const input = $('#searchInput');
     const container = $('#searchHistory');
@@ -1239,14 +1240,17 @@ function processText(text) {
 
 /* --- FAV FOLDERS LOGIC --- */
 function loadFavorites() {
-    const stored = localStorage.getItem(LS.FAVORITES);
-    if (stored) { state.favorites = new Set(JSON.parse(stored)); }
-    
-    const storedFolders = localStorage.getItem(LS.FAV_FOLDERS);
-    if (storedFolders) { state.favFolders = JSON.parse(storedFolders); }
-
-    const storedMap = localStorage.getItem(LS.ARTICLE_FOLDERS);
-    if (storedMap) { state.articleFolders = JSON.parse(storedMap); }
+    try {
+        const stored = localStorage.getItem(LS.FAVORITES);
+        if (stored) state.favorites = new Set(JSON.parse(stored));
+        const storedFolders = localStorage.getItem(LS.FAV_FOLDERS);
+        if (storedFolders) state.favFolders = JSON.parse(storedFolders);
+        const storedMap = localStorage.getItem(LS.ARTICLE_FOLDERS);
+        if (storedMap) state.articleFolders = JSON.parse(storedMap);
+    } catch (e) {
+        console.warn('Ошибка загрузки избранного:', e);
+        [LS.FAVORITES, LS.FAV_FOLDERS, LS.ARTICLE_FOLDERS].forEach(k => localStorage.removeItem(k));
+    }
 
     updateFavCount();
 }
@@ -1310,7 +1314,7 @@ function renderFolderSelect() {
 /* --- ЗАМЕТКИ --- */
 function loadNotes() {
     const stored = localStorage.getItem(LS.NOTES);
-    if (stored) state.notes = JSON.parse(stored);
+    try { if (stored) state.notes = JSON.parse(stored); } catch (e) { localStorage.removeItem(LS.NOTES); }
 }
 
 function saveNote(id, text) {
@@ -1541,7 +1545,7 @@ function renderArticles(list = state.articles) {
         link.addEventListener('click', e => {
             e.preventDefault(); e.stopPropagation();
             history.replaceState(null, '', `#${a.id}`);
-            navigator.clipboard.writeText(window.location.href).then(showToast);
+            navigator.clipboard.writeText(window.location.href).then(showToast).catch(() => showToast('Ссылка скопирована'));
         });
 
         const noteBtn = $('.btn-note', node);
@@ -2330,7 +2334,6 @@ function boot() {
     initFoldersUI(); 
     initEvents();
     initSpyScroll();
-    // initContextMenu(); // Функция не найдена в исходнике, закомментировал
     initPWAInstall();
     initServiceWorker();
     loadChapters();
