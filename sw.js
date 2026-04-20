@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prep-mate-v10'; // v10: OG-image бейджи, водяной знак 15%
+const CACHE_NAME = 'prep-mate-v11'; // v11: история поиска на мобиле, TOC закрывает меню, сброс рекорда
 const ASSETS = [
   './',
   './index.html',

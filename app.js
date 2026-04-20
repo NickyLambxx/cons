@@ -323,6 +323,12 @@ function initGame() {
     });
 
     safeAddListener('#closeGame', 'click', () => $('#gameDialog').close());
+    safeAddListener('#resetHighscoreBtn', 'click', () => {
+        localStorage.removeItem(LS.HIGHSCORE);
+        const hs = $('#highScore');
+        if (hs) hs.textContent = 0;
+        showToast('Рекорд сброшен');
+    });
     safeAddListener('#startGameBtn', 'click', () => {
         game.score = 0;
         updateGameScore();
@@ -1431,6 +1437,10 @@ function buildTOC() {
             a.textContent = art.title;
             a.addEventListener('click', e => {
                 e.preventDefault();
+                // Закрываем мобильное боковое меню сразу
+                const sidebarPanel = $('#sidebarPanel');
+                if (sidebarPanel) sidebarPanel.classList.remove('visible');
+                $$('.nav-item').forEach(b => b.classList.remove('active'));
                 if (state.showFavoritesOnly) setFavFilterMode();
                 const el = document.getElementById(art.id);
                 if (el) {
@@ -2016,6 +2026,8 @@ function initMobileNav() {
                 : '<div style="padding:20px;text-align:center;color:var(--muted)">Ничего не найдено</div>';
             container.querySelectorAll('.mobile-search-result-item').forEach(el => {
                 el.addEventListener('click', () => {
+                    const q = mobileInput.value.trim();
+                    if (q) saveSearchQuery(q);
                     $('#mobileSearchOverlay').hidden = true;
                     $$('.nav-item').forEach(b => b.classList.remove('active'));
                     state.showFavoritesOnly = false;
@@ -2031,6 +2043,7 @@ function initMobileNav() {
             if (e.key === 'Enter') {
                 const q = mobileInput.value.trim();
                 if (q) {
+                    saveSearchQuery(q);
                     $('#mobileSearchOverlay').hidden = true;
                     $$('.nav-item').forEach(b => b.classList.remove('active'));
                     filterArticles(q);
