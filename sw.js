@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prep-mate-v17'; // v17: карточка автора
+const CACHE_NAME = 'prep-mate-v18'; // v18: аватар сжат 5.5МБ → 9КБ
 const ASSETS = [
   './',
   './index.html',
@@ -8,7 +8,7 @@ const ASSETS = [
   './logo.png',
   './favicon.ico',
   './og-image.png',
-  './avatar.png',
+  './avatar.jpg',
   // Главы (можно добавить сюда, но лучше динамически)
   './chapters/chapter1.html',
   './chapters/chapter2.html',
