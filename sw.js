@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prep-mate-v12'; // v12: поиск с 1 символа, история сохраняет название статьи
+const CACHE_NAME = 'prep-mate-v13'; // v13: saveSearchQuery принимает 1 символ
 const ASSETS = [
   './',
   './index.html',

@@ -1141,7 +1141,7 @@ function initSearchHistory() {
 }
 
 function saveSearchQuery(query) {
-    if (!query || query.length < 2) return;
+    if (!query) return;
     state.searchHistory = state.searchHistory.filter(q => q !== query);
     state.searchHistory.unshift(query);
     if (state.searchHistory.length > 5) state.searchHistory.pop();
