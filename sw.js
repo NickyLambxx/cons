@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prep-mate-v11'; // v11: история поиска на мобиле, TOC закрывает меню, сброс рекорда
+const CACHE_NAME = 'prep-mate-v12'; // v12: поиск с 1 символа, история сохраняет название статьи
 const ASSETS = [
   './',
   './index.html',

@@ -2015,19 +2015,19 @@ function initMobileNav() {
         mobileInput.addEventListener('input', debounce((e) => {
             const q = e.target.value.trim();
             const container = $('#mobileSearchResults');
-            if (!q || q.length < 2) { showMobileSearchHistory(); return; }
+            if (!q) { showMobileSearchHistory(); return; }
             const results = state.articles.filter(a => {
                 const t = a.title.toLowerCase();
                 const b = a.bodyHTML.replace(/<[^>]+>/g, ' ').toLowerCase();
                 return t.includes(q.toLowerCase()) || b.includes(q.toLowerCase());
             }).slice(0, 15);
             container.innerHTML = results.length
-                ? results.map(a => `<div class="mobile-search-result-item" data-id="${a.id}"><strong>${a.title}</strong><span style="color:var(--muted);font-size:12px;margin-left:6px">${a.chapterTitle}</span></div>`).join('')
+                ? results.map(a => `<div class="mobile-search-result-item" data-id="${a.id}" data-title="${a.title}"><strong>${a.title}</strong><span style="color:var(--muted);font-size:12px;margin-left:6px">${a.chapterTitle}</span></div>`).join('')
                 : '<div style="padding:20px;text-align:center;color:var(--muted)">Ничего не найдено</div>';
             container.querySelectorAll('.mobile-search-result-item').forEach(el => {
                 el.addEventListener('click', () => {
-                    const q = mobileInput.value.trim();
-                    if (q) saveSearchQuery(q);
+                    // Сохраняем название выбранной статьи, а не текст запроса
+                    saveSearchQuery(el.dataset.title);
                     $('#mobileSearchOverlay').hidden = true;
                     $$('.nav-item').forEach(b => b.classList.remove('active'));
                     state.showFavoritesOnly = false;
