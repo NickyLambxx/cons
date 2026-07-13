@@ -1,9 +1,17 @@
-const CACHE_NAME = 'prep-mate-v18'; // v18: аватар сжат 5.5МБ → 9КБ
+const CACHE_NAME = 'prep-mate-v22'; // v22: жизненные ситуации, аргументы и тренажёр ошибок
 const ASSETS = [
   './',
   './index.html',
   './style.css',
-  './app.js',
+  './js/core.js',
+  './js/study-data.js',
+  './js/study-tools.js',
+  './js/practice.js',
+  './js/training.js',
+  './js/reading.js',
+  './js/articles-ui.js',
+  './js/mobile-pwa.js',
+  './js/app.js',
   './manifest.json',
   './logo.png',
   './favicon.ico',

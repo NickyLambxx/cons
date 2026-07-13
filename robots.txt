@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://prep-mate.ru/sitemap.xml

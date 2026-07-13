@@ -1,0 +1,12 @@
+{
+  "name": "prepmate-constitution",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check:js": "node scripts/check-js.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "npm run check:js && npm test",
+    "predeploy": "npm run check"
+  }
+}

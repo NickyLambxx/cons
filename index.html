@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#12141a" />
+  <link rel="canonical" href="https://prep-mate.ru/" />
 
   <title>PrepMate — Интерактивная Конституция РФ</title>
   <meta name="description"
@@ -28,7 +29,7 @@
   <meta name="twitter:image"       content="https://prep-mate.ru/og-image.png" />
 
   <link rel="manifest" href="./manifest.json" />
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./style.css?v=22" />
 
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" href="./logo.png" type="image/png">
@@ -61,13 +62,14 @@
       <button id="installBtn" class="btn btn-accent" hidden aria-label="Установить приложение"
         title="Установить как приложение">📲</button>
 
-      <button id="flashcardsBtn" class="btn" aria-label="Карточки" title="Учить термины (Flashcards)">🗂️</button>
-      <button id="dictionaryBtn" class="btn" aria-label="Словарь" title="Словарь терминов">📖</button>
-      <button id="game23Btn" class="btn" aria-label="Задание 23" title="ЕГЭ Задание №23">📋</button>
-      <button id="gameBtn" class="btn" aria-label="Тренажер полномочий" title="Игра: Кто за что отвечает?">🎮</button>
-      <button id="fontBtn" class="btn" aria-label="Настройки шрифта" title="Размер текста">Aa</button>
-      <button id="printBtn" class="btn" aria-label="Распечатать" title="Версия для печати">🖨️</button>
-      <button id="themeToggle" class="btn" aria-label="Переключить тему" title="Сменить тему">🌓</button>
+      <button id="flashcardsBtn" class="btn" aria-label="Карточки" title="Учить термины"><span aria-hidden="true">🗂️</span><span class="tool-label">Карточки</span></button>
+      <button id="dictionaryBtn" class="btn" aria-label="Словарь" title="Словарь терминов"><span aria-hidden="true">📖</span><span class="tool-label">Словарь</span></button>
+      <button id="mixedTrainingBtn" class="btn" aria-label="Смешанная тренировка" title="Смешанная тренировка"><span aria-hidden="true">🧠</span><span class="tool-label">Микс</span></button>
+      <button id="game23Btn" class="btn" aria-label="Тренажёр к заданию 23" title="Тренажёр положений Конституции для №23"><span aria-hidden="true">📋</span><span class="tool-label">№23</span></button>
+      <button id="gameBtn" class="btn" aria-label="Тренажёр полномочий" title="Кто за что отвечает?"><span aria-hidden="true">🎮</span><span class="tool-label">№13</span></button>
+      <button id="fontBtn" class="btn" aria-label="Настройки шрифта" title="Размер текста"><span aria-hidden="true">Aa</span><span class="tool-label">Текст</span></button>
+      <button id="printBtn" class="btn" aria-label="Распечатать" title="Версия для печати"><span aria-hidden="true">🖨️</span><span class="tool-label">Печать</span></button>
+      <button id="themeToggle" class="btn" aria-label="Переключить тему" title="Сменить тему"><span aria-hidden="true">🌓</span><span class="tool-label">Тема</span></button>
     </div>
 
     <div id="scrollProgress" class="progress">
@@ -83,7 +85,7 @@
         <div class="search-container">
           <div class="search-box">
             <input id="searchInput" type="search" placeholder="Поиск по статьям…" aria-label="Поиск" autocomplete="off" />
-            <button id="searchTriggerBtn" class="btn-search" title="Найти">🔍</button>
+            <button id="searchTriggerBtn" class="btn-search" title="Найти" aria-label="Открыть поиск">🔍</button>
           </div>
           <div id="searchHistory" class="search-history" hidden></div>
         </div>
@@ -91,12 +93,15 @@
         <div class="progress-summary" id="progressSummary" title="Прочитано статей">
           <div style="display:flex;align-items:center;justify-content:space-between">
             <span id="progressText">0 / 0 статей прочитано</span>
-            <button id="resetProgressBtn" class="btn-reset-highscore" title="Сбросить прогресс чтения">🔄</button>
+            <button id="resetProgressBtn" class="btn-reset-highscore" title="Сбросить прогресс чтения" aria-label="Сбросить прогресс чтения">🔄</button>
           </div>
           <div class="progress-summary-bar"><div class="progress-summary-fill" id="progressFill" style="width:0%"></div></div>
         </div>
 
         <button id="notesBtn" class="btn btn-block">📝 Мои заметки <span id="notesCount" class="badge" hidden>0</span></button>
+
+        <button id="argumentBankBtn" class="btn btn-block">💬 Банк аргументов</button>
+        <button id="findErrorBtn" class="btn btn-block">🔎 Найди ошибку</button>
 
         <button id="favFilterBtn" class="btn btn-block" aria-pressed="false">
           ⭐ Избранное <span id="favCount" class="badge">0</span>
@@ -144,14 +149,29 @@
       </div>
     </aside>
 
-    <div id="mobileSearchBanner" class="mobile-search-banner" hidden>
-      <span id="mobileSearchBannerText">Поиск: …</span>
-      <button id="mobileSearchBannerClear" class="mobile-search-banner-clear">✕ Сбросить</button>
-    </div>
+    <div class="content-shell">
+      <div id="mobileSearchBanner" class="mobile-search-banner" hidden>
+        <span id="mobileSearchBannerText">Поиск: …</span>
+        <button id="mobileSearchBannerClear" class="mobile-search-banner-clear">✕ Сбросить</button>
+      </div>
 
-    <section id="content" class="content" tabindex="-1" aria-live="polite">
-      <div class="loading">Загрузка глав…</div>
-    </section>
+      <section class="study-filters" aria-label="Фильтры учебных материалов">
+        <div class="study-filters-heading">
+          <strong>Подобрать статьи</strong>
+          <button id="resetStudyFilters" class="filter-reset" type="button">Сбросить</button>
+        </div>
+        <div class="study-filter-grid">
+          <label>Глава<select id="chapterFilter"><option value="all">Все главы</option></select></label>
+          <label>Задание ЕГЭ<select id="examFilter"><option value="all">Все задания</option><option value="13">№13 — органы власти</option><option value="23">№23 — Конституция</option><option value="rights">Права и свободы</option><option value="federation">Федеративное устройство</option></select></label>
+          <label>Статус<select id="statusFilter"><option value="all">Любой статус</option><option value="new">Не начато</option><option value="learning">Изучаю</option><option value="review">Повторить</option><option value="mastered">Освоено</option></select></label>
+        </div>
+        <div id="filterSummary" class="filter-summary" aria-live="polite">Показаны все статьи</div>
+      </section>
+
+      <section id="content" class="content" tabindex="-1" aria-live="polite">
+        <div class="loading">Загрузка глав…</div>
+      </section>
+    </div>
   </main>
 
   <nav class="mobile-nav">
@@ -167,9 +187,12 @@
     <div class="mobile-sheet-body">
       <button class="sheet-tool-btn" id="mobileFlashcards">🗂️ Карточки терминов</button>
       <button class="sheet-tool-btn" id="mobileDictionary">📖 Словарь</button>
-      <button class="sheet-tool-btn" id="mobileGame23">📋 Задание №23</button>
+      <button class="sheet-tool-btn" id="mobileMixedTraining">🧠 Смешанная тренировка</button>
+      <button class="sheet-tool-btn" id="mobileGame23">📋 Тренажёр к №23</button>
       <button class="sheet-tool-btn" id="mobileGame">🎮 Тренажёр полномочий</button>
       <button class="sheet-tool-btn" id="mobileNotesBtn">📝 Мои заметки</button>
+      <button class="sheet-tool-btn" id="mobileArgumentBank">💬 Банк аргументов</button>
+      <button class="sheet-tool-btn" id="mobileFindError">🔎 Найди ошибку</button>
       <button class="sheet-tool-btn" id="mobileFontBtn">Aa Настройки текста</button>
       <button class="sheet-tool-btn" id="mobileTheme">🌓 Сменить тему</button>
     </div>
@@ -178,7 +201,7 @@
   <div id="mobileSearchOverlay" class="mobile-search-overlay" hidden>
     <div class="mobile-search-header">
       <input id="mobileSearchInput" type="search" placeholder="Статья, слово, номер…" autocomplete="off" />
-      <button id="mobileSearchClose" class="btn-ghost">✕</button>
+      <button id="mobileSearchClose" class="btn-ghost" aria-label="Закрыть поиск">✕</button>
     </div>
     <div id="mobileSearchResults" class="mobile-search-results"></div>
   </div>
@@ -197,6 +220,10 @@
 
 
   <div id="toast">Ссылка скопирована!</div>
+  <div id="undoProgressToast" class="undo-toast" hidden>
+    <span>Прогресс чтения сброшен</span>
+    <button id="undoProgressBtn" type="button">Отменить</button>
+  </div>
 
   <div id="updateNotification" class="toast-update" hidden>
     <span>Доступна новая версия приложения!</span>
@@ -213,9 +240,9 @@
     <div class="map-wrapper">
       <div class="map-container" id="mapContainer">
         <div class="map-zoom-controls">
-          <button id="zoomIn" class="btn">+</button>
-          <button id="zoomOut" class="btn">-</button>
-          <button id="zoomReset" class="btn">⟲</button>
+          <button id="zoomIn" class="btn" aria-label="Увеличить масштаб">+</button>
+          <button id="zoomOut" class="btn" aria-label="Уменьшить масштаб">-</button>
+          <button id="zoomReset" class="btn" aria-label="Сбросить масштаб">⟲</button>
         </div>
         <h4 class="map-instruction">Нажмите на федеральный округ</h4>
         <div id="zoomLayer" style="transition: transform 0.2s ease-out; transform-origin: center;">
@@ -243,16 +270,17 @@
 
   <dialog id="game23Dialog" class="large-dialog">
     <div class="game-header">
-      <h3>Задание №23 ЕГЭ (Конституция)</h3>
+      <h3>Тренажёр положений Конституции для задания №23</h3>
       <div style="display:flex;gap:8px;align-items:center">
-        <button id="resetGame23" class="btn btn-secondary" style="font-size:12px;margin-left:8px">🔄</button>
-        <button id="closeGame23" class="btn-ghost">✕</button>
+        <button id="resetGame23" class="btn btn-secondary" style="font-size:12px;margin-left:8px" aria-label="Начать задание 23 заново">🔄</button>
+        <button id="closeGame23" class="btn-ghost" aria-label="Закрыть задание 23">✕</button>
       </div>
     </div>
     <div class="game23-body">
-      <p class="game23-task">На основе положений Конституции РФ сформулируйте и подтвердите характеристику:</p>
+      <p class="game23-task">Выберите положения Конституции РФ, которыми можно подтвердить характеристику:</p>
       <h2 id="task23Question" class="task23-question">...</h2>
       <p class="game23-hint">Выберите 3 верных положения из списка:</p>
+      <p class="game23-format-note">Это тренировочный формат. На ЕГЭ нужно самостоятельно записать три развёрнутых объяснения.</p>
       <div id="task23Options" class="task23-options"></div>
       <div class="game23-controls">
         <button id="checkTask23Btn" class="btn btn-primary btn-lg" disabled>Проверить ответ</button>
@@ -266,11 +294,14 @@
     <div class="game-header">
       <h3>Карточки терминов</h3>
       <div style="display:flex;gap:8px;align-items:center">
-        <button id="resetFlashcards" class="btn btn-secondary" style="font-size:12px">🔄</button>
-        <button id="closeFlashcards" class="btn-ghost">✕</button>
+        <button id="resetFlashcards" class="btn btn-secondary" style="font-size:12px" aria-label="Начать карточки заново">🔄</button>
+        <button id="closeFlashcards" class="btn-ghost" aria-label="Закрыть карточки">✕</button>
       </div>
     </div>
     <div class="flashcard-wrapper">
+      <label class="deck-picker">Тема карточек
+        <select id="flashcardDeck"><option value="all">Все темы</option><option value="foundations">Основы государства</option><option value="rights">Права и свободы</option><option value="government">Органы власти</option><option value="federation">Федеративное устройство</option><option value="justice">Право и суд</option></select>
+      </label>
       <div class="flashcard-container">
         <div id="flashcard" class="flashcard">
           <div class="front">
@@ -295,13 +326,14 @@
       <h3>📝 Мои заметки</h3>
       <button id="closeNotes" class="btn btn-secondary">Закрыть</button>
     </header>
+    <div class="dialog-search"><input id="notesSearch" type="search" placeholder="Поиск по заметкам…" aria-label="Поиск по заметкам"></div>
     <div id="notesDialogBody" style="max-height:65vh;overflow-y:auto;padding:4px 0"></div>
   </dialog>
 
   <dialog id="shareDialog" class="mini-dialog" style="width: 95%; max-width: 520px;">
     <header class="dialog-header">
       <h3>Поделиться цитатой</h3>
-      <button id="closeShare" class="btn btn-ghost">✕</button>
+      <button id="closeShare" class="btn btn-ghost" aria-label="Закрыть окно ссылки">✕</button>
     </header>
     <div style="padding: 16px;">
       <div style="margin-bottom: 12px;">
@@ -331,7 +363,54 @@
       <h3>Словарь терминов</h3>
       <button id="closeDictionary" class="btn btn-secondary">Закрыть</button>
     </header>
+    <div class="dictionary-tools">
+      <input id="dictionarySearch" type="search" placeholder="Найти термин или определение…" aria-label="Поиск по словарю">
+      <div id="dictionaryAlphabet" class="dictionary-alphabet" aria-label="Алфавитный указатель"></div>
+      <div id="dictionaryCount" class="filter-summary" aria-live="polite"></div>
+    </div>
     <div class="dictionary-content" id="dictionaryList"></div>
+  </dialog>
+
+  <dialog id="mixedTrainingDialog" class="large-dialog">
+    <header class="dialog-header"><div><h3>🧠 Смешанная тренировка</h3><p class="dialog-subtitle">Термины, полномочия и Конституция в одной серии</p></div><button id="closeMixedTraining" class="btn btn-secondary">Закрыть</button></header>
+    <div class="mixed-training-body">
+      <div class="mixed-training-progress"><span id="mixedType">Тема</span><strong id="mixedCounter">1 / 10</strong></div>
+      <h2 id="mixedQuestion">Вопрос</h2>
+      <div id="mixedAnswers" class="mixed-answers"></div>
+      <div id="mixedFeedback" class="game-feedback" aria-live="polite"></div>
+      <button id="mixedNext" class="btn btn-primary" type="button" hidden>Следующий вопрос</button>
+    </div>
+  </dialog>
+
+  <dialog id="argumentBankDialog" class="large-dialog">
+    <header class="dialog-header">
+      <div><h3>💬 Банк аргументов</h3><p class="dialog-subtitle">Конституционные положения для развёрнутых ответов</p></div>
+      <button id="closeArgumentBank" class="btn btn-secondary">Закрыть</button>
+    </header>
+    <div class="argument-bank-tools">
+      <input id="argumentSearch" type="search" placeholder="Тема, тезис или статья…" aria-label="Поиск по банку аргументов">
+      <select id="argumentTopic" aria-label="Тема аргументов"><option value="all">Все темы</option></select>
+      <p class="argument-bank-note">Не заучивайте текст механически: на ЕГЭ ответ нужно связать с требованием конкретного задания.</p>
+    </div>
+    <div id="argumentBankList" class="argument-bank-list"></div>
+  </dialog>
+
+  <dialog id="findErrorDialog" class="large-dialog">
+    <header class="dialog-header">
+      <div><h3>🔎 Найди ошибку</h3><p class="dialog-subtitle">Выберите точное исправление неверного утверждения</p></div>
+      <button id="closeFindError" class="btn btn-secondary">Закрыть</button>
+    </header>
+    <div class="find-error-body">
+      <div class="mixed-training-progress"><span>Конституция РФ</span><strong id="findErrorCounter">1 / 18</strong></div>
+      <div class="error-statement"><span>Неверное утверждение</span><p id="findErrorStatement"></p></div>
+      <div id="findErrorAnswers" class="mixed-answers"></div>
+      <div id="findErrorFeedback" class="game-feedback" aria-live="polite"></div>
+      <button id="findErrorNext" class="btn btn-primary" type="button" hidden>Следующее утверждение</button>
+    </div>
+  </dialog>
+
+  <dialog id="resetProgressDialog" class="mini-dialog">
+    <div class="confirm-dialog"><h3>Сбросить прогресс?</h3><p>Отметки «Прочитано» будут удалены. После сброса действие можно отменить.</p><div class="confirm-actions"><button id="cancelResetProgress" class="btn btn-secondary" type="button">Отмена</button><button id="confirmResetProgress" class="btn btn-danger" type="button">Сбросить</button></div></div>
   </dialog>
 
   <dialog id="fontSettingsDialog" class="mini-dialog">
@@ -355,17 +434,17 @@
       <div class="setting-group">
         <label>Размер шрифта:</label>
         <div class="range-controls">
-          <button type="button" id="fontDec">-</button>
+          <button type="button" id="fontDec" aria-label="Уменьшить размер шрифта">-</button>
           <span id="fontSizeVal">16px</span>
-          <button type="button" id="fontInc">+</button>
+          <button type="button" id="fontInc" aria-label="Увеличить размер шрифта">+</button>
         </div>
       </div>
       <div class="setting-group">
         <label>Межстрочный интервал:</label>
         <div class="range-controls">
-          <button type="button" id="lhDec">-</button>
+          <button type="button" id="lhDec" aria-label="Уменьшить межстрочный интервал">-</button>
           <span id="lhVal">1.6</span>
-          <button type="button" id="lhInc">+</button>
+          <button type="button" id="lhInc" aria-label="Увеличить межстрочный интервал">+</button>
         </div>
       </div>
       <button class="btn btn-block btn-secondary" style="margin-top:15px">Закрыть</button>
@@ -374,14 +453,14 @@
 
   <dialog id="gameDialog" class="game-dialog">
     <div class="game-header">
-      <h3>Тренажер полномочий (ЕГЭ №13)</h3>
-      <button id="closeGame" class="btn-ghost">✕</button>
+      <h3>Тренажёр полномочий (ЕГЭ №13)</h3>
+      <button id="closeGame" class="btn-ghost" aria-label="Закрыть тренажёр полномочий">✕</button>
     </div>
     <div id="gameStartScreen">
       <p>Вам будет дано полномочие. Ваша задача — определить, кто его осуществляет.</p>
       <div class="stats-preview" style="display:flex;align-items:center;gap:10px;justify-content:center">
         <span>Рекорд: <span id="highScore">0</span></span>
-        <button id="resetHighscoreBtn" title="Сбросить рекорд" class="btn-reset-highscore">🗑</button>
+        <button id="resetHighscoreBtn" title="Сбросить рекорд" class="btn-reset-highscore" aria-label="Сбросить рекорд">🗑</button>
       </div>
       <button id="startGameBtn" class="btn btn-primary btn-lg">Начать тренировку</button>
     </div>
@@ -395,6 +474,7 @@
         <button class="ans-btn" data-target="sf">Совет Федерации</button>
         <button class="ans-btn" data-target="gd">Государственная Дума</button>
         <button class="ans-btn" data-target="gov">Правительство РФ</button>
+        <button class="ans-btn" data-target="ks">Конституционный Суд РФ</button>
       </div>
       <div id="gameFeedback" class="game-feedback"></div>
     </div>
@@ -420,18 +500,23 @@
           <h3 class="title"></h3>
         </div>
         <div class="meta">
-          <button class="btn-note btn-ghost" title="Моя заметка">📝</button>
-          <button class="btn-share btn-ghost" title="Создать цитату">📤</button>
-          <button class="btn-fav btn-ghost" title="Добавить в избранное">☆</button>
-          <a class="deeplink btn btn-ghost" title="Скопировать ссылку на статью">🔗</a>
+          <button type="button" class="btn-note btn-ghost" title="Моя заметка" aria-label="Добавить заметку">📝</button>
+          <button type="button" class="btn-share btn-ghost" title="Создать цитату" aria-label="Создать цитату">📤</button>
+          <button type="button" class="btn-fav btn-ghost" title="Добавить в избранное" aria-label="Добавить в избранное">☆</button>
+          <a class="deeplink btn btn-ghost" title="Скопировать ссылку на статью" aria-label="Скопировать ссылку на статью">🔗</a>
         </div>
       </header>
 
       <div class="body"></div>
 
       <div class="note-container" hidden>
-        <textarea class="note-area" placeholder="Ваша заметка..."></textarea>
+        <textarea class="note-area" placeholder="Ваша заметка..." aria-label="Заметка к статье"></textarea>
       </div>
+
+      <details class="practice-situation" hidden>
+        <summary>Жизненная ситуация</summary>
+        <div class="practice-situation-body"><p class="practice-story"></p><p class="practice-question"></p><div class="practice-answer"></div></div>
+      </details>
 
       <details class="explain">
         <summary>Пояснение</summary>
@@ -439,12 +524,24 @@
       </details>
 
       <footer class="card-footer">
+        <div class="article-study-meta">
+          <span class="importance-badge"></span>
+          <label class="article-status-control"><span>Статус</span><select class="article-status" aria-label="Статус изучения статьи"><option value="new">Не начато</option><option value="learning">Изучаю</option><option value="review">Повторить</option><option value="mastered">Освоено</option></select></label>
+        </div>
         <button class="btn-read" title="Отметить как прочитанное">✓ Прочитал</button>
       </footer>
     </article>
   </template>
 
-  <script src="app.js" defer></script>
+  <script src="js/core.js" defer></script>
+  <script src="js/study-data.js" defer></script>
+  <script src="js/study-tools.js" defer></script>
+  <script src="js/practice.js" defer></script>
+  <script src="js/training.js" defer></script>
+  <script src="js/reading.js" defer></script>
+  <script src="js/articles-ui.js" defer></script>
+  <script src="js/mobile-pwa.js" defer></script>
+  <script src="js/app.js" defer></script>
 </body>
 
 </html>
