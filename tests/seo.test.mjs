@@ -23,5 +23,5 @@ test('sitemap содержит канонический адрес сайта', 
 test('все локальные JavaScript-файлы из index.html существуют', () => {
   const scripts = [...index.matchAll(/<script\s+src="([^"]+)"/g)].map((match) => match[1]);
   assert.equal(scripts.length, 9);
-  for (const script of scripts) assert.ok(existsSync(script), `Нет файла ${script}`);
+  for (const script of scripts) assert.ok(existsSync(script.split('?')[0]), `Нет файла ${script}`);
 });
