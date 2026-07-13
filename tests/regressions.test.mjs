@@ -28,8 +28,9 @@ test('mobile trainers expose visible scrolling and reset flashcard position', ()
   assert.match(html, /id="flashcardScrollIndicator"/);
   assert.doesNotMatch(html, /mobile-game-scroll-hint/);
   assert.match(training, /back\.scrollTop = 0/);
-  assert.match(css, /\.flashcard-scroll-indicator\s*\{[^}]*width:\s*8px/);
-  assert.match(css, /\.flashcard-scroll-indicator\s*\{[^}]*opacity:\s*\.72/);
+  assert.match(css, /\.flashcard-scroll-indicator\s*\{[^}]*width:\s*6px/);
+  assert.match(css, /\.flashcard-scroll-indicator\s*\{[^}]*opacity:\s*\.58/);
+  assert.match(css, /\.flashcard \.back::\-webkit\-scrollbar\s*\{\s*display:\s*none/);
   assert.match(css, /#gamePlayScreen\s*\{[^}]*overflow-y:\s*scroll/);
 });
 
@@ -89,7 +90,7 @@ test('все новые элементы управления присутств
   for (const id of ['resetHighscoreDialog', 'nextGameQuestionBtn', 'mixedNext', 'dictionaryDialog']) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
-  assert.match(read('sw.js'), /prep-mate-v34/);
+  assert.match(read('sw.js'), /prep-mate-v35/);
   assert.match(mobile, /7000/);
   assert.match(mobile, /if \(e\.target === dlg\) dlg\.close\(\)/);
 });

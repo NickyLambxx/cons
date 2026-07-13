@@ -2605,13 +2605,13 @@ select optgroup {
     top: 14px;
     right: 7px;
     bottom: 14px;
-    width: 8px;
-    border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+    width: 6px;
+    border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border));
     border-radius: 999px;
     background: var(--surface2);
     background: color-mix(in srgb, var(--surface2) 85%, black);
     box-shadow: 0 0 0 1px var(--card);
-    opacity: .72;
+    opacity: .58;
     pointer-events: none;
 }
 
@@ -2621,7 +2621,7 @@ select optgroup {
     right: 2px;
     min-height: 20px;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--accent) 60%, var(--muted));
+    background: color-mix(in srgb, var(--accent) 48%, var(--muted));
 }
 
 .game-dialog[open] {
@@ -2718,6 +2718,14 @@ select optgroup {
         height: calc(100dvh - var(--nav-height) - 16px);
         max-height: calc(100dvh - var(--nav-height) - 16px);
         margin: auto;
+    }
+
+    .flashcard .back {
+        scrollbar-width: none;
+    }
+
+    .flashcard .back::-webkit-scrollbar {
+        display: none;
     }
 
     #gameStartScreen,
