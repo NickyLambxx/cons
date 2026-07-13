@@ -2605,12 +2605,13 @@ select optgroup {
     top: 14px;
     right: 7px;
     bottom: 14px;
-    width: 12px;
-    border: 2px solid var(--accent);
+    width: 8px;
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
     border-radius: 999px;
     background: var(--surface2);
     background: color-mix(in srgb, var(--surface2) 85%, black);
-    box-shadow: 0 0 0 2px var(--card), 0 0 10px rgba(96, 165, 250, .65);
+    box-shadow: 0 0 0 1px var(--card);
+    opacity: .72;
     pointer-events: none;
 }
 
@@ -2618,10 +2619,9 @@ select optgroup {
     position: absolute;
     left: 2px;
     right: 2px;
-    min-height: 24px;
+    min-height: 20px;
     border-radius: 999px;
-    background: #60a5fa;
-    box-shadow: 0 0 6px rgba(96, 165, 250, .9);
+    background: color-mix(in srgb, var(--accent) 60%, var(--muted));
 }
 
 .game-dialog[open] {
@@ -2641,10 +2641,6 @@ select optgroup {
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-}
-
-.mobile-game-scroll-hint {
-    display: none;
 }
 
 #dictionaryDialog[open] {
@@ -2748,22 +2744,6 @@ select optgroup {
         border: 2px solid var(--surface2);
         border-radius: 999px;
         background: #60a5fa;
-    }
-
-    .mobile-game-scroll-hint {
-        display: block;
-        position: sticky;
-        top: 0;
-        z-index: 3;
-        margin: 0 0 12px;
-        border: 1px solid rgba(96, 165, 250, .7);
-        border-radius: 9px;
-        padding: 8px 10px;
-        background: var(--card);
-        color: #93c5fd;
-        font-size: 12px;
-        font-weight: 700;
-        line-height: 1.35;
     }
 
     #gamePlayScreen .question-card {
