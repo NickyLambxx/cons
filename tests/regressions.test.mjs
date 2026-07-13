@@ -9,12 +9,47 @@ const reading = read('js/reading.js');
 const mobile = read('js/mobile-pwa.js');
 const articles = read('js/articles-ui.js');
 const training = read('js/training.js');
+const practice = read('js/practice.js');
+const serviceWorker = read('sw.js');
 
 test('чистые цифры ищутся по всему тексту, а точный номер включается только словом статья', () => {
   assert.match(reading, /\^статья\\s\+\(\\d\+/);
   assert.doesNotMatch(reading, /levenshtein/);
   assert.match(reading, /visibleText\.includes\(normalizedQuery\)/);
   assert.match(mobile, /getArticleSearchResults\(q, state\.articles\)/);
+});
+
+test('notes target is visible immediately during highlight', () => {
+  assert.match(css, /\.card\.highlight\s*\{[^}]*opacity:\s*1/);
+  assert.match(reading, /dlg\.close\(\);\s*const note/);
+});
+
+test('mobile trainers expose visible scrolling and reset flashcard position', () => {
+  assert.match(html, /id="flashcardScrollIndicator"/);
+  assert.match(html, /class="mobile-game-scroll-hint"/);
+  assert.match(training, /back\.scrollTop = 0/);
+  assert.match(css, /\.flashcard-scroll-indicator\s*\{[^}]*border:\s*2px solid var\(--accent\)/);
+  assert.match(css, /#gamePlayScreen\s*\{[^}]*overflow-y:\s*scroll/);
+});
+
+test('find-error task can be skipped before answering', () => {
+  assert.match(html, /id="findErrorNext"[^>]*>Следующее утверждение<\/button>/);
+  assert.doesNotMatch(html, /id="findErrorNext"[^>]*hidden/);
+  assert.match(practice, /findErrorNext'\)\.hidden = false/);
+});
+
+test('print offers both explanation modes', () => {
+  for (const id of ['printOptionsDialog', 'printWithExplanations', 'printWithoutExplanations']) {
+    assert.match(html, new RegExp(`id="${id}"`));
+  }
+  assert.match(mobile, /startPrint\(true\)/);
+  assert.match(mobile, /startPrint\(false\)/);
+  assert.match(css, /body:not\(\.print-with-explanations\) details\.explain/);
+});
+
+test('service worker never puts POST requests into Cache API', () => {
+  assert.match(serviceWorker, /req\.method !== 'GET'/);
+  assert.match(serviceWorker, /if \(!response \|\| !response\.ok\) return response/);
 });
 
 test('переход из поиска выравнивает совпадение, а заметка открывается без отложенного повторного рендера', () => {
@@ -53,7 +88,7 @@ test('все новые элементы управления присутств
   for (const id of ['resetHighscoreDialog', 'nextGameQuestionBtn', 'mixedNext', 'dictionaryDialog']) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
-  assert.match(read('sw.js'), /prep-mate-v32/);
+  assert.match(read('sw.js'), /prep-mate-v33/);
   assert.match(mobile, /7000/);
   assert.match(mobile, /if \(e\.target === dlg\) dlg\.close\(\)/);
 });

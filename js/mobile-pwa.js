@@ -191,8 +191,19 @@ function initEvents() {
     let resetSnapshot = null;
     let undoTimer = null;
     let printExplanationState = [];
+    let printIncludeExplanations = false;
     safeAddListener('#themeToggle', 'click', toggleTheme);
-    safeAddListener('#printBtn', 'click', () => window.print());
+    safeAddListener('#printBtn', 'click', () => $('#printOptionsDialog')?.showModal());
+    safeAddListener('#cancelPrint', 'click', () => $('#printOptionsDialog')?.close());
+    const startPrint = (includeExplanations) => {
+        printIncludeExplanations = includeExplanations;
+        document.body.classList.toggle('print-with-explanations', includeExplanations);
+        document.body.classList.toggle('print-without-explanations', !includeExplanations);
+        $('#printOptionsDialog')?.close();
+        setTimeout(() => window.print(), 0);
+    };
+    safeAddListener('#printWithExplanations', 'click', () => startPrint(true));
+    safeAddListener('#printWithoutExplanations', 'click', () => startPrint(false));
     safeAddListener('#favFilterBtn', 'click', setFavFilterMode);
     safeAddListener('#closeDialog', 'click', () => $('#articleDialog').close());
     safeAddListener('#notesBtn', 'click', openNotesPanel);
@@ -226,11 +237,13 @@ function initEvents() {
 
     window.addEventListener('beforeprint', () => {
         printExplanationState = $$('.card details.explain').map(details => ({ details, open: details.open }));
-        printExplanationState.forEach(item => { item.details.open = true; });
+        if (printIncludeExplanations) printExplanationState.forEach(item => { item.details.open = true; });
     });
     window.addEventListener('afterprint', () => {
         printExplanationState.forEach(item => { item.details.open = item.open; });
         printExplanationState = [];
+        printIncludeExplanations = false;
+        document.body.classList.remove('print-with-explanations', 'print-without-explanations');
     });
     
     $$('dialog').forEach(dlg => {

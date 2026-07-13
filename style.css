@@ -109,6 +109,7 @@
 .confirm-dialog { padding: 20px; }
 .confirm-dialog p { color: var(--muted); line-height: 1.55; }
 .confirm-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.print-choice-actions { display: grid; gap: 9px; margin-top: 18px; }
 .btn-danger { background: #dc2626; border-color: #dc2626; color: white; }
 .undo-toast { position: fixed; z-index: 6000; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; padding: 12px 14px; border-radius: 10px; background: #111827; color: white; box-shadow: 0 12px 35px rgba(0,0,0,.35); }
 .undo-toast[hidden] { display: none; }
@@ -148,7 +149,7 @@ button, .btn, .nav-item, .sheet-tool-btn, .toc-chapter-header { min-height: 44px
 }
 
 @media print {
-    .study-filters, .article-study-meta, #mixedTrainingDialog, #resetProgressDialog, .undo-toast { display: none !important; }
+    .study-filters, .article-study-meta, #mixedTrainingDialog, #resetProgressDialog, #printOptionsDialog, .undo-toast { display: none !important; }
 }
 
 :root.light {
@@ -650,6 +651,8 @@ body {
 
 .card.highlight {
     animation: flash 1.5s ease-out;
+    opacity: 1;
+    transform: none;
 }
 
 @keyframes flash {
@@ -884,6 +887,7 @@ body {
 }
 
 .flashcard-container {
+    position: relative;
     perspective: 1000px;
     width: 100%;
     max-width: 500px;
@@ -2394,6 +2398,7 @@ dialog::backdrop {
     #game23Dialog,
     #flashcardsDialog,
     #shareDialog,
+    #printOptionsDialog,
     .toast-update,
     .action-sheet,
     .audio-player,
@@ -2446,12 +2451,16 @@ dialog::backdrop {
         text-decoration: underline;
     }
 
-    details.explain {
+    body.print-with-explanations details.explain {
         display: block !important;
         border: none;
     }
 
-    details.explain[hidden] {
+    body.print-with-explanations details.explain[hidden] {
+        display: none !important;
+    }
+
+    body:not(.print-with-explanations) details.explain {
         display: none !important;
     }
 
@@ -2590,10 +2599,36 @@ select optgroup {
     background: var(--accent);
 }
 
+.flashcard-scroll-indicator {
+    position: absolute;
+    z-index: 5;
+    top: 14px;
+    right: 7px;
+    bottom: 14px;
+    width: 12px;
+    border: 2px solid var(--accent);
+    border-radius: 999px;
+    background: var(--surface2);
+    background: color-mix(in srgb, var(--surface2) 85%, black);
+    box-shadow: 0 0 0 2px var(--card), 0 0 10px rgba(96, 165, 250, .65);
+    pointer-events: none;
+}
+
+.flashcard-scroll-indicator span {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    min-height: 24px;
+    border-radius: 999px;
+    background: #60a5fa;
+    box-shadow: 0 0 6px rgba(96, 165, 250, .9);
+}
+
 .game-dialog[open] {
     display: flex;
     flex-direction: column;
     max-height: min(90dvh, 820px);
+    overflow: hidden !important;
 }
 
 .game-dialog .game-header {
@@ -2602,9 +2637,14 @@ select optgroup {
 
 #gameStartScreen,
 #gamePlayScreen {
+    flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
+}
+
+.mobile-game-scroll-hint {
+    display: none;
 }
 
 #dictionaryDialog[open] {
@@ -2679,6 +2719,7 @@ select optgroup {
 
     .game-dialog {
         width: calc(100vw - 20px);
+        height: calc(100dvh - var(--nav-height) - 16px);
         max-height: calc(100dvh - var(--nav-height) - 16px);
         margin: auto;
     }
@@ -2686,6 +2727,43 @@ select optgroup {
     #gameStartScreen,
     #gamePlayScreen {
         padding: 16px 14px 20px;
+    }
+
+    #gamePlayScreen {
+        overflow-y: scroll;
+        scrollbar-width: auto;
+        scrollbar-color: #60a5fa var(--surface2);
+    }
+
+    #gamePlayScreen::-webkit-scrollbar {
+        width: 12px;
+    }
+
+    #gamePlayScreen::-webkit-scrollbar-track {
+        background: var(--surface2);
+        border-left: 1px solid var(--border);
+    }
+
+    #gamePlayScreen::-webkit-scrollbar-thumb {
+        border: 2px solid var(--surface2);
+        border-radius: 999px;
+        background: #60a5fa;
+    }
+
+    .mobile-game-scroll-hint {
+        display: block;
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        margin: 0 0 12px;
+        border: 1px solid rgba(96, 165, 250, .7);
+        border-radius: 9px;
+        padding: 8px 10px;
+        background: var(--card);
+        color: #93c5fd;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.35;
     }
 
     #gamePlayScreen .question-card {
@@ -2715,8 +2793,12 @@ select optgroup {
         display: none !important;
     }
 
-    details.explain,
-    details.explain > .explain-body {
+    body.print-with-explanations details.explain,
+    body.print-with-explanations details.explain > .explain-body {
         display: block !important;
+    }
+
+    body:not(.print-with-explanations) details.explain {
+        display: none !important;
     }
 }

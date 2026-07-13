@@ -1,23 +1,22 @@
-const CACHE_NAME = 'prep-mate-v32'; // v32: точный поиск, расширенные материалы, печать и мобильные окна
+const CACHE_NAME = 'prep-mate-v33';
 const ASSETS = [
   './',
   './index.html',
   './style.css',
-  './js/core.js?v=32',
-  './js/study-data.js?v=32',
-  './js/study-tools.js?v=32',
-  './js/practice.js?v=32',
-  './js/training.js?v=32',
-  './js/reading.js?v=32',
-  './js/articles-ui.js?v=32',
-  './js/mobile-pwa.js?v=32',
-  './js/app.js?v=32',
+  './js/core.js?v=33',
+  './js/study-data.js?v=33',
+  './js/study-tools.js?v=33',
+  './js/practice.js?v=33',
+  './js/training.js?v=33',
+  './js/reading.js?v=33',
+  './js/articles-ui.js?v=33',
+  './js/mobile-pwa.js?v=33',
+  './js/app.js?v=33',
   './manifest.json',
   './logo.png',
   './favicon.ico',
   './og-image.png',
   './avatar.jpg',
-  // Главы (можно добавить сюда, но лучше динамически)
   './chapters/chapter1.html',
   './chapters/chapter2.html',
   './chapters/chapter3.html',
@@ -29,65 +28,45 @@ const ASSETS = [
   './chapters/chapter9.html'
 ];
 
-// Установка SW
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log('[SW] Caching assets');
-      return cache.addAll(ASSETS);
-    })
-  );
-  self.skipWaiting(); // Принудительно активировать новый SW сразу
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
+  self.skipWaiting();
 });
 
-// Активация и удаление старых кэшей
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) {
-            console.log('[SW] Removing old cache:', key);
-            return caches.delete(key);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(keys.map(key => key === CACHE_NAME ? undefined : caches.delete(key))))
+      .then(() => self.clients.claim())
   );
 });
 
-// Стратегия запросов
 self.addEventListener('fetch', event => {
   const req = event.request;
-  const url = new URL(req.url);
 
-  // Для HTML файлов (навигация) используем Network First
-  // Это гарантирует, что пользователь видит свежую версию, если есть интернет
+  // Cache API supports GET requests only. Let POST and other methods pass through.
+  if (req.method !== 'GET') return;
+
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)
         .then(response => {
-          return caches.open(CACHE_NAME).then(cache => {
-            cache.put(req, response.clone());
-            return response;
-          });
+          if (!response || !response.ok) return response;
+          return caches.open(CACHE_NAME)
+            .then(cache => cache.put(req, response.clone()))
+            .then(() => response);
         })
-        .catch(() => {
-          return caches.match(req); // Если офлайн, берем из кэша
-        })
+        .catch(() => caches.match(req).then(cached => cached || caches.match('./index.html')))
     );
     return;
   }
 
-  // Для остальных ресурсов (CSS, JS, картинки) - Cache First (для скорости)
   event.respondWith(
-    caches.match(req).then(cachedResponse => {
-      return cachedResponse || fetch(req).then(response => {
-        return caches.open(CACHE_NAME).then(cache => {
-          cache.put(req, response.clone());
-          return response;
-        });
-      });
-    })
+    caches.match(req).then(cachedResponse => cachedResponse || fetch(req).then(response => {
+      if (!response || !response.ok) return response;
+      return caches.open(CACHE_NAME)
+        .then(cache => cache.put(req, response.clone()))
+        .then(() => response);
+    }))
   );
 });

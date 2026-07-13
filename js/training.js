@@ -684,6 +684,29 @@ function resetFlashcardDeck() {
     renderFlashcard();
 }
 
+function updateFlashcardScrollIndicator() {
+    const card = $('#flashcard');
+    const back = $('.flashcard .back');
+    const indicator = $('#flashcardScrollIndicator');
+    const thumb = indicator?.querySelector('span');
+    if (!card || !back || !indicator || !thumb) return;
+
+    const overflow = back.scrollHeight > back.clientHeight + 2;
+    indicator.hidden = !card.classList.contains('flipped') || !overflow;
+    if (indicator.hidden) return;
+
+    const thumbHeight = Math.max(22, Math.round(back.clientHeight / back.scrollHeight * 100));
+    const progress = back.scrollTop / Math.max(1, back.scrollHeight - back.clientHeight);
+    thumb.style.height = `${thumbHeight}%`;
+    thumb.style.top = `${progress * (100 - thumbHeight)}%`;
+}
+
+function resetFlashcardScroll() {
+    const back = $('.flashcard .back');
+    if (back) back.scrollTop = 0;
+    requestAnimationFrame(updateFlashcardScrollIndicator);
+}
+
 function initFlashcards() {
     safeAddListener('#flashcardsBtn', 'click', () => {
         // Инициализировать только если пусто (первое открытие)
@@ -700,6 +723,7 @@ function initFlashcards() {
         resetFlashcardDeck();
     });
     safeAddListener('#flashcardDeck', 'change', resetFlashcardDeck);
+    $('.flashcard .back')?.addEventListener('scroll', updateFlashcardScrollIndicator, { passive: true });
 
     safeAddListener('#fcNext', 'click', () => {
         if (flashcards.index < flashcards.terms.length - 1) {
@@ -722,7 +746,10 @@ function initFlashcards() {
     });
 
     safeAddListener('#flashcard', 'click', () => {
-        $('#flashcard').classList.toggle('flipped');
+        const card = $('#flashcard');
+        card.classList.toggle('flipped');
+        if (card.classList.contains('flipped')) resetFlashcardScroll();
+        else updateFlashcardScrollIndicator();
     });
 }
 
@@ -736,6 +763,7 @@ function renderFlashcard() {
 
     $('#fcPrev').disabled = flashcards.index === 0;
     $('#fcNext').disabled = flashcards.index === flashcards.terms.length - 1;
+    resetFlashcardScroll();
 }
 
 /* --- СМЕШАННАЯ ТРЕНИРОВКА --- */

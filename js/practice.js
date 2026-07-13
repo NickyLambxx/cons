@@ -124,7 +124,7 @@ function renderFindErrorTask() {
     $('#findErrorCounter').textContent = `${findErrorState.index + 1} / ${findErrorState.tasks.length}`;
     $('#findErrorStatement').textContent = task.statement;
     $('#findErrorFeedback').textContent = '';
-    $('#findErrorNext').hidden = true;
+    $('#findErrorNext').hidden = false;
     $('#findErrorNext').textContent = 'Следующее утверждение';
     const answers = $('#findErrorAnswers'); answers.innerHTML = '';
     task.options.forEach((option, index) => {

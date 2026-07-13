@@ -29,7 +29,7 @@
   <meta name="twitter:image"       content="https://prep-mate.ru/og-image.png" />
 
   <link rel="manifest" href="./manifest.json" />
-  <link rel="stylesheet" href="./style.css?v=32" />
+  <link rel="stylesheet" href="./style.css?v=33" />
 
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" href="./logo.png" type="image/png">
@@ -312,6 +312,7 @@
             <div id="fcDef">Определение</div>
           </div>
         </div>
+        <div id="flashcardScrollIndicator" class="flashcard-scroll-indicator" aria-hidden="true" hidden><span></span></div>
       </div>
       <div class="flashcard-controls">
         <button id="fcPrev" class="btn">← Назад</button>
@@ -404,7 +405,7 @@
       <div class="error-statement"><span>Неверное утверждение</span><p id="findErrorStatement"></p></div>
       <div id="findErrorAnswers" class="mixed-answers"></div>
       <div id="findErrorFeedback" class="game-feedback" aria-live="polite"></div>
-      <button id="findErrorNext" class="btn btn-primary" type="button" hidden>Следующее утверждение</button>
+      <button id="findErrorNext" class="btn btn-primary" type="button">Следующее утверждение</button>
     </div>
   </dialog>
 
@@ -414,6 +415,18 @@
 
   <dialog id="resetHighscoreDialog" class="mini-dialog">
     <div class="confirm-dialog"><h3>Сбросить рекорд?</h3><p>Рекорд тренажёра задания №13 будет удалён.</p><div class="confirm-actions"><button id="cancelResetHighscore" class="btn btn-secondary" type="button">Отмена</button><button id="confirmResetHighscore" class="btn btn-danger" type="button">Сбросить</button></div></div>
+  </dialog>
+
+  <dialog id="printOptionsDialog" class="mini-dialog">
+    <div class="confirm-dialog">
+      <h3>Что напечатать?</h3>
+      <p>Выберите, добавлять ли пояснения к статьям.</p>
+      <div class="print-choice-actions">
+        <button id="printWithExplanations" class="btn btn-primary" type="button">С пояснениями</button>
+        <button id="printWithoutExplanations" class="btn btn-secondary" type="button">Без пояснений</button>
+        <button id="cancelPrint" class="btn btn-ghost" type="button">Отмена</button>
+      </div>
+    </div>
   </dialog>
 
   <dialog id="fontSettingsDialog" class="mini-dialog">
@@ -469,6 +482,7 @@
     </div>
     <div id="gamePlayScreen" hidden>
       <div class="game-score">Счет: <span id="currentScore">0</span></div>
+      <div class="mobile-game-scroll-hint" aria-hidden="true">↕ Прокручивайте внутри окна, чтобы увидеть все варианты и кнопку</div>
       <div class="question-card">
         <div class="question-text" id="questionText">Вопрос...</div>
       </div>
@@ -532,15 +546,15 @@
     </article>
   </template>
 
-  <script src="js/core.js?v=32" defer></script>
-  <script src="js/study-data.js?v=32" defer></script>
-  <script src="js/study-tools.js?v=32" defer></script>
-  <script src="js/practice.js?v=32" defer></script>
-  <script src="js/training.js?v=32" defer></script>
-  <script src="js/reading.js?v=32" defer></script>
-  <script src="js/articles-ui.js?v=32" defer></script>
-  <script src="js/mobile-pwa.js?v=32" defer></script>
-  <script src="js/app.js?v=32" defer></script>
+  <script src="js/core.js?v=33" defer></script>
+  <script src="js/study-data.js?v=33" defer></script>
+  <script src="js/study-tools.js?v=33" defer></script>
+  <script src="js/practice.js?v=33" defer></script>
+  <script src="js/training.js?v=33" defer></script>
+  <script src="js/reading.js?v=33" defer></script>
+  <script src="js/articles-ui.js?v=33" defer></script>
+  <script src="js/mobile-pwa.js?v=33" defer></script>
+  <script src="js/app.js?v=33" defer></script>
 </body>
 
 </html>

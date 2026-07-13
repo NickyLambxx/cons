@@ -399,7 +399,6 @@ function openNotesPanel() {
             el.addEventListener('click', () => {
                 const article = state.articles.find(item => item.id === el.dataset.id);
                 if (!article) return;
-                dlg.close();
                 // Закрыть мобильное меню если открыто
                 $('#sidebarPanel')?.classList.remove('visible');
                 $('#mobileToolsSheet').hidden = true;
@@ -419,6 +418,7 @@ function openNotesPanel() {
                     currentTarget = document.getElementById(el.dataset.id);
                 }
                 if (!currentTarget) return;
+                dlg.close();
                 const note = $('.note-container', currentTarget);
                 if (note) note.hidden = false;
                 currentTarget.tabIndex = -1;
