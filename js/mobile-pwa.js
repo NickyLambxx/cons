@@ -91,17 +91,24 @@ function initMobileNav() {
                 : '<div style="padding:20px;text-align:center;color:var(--muted)">Ничего не найдено</div>';
             container.querySelectorAll('.mobile-search-result-item').forEach(el => {
                 el.addEventListener('click', () => {
-                    // Сохраняем название выбранной статьи, а не текст запроса
-                    saveSearchQuery(el.dataset.title);
+                    const selectedArticle = state.articles.find(article => article.id === el.dataset.id);
+                    if (!selectedArticle) return;
+                    saveSearchQuery(q);
                     $('#mobileSearchOverlay').hidden = true;
                     $$('.nav-item').forEach(b => b.classList.remove('active'));
                     state.showFavoritesOnly = false;
-                    resetStudyFilters();
-                    renderArticles(state.articles);
-                    setTimeout(() => {
+                    state.currentFolderFilter = 'all';
+                    state.studyFilters = { chapter: 'all', exam: 'all', status: 'all' };
+                    ['chapterFilter', 'examFilter', 'statusFilter'].forEach(id => { if ($(`#${id}`)) $(`#${id}`).value = 'all'; });
+                    state.activeSearchQuery = q.toLocaleLowerCase('ru');
+                    document.body.classList.add('search-active');
+                    updateMobileSearchBanner(q);
+                    renderArticles([selectedArticle]);
+                    updateFilterSummary(1, state.articles.length);
+                    requestAnimationFrame(() => {
                         const target = document.getElementById(el.dataset.id);
-                        if (target) { scrollArticleToTop(target); target.classList.add('highlight'); setTimeout(() => target.classList.remove('highlight'), 1500); }
-                    }, 300);
+                        if (target) { scrollSearchMatchToTop(target, 'auto'); target.classList.add('highlight'); setTimeout(() => target.classList.remove('highlight'), 1500); }
+                    });
                 });
             });
         }, 300));
@@ -113,6 +120,10 @@ function initMobileNav() {
                     $('#mobileSearchOverlay').hidden = true;
                     $$('.nav-item').forEach(b => b.classList.remove('active'));
                     filterArticles(q);
+                    requestAnimationFrame(() => {
+                        const firstResult = $('#content .card');
+                        if (firstResult) scrollSearchMatchToTop(firstResult, 'auto');
+                    });
                 }
             }
         });
@@ -179,6 +190,7 @@ function initPWAInstall() {
 function initEvents() {
     let resetSnapshot = null;
     let undoTimer = null;
+    let printExplanationState = [];
     safeAddListener('#themeToggle', 'click', toggleTheme);
     safeAddListener('#printBtn', 'click', () => window.print());
     safeAddListener('#favFilterBtn', 'click', setFavFilterMode);
@@ -210,6 +222,15 @@ function initEvents() {
         clearTimeout(undoTimer);
         if ($('#undoProgressToast')) $('#undoProgressToast').hidden = true;
         showToast('Прогресс восстановлен');
+    });
+
+    window.addEventListener('beforeprint', () => {
+        printExplanationState = $$('.card details.explain').map(details => ({ details, open: details.open }));
+        printExplanationState.forEach(item => { item.details.open = true; });
+    });
+    window.addEventListener('afterprint', () => {
+        printExplanationState.forEach(item => { item.details.open = item.open; });
+        printExplanationState = [];
     });
     
     $$('dialog').forEach(dlg => {

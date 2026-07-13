@@ -29,7 +29,7 @@
   <meta name="twitter:image"       content="https://prep-mate.ru/og-image.png" />
 
   <link rel="manifest" href="./manifest.json" />
-  <link rel="stylesheet" href="./style.css?v=30" />
+  <link rel="stylesheet" href="./style.css?v=32" />
 
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" href="./logo.png" type="image/png">
@@ -101,7 +101,7 @@
         <button id="notesBtn" class="btn btn-block">📝 Мои заметки <span id="notesCount" class="badge" hidden>0</span></button>
 
         <button id="argumentBankBtn" class="btn btn-block">💬 Банк аргументов</button>
-        <button id="findErrorBtn" class="btn btn-block">🔎 Найди ошибку</button>
+        <button id="findErrorBtn" class="btn btn-block">🔎 Исправь утверждение</button>
 
         <button id="favFilterBtn" class="btn btn-block" aria-pressed="false">
           ⭐ Избранное <span id="favCount" class="badge">0</span>
@@ -192,7 +192,7 @@
       <button class="sheet-tool-btn" id="mobileGame">🎮 Тренажёр полномочий</button>
       <button class="sheet-tool-btn" id="mobileNotesBtn">📝 Мои заметки</button>
       <button class="sheet-tool-btn" id="mobileArgumentBank">💬 Банк аргументов</button>
-      <button class="sheet-tool-btn" id="mobileFindError">🔎 Найди ошибку</button>
+      <button class="sheet-tool-btn" id="mobileFindError">🔎 Исправь утверждение</button>
       <button class="sheet-tool-btn" id="mobileFontBtn">Aa Настройки текста</button>
       <button class="sheet-tool-btn" id="mobileTheme">🌓 Сменить тему</button>
     </div>
@@ -390,18 +390,17 @@
     <div class="argument-bank-tools">
       <input id="argumentSearch" type="search" placeholder="Тема, тезис или статья…" aria-label="Поиск по банку аргументов">
       <select id="argumentTopic" aria-label="Тема аргументов"><option value="all">Все темы</option></select>
-      <p class="argument-bank-note">Не заучивайте текст механически: на ЕГЭ ответ нужно связать с требованием конкретного задания.</p>
     </div>
     <div id="argumentBankList" class="argument-bank-list"></div>
   </dialog>
 
   <dialog id="findErrorDialog" class="large-dialog">
     <header class="dialog-header">
-      <div><h3>🔎 Найди ошибку</h3><p class="dialog-subtitle">Выберите точное исправление неверного утверждения</p></div>
+      <div><h3>🔎 Исправь утверждение</h3><p class="dialog-subtitle">Выберите точное исправление неверного утверждения</p></div>
       <button id="closeFindError" class="btn btn-secondary">Закрыть</button>
     </header>
     <div class="find-error-body">
-      <div class="mixed-training-progress"><span>Конституция РФ</span><strong id="findErrorCounter">1 / 18</strong></div>
+      <div class="mixed-training-progress"><span>Конституция РФ</span><strong id="findErrorCounter">1 / 36</strong></div>
       <div class="error-statement"><span>Неверное утверждение</span><p id="findErrorStatement"></p></div>
       <div id="findErrorAnswers" class="mixed-answers"></div>
       <div id="findErrorFeedback" class="game-feedback" aria-live="polite"></div>
@@ -533,15 +532,15 @@
     </article>
   </template>
 
-  <script src="js/core.js?v=30" defer></script>
-  <script src="js/study-data.js?v=30" defer></script>
-  <script src="js/study-tools.js?v=30" defer></script>
-  <script src="js/practice.js?v=30" defer></script>
-  <script src="js/training.js?v=30" defer></script>
-  <script src="js/reading.js?v=30" defer></script>
-  <script src="js/articles-ui.js?v=30" defer></script>
-  <script src="js/mobile-pwa.js?v=30" defer></script>
-  <script src="js/app.js?v=30" defer></script>
+  <script src="js/core.js?v=32" defer></script>
+  <script src="js/study-data.js?v=32" defer></script>
+  <script src="js/study-tools.js?v=32" defer></script>
+  <script src="js/practice.js?v=32" defer></script>
+  <script src="js/training.js?v=32" defer></script>
+  <script src="js/reading.js?v=32" defer></script>
+  <script src="js/articles-ui.js?v=32" defer></script>
+  <script src="js/mobile-pwa.js?v=32" defer></script>
+  <script src="js/app.js?v=32" defer></script>
 </body>
 
 </html>

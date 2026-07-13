@@ -183,12 +183,7 @@ function renderArticles(list = state.articles) {
 
         $('.title', node).innerHTML = highlightPlainText(a.title, state.activeSearchQuery);
 
-        let processedBody = processText(a.bodyHTML);
-        if (state.activeSearchQuery && state.activeSearchQuery.length > 2) {
-             const escaped = state.activeSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-             const re = new RegExp(`(${escaped})(?![^<]*>)`, 'gi');
-             processedBody = processedBody.replace(re, '<mark>$1</mark>');
-        }
+        let processedBody = highlightHTMLText(processText(a.bodyHTML), state.activeSearchQuery);
         $('.body', node).innerHTML = processedBody;
 
         const explain = $('.explain', node);
@@ -196,12 +191,9 @@ function renderArticles(list = state.articles) {
         let foundInExplain = false;
 
         if (a.explainHTML) {
-             if (state.activeSearchQuery && state.activeSearchQuery.length > 2) {
-                const escaped = state.activeSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const re = new RegExp(`(${escaped})(?![^<]*>)`, 'gi');
-                if (re.test(processedExplain)) foundInExplain = true;
-                processedExplain = processedExplain.replace(re, '<mark>$1</mark>');
-            }
+            foundInExplain = Boolean(state.activeSearchQuery
+                && htmlToSearchText(processedExplain).includes(state.activeSearchQuery.toLocaleLowerCase('ru')));
+            processedExplain = highlightHTMLText(processedExplain, state.activeSearchQuery);
             $('.explain-body', node).innerHTML = processedExplain;
             
             // ALWAYS VISIBLE (removed TeacherMode check)

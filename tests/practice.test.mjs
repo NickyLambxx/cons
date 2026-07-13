@@ -7,7 +7,7 @@ const source = readFileSync('js/practice.js', 'utf8');
 const data = vm.runInNewContext(`${source}; ({ ARGUMENT_BANK, FIND_ERROR_TASKS })`);
 
 test('банк содержит готовые аргументы с конституционными источниками', () => {
-  assert.equal(data.ARGUMENT_BANK.length, 20);
+  assert.equal(data.ARGUMENT_BANK.length, 50);
   assert.ok(new Set(data.ARGUMENT_BANK.map(item => item.topic)).size >= 8);
   for (const item of data.ARGUMENT_BANK) {
     assert.match(item.article, /^Статья \d+$/);
@@ -17,7 +17,7 @@ test('банк содержит готовые аргументы с конст�
 });
 
 test('тренажёр ошибок структурно корректен и не закрепляет неверные формулировки', () => {
-  assert.equal(data.FIND_ERROR_TASKS.length, 18);
+  assert.equal(data.FIND_ERROR_TASKS.length, 36);
   for (const task of data.FIND_ERROR_TASKS) {
     assert.equal(task.options.length, 4, task.statement);
     assert.ok(task.correct >= 0 && task.correct < task.options.length);
@@ -28,4 +28,7 @@ test('тренажёр ошибок структурно корректен и �
   assert.match(source, /не может быть лишён гражданства/);
   assert.match(source, /более чем на 48 часов/);
   assert.doesNotMatch(source, /можно задержать на срок до 72 часов[^\n]+correct/);
+  assert.match(source, /findErrorState\.completed/);
+  assert.match(source, /textContent = 'Начать заново'/);
+  assert.doesNotMatch(source, /findErrorState\.index === findErrorState\.tasks\.length - 1 \? 'Показать результат'/);
 });

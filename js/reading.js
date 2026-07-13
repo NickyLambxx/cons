@@ -130,24 +130,6 @@ function performSearch(query) {
     $('#searchHistory').hidden = true;
 }
 
-function levenshtein(a, b) {
-    if (a.length === 0) return b.length;
-    if (b.length === 0) return a.length;
-    const matrix = [];
-    for (let i = 0; i <= b.length; i++) matrix[i] = [i];
-    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-    for (let i = 1; i <= b.length; i++) {
-        for (let j = 1; j <= a.length; j++) {
-            if (b.charAt(i - 1) === a.charAt(j - 1)) {
-                matrix[i][j] = matrix[i - 1][j - 1];
-            } else {
-                matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1);
-            }
-        }
-    }
-    return matrix[b.length][a.length];
-}
-
 function htmlToSearchText(html = '') {
     const template = document.createElement('template');
     template.innerHTML = html;
@@ -158,7 +140,7 @@ function getArticleSearchResults(query, sourceList = state.articles) {
     const normalizedQuery = query.trim().toLocaleLowerCase('ru');
     if (!normalizedQuery) return sourceList;
 
-    const articleQuery = normalizedQuery.match(/^(?:статья\s+)?(\d+(?:\.\d+)?)$/i);
+    const articleQuery = normalizedQuery.match(/^статья\s+(\d+(?:\.\d+)?)$/i);
     if (articleQuery) {
         const requestedNumber = articleQuery[1];
         return sourceList.filter(article => article.title.match(/Статья\s+(\d+(?:\.\d+)?)/i)?.[1] === requestedNumber);
@@ -167,13 +149,7 @@ function getArticleSearchResults(query, sourceList = state.articles) {
     return sourceList.filter(article => {
         const title = article.title.toLocaleLowerCase('ru');
         const visibleText = `${htmlToSearchText(article.bodyHTML)} ${htmlToSearchText(article.explainHTML)}`;
-        if (title.includes(normalizedQuery) || visibleText.includes(normalizedQuery)) return true;
-
-        if (normalizedQuery.length < 4) return false;
-        const words = `${title} ${visibleText}`.match(/[а-яёa-z0-9.-]+/gi) || [];
-        return words.some(word => Math.abs(word.length - normalizedQuery.length) <= 1
-            && word[0] === normalizedQuery[0]
-            && levenshtein(word, normalizedQuery) === 1);
+        return title.includes(normalizedQuery) || visibleText.includes(normalizedQuery);
     });
 }
 
@@ -187,6 +163,12 @@ function scrollArticleToTop(target, behavior = 'smooth') {
     if (behavior === 'auto') root.style.scrollBehavior = 'auto';
     target.scrollIntoView({ block: 'start', behavior });
     if (behavior === 'auto') requestAnimationFrame(() => { root.style.scrollBehavior = previousScrollBehavior; });
+}
+
+function scrollSearchMatchToTop(target, behavior = 'smooth') {
+    if (!target) return;
+    const firstMatch = target.querySelector('mark');
+    scrollArticleToTop(firstMatch || target, behavior);
 }
 
 function updateMobileSearchBanner(query) {
@@ -203,6 +185,7 @@ function updateMobileSearchBanner(query) {
 function filterArticles(query) {
     query = query.trim().toLocaleLowerCase('ru');
     state.activeSearchQuery = query;
+    document.body.classList.toggle('search-active', Boolean(query));
     updateMobileSearchBanner(query);
 
     if (!query) { renderArticles(state.articles); return; }
@@ -414,6 +397,8 @@ function openNotesPanel() {
         });
         body.querySelectorAll('.notes-list-item').forEach(el => {
             el.addEventListener('click', () => {
+                const article = state.articles.find(item => item.id === el.dataset.id);
+                if (!article) return;
                 dlg.close();
                 // Закрыть мобильное меню если открыто
                 $('#sidebarPanel')?.classList.remove('visible');
@@ -421,21 +406,26 @@ function openNotesPanel() {
                 state.showFavoritesOnly = false;
                 state.currentFolderFilter = 'all';
                 state.activeSearchQuery = '';
+                document.body.classList.remove('search-active');
                 const desktopSearch = $('#searchInput'); if (desktopSearch) desktopSearch.value = '';
-                resetStudyFilters();
-                const revealSavedNote = () => {
-                    const currentTarget = document.getElementById(el.dataset.id);
-                    if (!currentTarget) return;
-                    const note = $('.note-container', currentTarget);
-                    if (note) note.hidden = false;
-                    currentTarget.tabIndex = -1;
-                    currentTarget.focus({ preventScroll: true });
-                    scrollArticleToTop(currentTarget, 'auto');
-                    currentTarget.classList.add('highlight');
-                    setTimeout(() => currentTarget.classList.remove('highlight'), 1500);
-                };
-                requestAnimationFrame(revealSavedNote);
-                setTimeout(revealSavedNote, 700);
+                updateMobileSearchBanner('');
+                state.studyFilters = { chapter: 'all', exam: 'all', status: 'all' };
+                ['chapterFilter', 'examFilter', 'statusFilter'].forEach(id => { if ($(`#${id}`)) $(`#${id}`).value = 'all'; });
+
+                let currentTarget = document.getElementById(el.dataset.id);
+                if (!currentTarget) {
+                    renderArticles([article]);
+                    updateFilterSummary(1, state.articles.length);
+                    currentTarget = document.getElementById(el.dataset.id);
+                }
+                if (!currentTarget) return;
+                const note = $('.note-container', currentTarget);
+                if (note) note.hidden = false;
+                currentTarget.tabIndex = -1;
+                currentTarget.focus({ preventScroll: true });
+                scrollArticleToTop(currentTarget, 'auto');
+                currentTarget.classList.add('highlight');
+                setTimeout(() => currentTarget.classList.remove('highlight'), 1500);
             });
         });
     };

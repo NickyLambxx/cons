@@ -26,11 +26,41 @@ function escapeHTML(value) {
     return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 }
 
-function highlightPlainText(value, query) {
+function highlightPlainText(value, query, minLength = 1) {
     const safe = escapeHTML(value);
-    if (!query || query.length < 3) return safe;
+    if (!query || query.length < minLength) return safe;
     const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return safe.replace(new RegExp(`(${escapedQuery})`, 'gi'), '<mark>$1</mark>');
+}
+
+function highlightHTMLText(html, query) {
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    if (!query) return template.innerHTML;
+
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const matcher = new RegExp(`(${escapedQuery})`, 'gi');
+    const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+    textNodes.forEach(textNode => {
+        if (!textNode.nodeValue.toLocaleLowerCase('ru').includes(query.toLocaleLowerCase('ru'))) return;
+        const fragment = document.createDocumentFragment();
+        textNode.nodeValue.split(matcher).forEach(part => {
+            if (!part) return;
+            if (part.toLocaleLowerCase('ru') === query.toLocaleLowerCase('ru')) {
+                const mark = document.createElement('mark');
+                mark.textContent = part;
+                fragment.append(mark);
+            } else {
+                fragment.append(document.createTextNode(part));
+            }
+        });
+        textNode.replaceWith(fragment);
+    });
+
+    return template.innerHTML;
 }
 
 function loadArticleStatuses() {

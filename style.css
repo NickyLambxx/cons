@@ -49,6 +49,10 @@
     --map-hover-stroke: #fff;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 /* --- УЧЕБНЫЕ ИНСТРУМЕНТЫ И МОБИЛЬНАЯ ДОСТУПНОСТЬ --- */
 .content-shell { min-width: 0; display: grid; gap: 16px; }
 .header-tools .btn { min-height: 44px; display: inline-flex; align-items: center; gap: 5px; padding: 8px 10px; }
@@ -2481,7 +2485,6 @@ button, .btn, .nav-item, .sheet-tool-btn, .toc-chapter-header { min-height: 44px
 
 .argument-bank-tools { display: grid; grid-template-columns: minmax(0, 1fr) minmax(190px, .35fr); gap: 10px; padding: 14px 16px 4px; }
 .argument-bank-tools input, .argument-bank-tools select { width: 100%; min-height: 44px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface2); color: var(--text); padding: 8px 10px; font: inherit; }
-.argument-bank-note { grid-column: 1 / -1; margin: 2px 0 8px; color: var(--muted); font-size: 12px; line-height: 1.45; }
 .argument-bank-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 12px 16px 18px; max-height: 66vh; overflow-y: auto; }
 .argument-card { min-width: 0; border: 1px solid var(--border); border-radius: 11px; background: var(--card); padding: 14px; }
 .argument-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
@@ -2497,7 +2500,6 @@ button, .btn, .nav-item, .sheet-tool-btn, .toc-chapter-header { min-height: 44px
 
 @media (max-width: 768px) {
     .argument-bank-tools { grid-template-columns: 1fr; padding: 12px 12px 2px; }
-    .argument-bank-note { grid-column: auto; }
     .argument-bank-list { grid-template-columns: 1fr; padding: 10px 12px 16px; max-height: 60vh; }
     .argument-card { padding: 12px; }
     .argument-card-top { flex-wrap: wrap; }
@@ -2568,6 +2570,41 @@ select optgroup {
 
 .flashcard .back {
     justify-content: flex-start;
+    scrollbar-width: auto;
+    scrollbar-color: var(--accent) var(--surface2);
+}
+
+.flashcard .back::-webkit-scrollbar {
+    width: 10px;
+}
+
+.flashcard .back::-webkit-scrollbar-track {
+    margin: 12px 0;
+    border-radius: 999px;
+    background: var(--surface2);
+}
+
+.flashcard .back::-webkit-scrollbar-thumb {
+    border: 2px solid var(--surface2);
+    border-radius: 999px;
+    background: var(--accent);
+}
+
+.game-dialog[open] {
+    display: flex;
+    flex-direction: column;
+    max-height: min(90dvh, 820px);
+}
+
+.game-dialog .game-header {
+    flex: 0 0 auto;
+}
+
+#gameStartScreen,
+#gamePlayScreen {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 #dictionaryDialog[open] {
@@ -2589,6 +2626,10 @@ select optgroup {
 }
 
 @media (max-width: 768px) {
+    body.search-active #content {
+        padding-bottom: 100dvh;
+    }
+
     .sidebar {
         position: fixed;
         top: 70px;
@@ -2634,5 +2675,48 @@ select optgroup {
     #mixedNext,
     #nextGameQuestionBtn {
         width: 100%;
+    }
+
+    .game-dialog {
+        width: calc(100vw - 20px);
+        max-height: calc(100dvh - var(--nav-height) - 16px);
+        margin: auto;
+    }
+
+    #gameStartScreen,
+    #gamePlayScreen {
+        padding: 16px 14px 20px;
+    }
+
+    #gamePlayScreen .question-card {
+        min-height: 88px;
+        margin-bottom: 14px;
+        padding: 18px 14px;
+    }
+
+    #gamePlayScreen .answers-grid {
+        gap: 9px;
+    }
+
+    #nextGameQuestionBtn {
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
+        box-shadow: 0 -10px 18px var(--card);
+    }
+}
+
+@media print {
+    .card-footer,
+    .btn-read,
+    .article-study-meta,
+    .note-container,
+    .importance-badge {
+        display: none !important;
+    }
+
+    details.explain,
+    details.explain > .explain-body {
+        display: block !important;
     }
 }
