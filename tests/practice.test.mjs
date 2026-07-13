@@ -4,20 +4,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 
 const source = readFileSync('js/practice.js', 'utf8');
-const data = vm.runInNewContext(`${source}; ({ ARTICLE_PRACTICE, ARGUMENT_BANK, FIND_ERROR_TASKS })`);
-const chapterSource = Array.from({ length: 9 }, (_, index) => readFileSync(`chapters/chapter${index + 1}.html`, 'utf8')).join('\n');
-const articleIds = new Set([...chapterSource.matchAll(/<article\b[^>]*\bid="([^"]+)"/g)].map(match => match[1]));
-
-test('жизненные ситуации привязаны к существующим статьям и содержат разбор', () => {
-  const entries = Object.entries(data.ARTICLE_PRACTICE);
-  assert.equal(entries.length, 20);
-  for (const [id, item] of entries) {
-    assert.ok(articleIds.has(id), `Нет статьи ${id}`);
-    assert.ok(item.situation.length > 30, id);
-    assert.ok(item.question.length > 15, id);
-    assert.ok(item.answer.length > 40, id);
-  }
-});
+const data = vm.runInNewContext(`${source}; ({ ARGUMENT_BANK, FIND_ERROR_TASKS })`);
 
 test('банк содержит готовые аргументы с конституционными источниками', () => {
   assert.equal(data.ARGUMENT_BANK.length, 20);

@@ -1,5 +1,5 @@
 /* PrepMate: training.js */
-const game = { score: 0, currentQuestion: null, isBusy: false };
+const game = { score: 0, currentQuestion: null, isBusy: false, nextTimer: 0 };
 
 function initGame() {
     safeAddListener('#gameBtn', 'click', () => {
@@ -14,10 +14,13 @@ function initGame() {
     });
 
     safeAddListener('#closeGame', 'click', () => $('#gameDialog').close());
-    safeAddListener('#resetHighscoreBtn', 'click', () => {
+    safeAddListener('#resetHighscoreBtn', 'click', () => $('#resetHighscoreDialog')?.showModal());
+    safeAddListener('#cancelResetHighscore', 'click', () => $('#resetHighscoreDialog')?.close());
+    safeAddListener('#confirmResetHighscore', 'click', () => {
         localStorage.removeItem(LS.HIGHSCORE);
         const hs = $('#highScore');
         if (hs) hs.textContent = 0;
+        $('#resetHighscoreDialog')?.close();
         showToast('Рекорд сброшен');
     });
     safeAddListener('#startGameBtn', 'click', () => {
@@ -29,9 +32,11 @@ function initGame() {
     });
 
     $$('.ans-btn').forEach(btn => btn.addEventListener('click', (e) => checkAnswer(e.target)));
+    safeAddListener('#nextGameQuestionBtn', 'click', nextQuestion);
 }
 
 function nextQuestion() {
+    clearTimeout(game.nextTimer);
     game.isBusy = false;
     const randomIndex = Math.floor(Math.random() * POWERS.length);
     game.currentQuestion = POWERS[randomIndex];
@@ -43,6 +48,8 @@ function nextQuestion() {
     $$('.ans-btn').forEach(btn => btn.className = 'ans-btn');
     const fb = $('#gameFeedback');
     if (fb) fb.textContent = "";
+    const nextButton = $('#nextGameQuestionBtn');
+    if (nextButton) nextButton.hidden = true;
 }
 
 function checkAnswer(btn) {
@@ -65,7 +72,12 @@ function checkAnswer(btn) {
     updateGameScore();
     const currentHigh = parseInt(localStorage.getItem(LS.HIGHSCORE) || 0);
     if (game.score > currentHigh) localStorage.setItem(LS.HIGHSCORE, game.score);
-    setTimeout(nextQuestion, 1500);
+    if (isCorrect) {
+        game.nextTimer = setTimeout(nextQuestion, 1500);
+    } else {
+        const nextButton = $('#nextGameQuestionBtn');
+        if (nextButton) nextButton.hidden = false;
+    }
 }
 
 function updateGameScore() {
@@ -727,7 +739,7 @@ function renderFlashcard() {
 }
 
 /* --- СМЕШАННАЯ ТРЕНИРОВКА --- */
-const mixedTraining = { questions: [], index: 0, score: 0, answered: false };
+const mixedTraining = { questions: [], index: 0, score: 0, answered: false, transitioning: false };
 const POWER_LABELS = { president: 'Президент РФ', sf: 'Совет Федерации', gd: 'Государственная Дума', gov: 'Правительство РФ', ks: 'Конституционный Суд РФ' };
 
 function shuffle(values) { return [...values].sort(() => Math.random() - 0.5); }
@@ -753,8 +765,11 @@ function createMixedQuestions() {
 function renderMixedQuestion() {
     const item = mixedTraining.questions[mixedTraining.index];
     const answers = $('#mixedAnswers');
+    if (!item || !answers) return;
     mixedTraining.answered = false;
-    $('#mixedNext').hidden = true;
+    const next = $('#mixedNext');
+    next.hidden = true;
+    next.disabled = false;
     $('#mixedFeedback').textContent = '';
     $('#mixedType').textContent = item.type;
     $('#mixedCounter').textContent = `${mixedTraining.index + 1} / ${mixedTraining.questions.length}`;
@@ -771,7 +786,7 @@ function renderMixedQuestion() {
 }
 
 function checkMixedAnswer(button, answer) {
-    if (mixedTraining.answered) return;
+    if (mixedTraining.answered || mixedTraining.transitioning) return;
     mixedTraining.answered = true;
     const item = mixedTraining.questions[mixedTraining.index];
     const correct = answer === item.correct;
@@ -785,6 +800,7 @@ function checkMixedAnswer(button, answer) {
     feedback.textContent = correct ? 'Верно!' : `Правильный ответ: ${item.correct}`;
     feedback.style.color = correct ? '#22c55e' : '#ef4444';
     const next = $('#mixedNext');
+    next.disabled = false;
     next.hidden = false;
     next.textContent = mixedTraining.index === mixedTraining.questions.length - 1 ? 'Показать результат' : 'Следующий вопрос';
 }
@@ -794,21 +810,28 @@ function initMixedTraining() {
         mixedTraining.questions = createMixedQuestions();
         mixedTraining.index = 0;
         mixedTraining.score = 0;
+        mixedTraining.transitioning = false;
         renderMixedQuestion();
         $('#mixedTrainingDialog').showModal();
     });
     safeAddListener('#closeMixedTraining', 'click', () => $('#mixedTrainingDialog').close());
     safeAddListener('#mixedNext', 'click', () => {
+        const next = $('#mixedNext');
+        if (mixedTraining.transitioning || next.hidden || next.disabled) return;
+        mixedTraining.transitioning = true;
+        next.disabled = true;
         if (mixedTraining.index === -1) {
             mixedTraining.questions = createMixedQuestions();
             mixedTraining.index = 0;
             mixedTraining.score = 0;
             renderMixedQuestion();
+            requestAnimationFrame(() => { mixedTraining.transitioning = false; });
             return;
         }
         if (mixedTraining.index < mixedTraining.questions.length - 1) {
             mixedTraining.index++;
             renderMixedQuestion();
+            requestAnimationFrame(() => { mixedTraining.transitioning = false; });
             return;
         }
         $('#mixedType').textContent = 'Результат';
@@ -816,7 +839,9 @@ function initMixedTraining() {
         $('#mixedQuestion').textContent = `${mixedTraining.score} из ${mixedTraining.questions.length}`;
         $('#mixedAnswers').innerHTML = '';
         $('#mixedFeedback').textContent = mixedTraining.score >= 8 ? 'Отличный результат!' : 'Повторите ошибки и попробуйте ещё раз.';
-        $('#mixedNext').textContent = 'Начать заново';
+        next.textContent = 'Начать заново';
+        next.hidden = false;
         mixedTraining.index = -1;
+        requestAnimationFrame(() => { mixedTraining.transitioning = false; next.disabled = false; });
     });
 }

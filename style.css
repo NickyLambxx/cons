@@ -11,6 +11,8 @@
     --scroll-track: #1a1d26;
     --scroll-thumb: #3e4658;
     --player-bg: #1a1d26;
+    --surface2: #191d26;
+    color-scheme: dark;
 
     /* Шрифты */
     --font-family-sans: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
@@ -158,6 +160,8 @@ button, .btn, .nav-item, .sheet-tool-btn, .toc-chapter-header { min-height: 44px
     --scroll-track: #e2e8f0;
     --scroll-thumb: #94a3b8;
     --player-bg: #fff;
+    --surface2: #f1f5f9;
+    color-scheme: light;
 
     --highlight-bg: #fef08a;
 
@@ -185,7 +189,7 @@ body.serif-mode {
 
 html {
     scroll-behavior: smooth;
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 body {
@@ -199,7 +203,7 @@ body {
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 @media (max-width: 768px) {
@@ -2475,21 +2479,6 @@ button, .btn, .nav-item, .sheet-tool-btn, .toc-chapter-header { min-height: 44px
     .btn-read { width: 100%; min-height: 44px; padding: 9px 16px; border-radius: 10px; white-space: nowrap; }
 }
 
-/* Практические ситуации, банк аргументов и тренажёр ошибок */
-.practice-situation {
-    margin-top: 16px;
-    border: 1px solid rgba(34, 197, 94, .28);
-    border-radius: 10px;
-    background: rgba(34, 197, 94, .06);
-    overflow: hidden;
-}
-.practice-situation summary { min-height: 44px; display: flex; align-items: center; padding: 10px 13px; color: #4ade80; font-weight: 700; cursor: pointer; }
-.practice-situation summary::before { content: '🏙️'; margin-right: 8px; }
-.practice-situation-body { padding: 0 13px 13px; line-height: 1.55; }
-.practice-story { margin-top: 2px; }
-.practice-question { font-weight: 700; }
-.practice-answer { padding: 11px; border-radius: 8px; background: rgba(34, 197, 94, .09); color: var(--text); }
-
 .argument-bank-tools { display: grid; grid-template-columns: minmax(0, 1fr) minmax(190px, .35fr); gap: 10px; padding: 14px 16px 4px; }
 .argument-bank-tools input, .argument-bank-tools select { width: 100%; min-height: 44px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface2); color: var(--text); padding: 8px 10px; font: inherit; }
 .argument-bank-note { grid-column: 1 / -1; margin: 2px 0 8px; color: var(--muted); font-size: 12px; line-height: 1.45; }
@@ -2514,9 +2503,136 @@ button, .btn, .nav-item, .sheet-tool-btn, .toc-chapter-header { min-height: 44px
     .argument-card-top { flex-wrap: wrap; }
     .find-error-body { padding: 13px; }
     .error-statement p { font-size: 1rem; }
-    .practice-situation-body { font-size: .95rem; }
 }
 
 @media print {
     #argumentBankDialog, #findErrorDialog { display: none !important; }
+}
+
+/* Исправления интерфейса v23 */
+select,
+select option,
+select optgroup {
+    background-color: var(--surface2);
+    color: var(--text);
+}
+
+:root:not(.light) select {
+    color-scheme: dark;
+}
+
+.sidebar {
+    position: sticky;
+    top: 90px;
+    height: calc(100vh - 110px);
+    overflow: visible;
+}
+
+.sidebar-inner {
+    position: static;
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+#resetProgressDialog,
+#resetHighscoreDialog {
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    transform-origin: center;
+    margin: 0;
+}
+
+.game-feedback {
+    height: auto;
+    min-height: 24px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+#nextGameQuestionBtn,
+#mixedNext {
+    position: static;
+    margin-top: 12px;
+}
+
+.flashcard .front,
+.flashcard .back {
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overflow-wrap: anywhere;
+}
+
+.flashcard .back {
+    justify-content: flex-start;
+}
+
+#dictionaryDialog[open] {
+    display: flex;
+    flex-direction: column;
+    max-height: min(90dvh, 850px);
+    overflow: hidden;
+}
+
+#dictionaryDialog .dialog-header,
+#dictionaryDialog .dictionary-tools {
+    flex: 0 0 auto;
+}
+
+#dictionaryDialog .dictionary-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 70px;
+        height: calc(100dvh - 70px - var(--nav-height));
+        overflow-y: auto;
+    }
+
+    .sidebar-inner {
+        height: auto;
+        min-height: 100%;
+        overflow: visible;
+    }
+
+    .mobile-search-banner {
+        position: static;
+        top: auto;
+        z-index: auto;
+    }
+
+    #dictionaryDialog {
+        width: calc(100vw - 20px);
+        max-height: calc(100dvh - var(--nav-height) - 16px);
+        margin: auto;
+    }
+
+    #dictionaryDialog .dialog-header {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--card);
+        padding: 12px;
+    }
+
+    #dictionaryDialog .dictionary-content {
+        padding: 12px;
+    }
+
+    .flashcard .front,
+    .flashcard .back {
+        padding: 16px;
+    }
+
+    #mixedNext,
+    #nextGameQuestionBtn {
+        width: 100%;
+    }
 }

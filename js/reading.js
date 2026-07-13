@@ -148,6 +148,47 @@ function levenshtein(a, b) {
     return matrix[b.length][a.length];
 }
 
+function htmlToSearchText(html = '') {
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    return (template.content.textContent || '').replace(/\s+/g, ' ').trim().toLocaleLowerCase('ru');
+}
+
+function getArticleSearchResults(query, sourceList = state.articles) {
+    const normalizedQuery = query.trim().toLocaleLowerCase('ru');
+    if (!normalizedQuery) return sourceList;
+
+    const articleQuery = normalizedQuery.match(/^(?:статья\s+)?(\d+(?:\.\d+)?)$/i);
+    if (articleQuery) {
+        const requestedNumber = articleQuery[1];
+        return sourceList.filter(article => article.title.match(/Статья\s+(\d+(?:\.\d+)?)/i)?.[1] === requestedNumber);
+    }
+
+    return sourceList.filter(article => {
+        const title = article.title.toLocaleLowerCase('ru');
+        const visibleText = `${htmlToSearchText(article.bodyHTML)} ${htmlToSearchText(article.explainHTML)}`;
+        if (title.includes(normalizedQuery) || visibleText.includes(normalizedQuery)) return true;
+
+        if (normalizedQuery.length < 4) return false;
+        const words = `${title} ${visibleText}`.match(/[а-яёa-z0-9.-]+/gi) || [];
+        return words.some(word => Math.abs(word.length - normalizedQuery.length) <= 1
+            && word[0] === normalizedQuery[0]
+            && levenshtein(word, normalizedQuery) === 1);
+    });
+}
+
+function scrollArticleToTop(target, behavior = 'smooth') {
+    if (!target) return;
+    const header = $('.site-header');
+    const offset = (header?.getBoundingClientRect().height || 70) + 12;
+    target.style.scrollMarginTop = `${offset}px`;
+    const root = document.documentElement;
+    const previousScrollBehavior = root.style.scrollBehavior;
+    if (behavior === 'auto') root.style.scrollBehavior = 'auto';
+    target.scrollIntoView({ block: 'start', behavior });
+    if (behavior === 'auto') requestAnimationFrame(() => { root.style.scrollBehavior = previousScrollBehavior; });
+}
+
 function updateMobileSearchBanner(query) {
     const banner = $('#mobileSearchBanner');
     if (!banner) return;
@@ -160,7 +201,7 @@ function updateMobileSearchBanner(query) {
 }
 
 function filterArticles(query) {
-    query = query.trim().toLowerCase();
+    query = query.trim().toLocaleLowerCase('ru');
     state.activeSearchQuery = query;
     updateMobileSearchBanner(query);
 
@@ -168,27 +209,7 @@ function filterArticles(query) {
 
     const sourceList = state.showFavoritesOnly ? state.articles.filter(a => state.favorites.has(a.id)) : state.articles;
 
-    // Fuzzy Filter Logic
-    const filtered = sourceList.filter(a => {
-        const t = a.title.toLowerCase();
-        const body = a.bodyHTML.replace(/<[^>]+>/g, ' ').toLowerCase();
-
-        if (t.includes(query) || body.includes(query)) return true;
-
-        if (query.length > 3) {
-            const titleWords = t.split(/\s+/);
-            const bodyWords = body.split(/\s+/);
-
-            const matchWord = (word) => {
-                if (Math.abs(word.length - query.length) > 2) return false;
-                const dist = levenshtein(word, query);
-                return dist <= 2;
-            };
-
-            return titleWords.some(matchWord) || bodyWords.some(matchWord);
-        }
-        return false;
-    });
+    const filtered = getArticleSearchResults(query, sourceList);
 
     renderArticles(filtered);
 }
@@ -397,16 +418,24 @@ function openNotesPanel() {
                 // Закрыть мобильное меню если открыто
                 $('#sidebarPanel')?.classList.remove('visible');
                 $('#mobileToolsSheet').hidden = true;
-                const target = document.getElementById(el.dataset.id);
-                if (target) {
-                    setTimeout(() => {
-                        const offset = 80;
-                        const pos = target.getBoundingClientRect().top + window.scrollY - offset;
-                        window.scrollTo({ top: pos, behavior: 'smooth' });
-                        target.classList.add('highlight');
-                        setTimeout(() => target.classList.remove('highlight'), 1500);
-                    }, 100);
-                }
+                state.showFavoritesOnly = false;
+                state.currentFolderFilter = 'all';
+                state.activeSearchQuery = '';
+                const desktopSearch = $('#searchInput'); if (desktopSearch) desktopSearch.value = '';
+                resetStudyFilters();
+                const revealSavedNote = () => {
+                    const currentTarget = document.getElementById(el.dataset.id);
+                    if (!currentTarget) return;
+                    const note = $('.note-container', currentTarget);
+                    if (note) note.hidden = false;
+                    currentTarget.tabIndex = -1;
+                    currentTarget.focus({ preventScroll: true });
+                    scrollArticleToTop(currentTarget, 'auto');
+                    currentTarget.classList.add('highlight');
+                    setTimeout(() => currentTarget.classList.remove('highlight'), 1500);
+                };
+                requestAnimationFrame(revealSavedNote);
+                setTimeout(revealSavedNote, 700);
             });
         });
     };

@@ -29,7 +29,7 @@
   <meta name="twitter:image"       content="https://prep-mate.ru/og-image.png" />
 
   <link rel="manifest" href="./manifest.json" />
-  <link rel="stylesheet" href="./style.css?v=22" />
+  <link rel="stylesheet" href="./style.css?v=30" />
 
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" href="./logo.png" type="image/png">
@@ -294,7 +294,7 @@
     <div class="game-header">
       <h3>Карточки терминов</h3>
       <div style="display:flex;gap:8px;align-items:center">
-        <button id="resetFlashcards" class="btn btn-secondary" style="font-size:12px" aria-label="Начать карточки заново">🔄</button>
+        <button id="resetFlashcards" class="btn btn-secondary" style="font-size:12px" aria-label="Перемешать карточки и начать заново" title="Перемешать карточки и начать заново">🔄</button>
         <button id="closeFlashcards" class="btn-ghost" aria-label="Закрыть карточки">✕</button>
       </div>
     </div>
@@ -413,6 +413,10 @@
     <div class="confirm-dialog"><h3>Сбросить прогресс?</h3><p>Отметки «Прочитано» будут удалены. После сброса действие можно отменить.</p><div class="confirm-actions"><button id="cancelResetProgress" class="btn btn-secondary" type="button">Отмена</button><button id="confirmResetProgress" class="btn btn-danger" type="button">Сбросить</button></div></div>
   </dialog>
 
+  <dialog id="resetHighscoreDialog" class="mini-dialog">
+    <div class="confirm-dialog"><h3>Сбросить рекорд?</h3><p>Рекорд тренажёра задания №13 будет удалён.</p><div class="confirm-actions"><button id="cancelResetHighscore" class="btn btn-secondary" type="button">Отмена</button><button id="confirmResetHighscore" class="btn btn-danger" type="button">Сбросить</button></div></div>
+  </dialog>
+
   <dialog id="fontSettingsDialog" class="mini-dialog">
     <form method="dialog">
       <h3>Настройки текста</h3>
@@ -477,6 +481,7 @@
         <button class="ans-btn" data-target="ks">Конституционный Суд РФ</button>
       </div>
       <div id="gameFeedback" class="game-feedback"></div>
+      <button id="nextGameQuestionBtn" class="btn btn-primary" type="button" hidden>Следующий вопрос</button>
     </div>
   </dialog>
 
@@ -513,11 +518,6 @@
         <textarea class="note-area" placeholder="Ваша заметка..." aria-label="Заметка к статье"></textarea>
       </div>
 
-      <details class="practice-situation" hidden>
-        <summary>Жизненная ситуация</summary>
-        <div class="practice-situation-body"><p class="practice-story"></p><p class="practice-question"></p><div class="practice-answer"></div></div>
-      </details>
-
       <details class="explain">
         <summary>Пояснение</summary>
         <div class="explain-body"></div>
@@ -533,15 +533,15 @@
     </article>
   </template>
 
-  <script src="js/core.js?v=22" defer></script>
-  <script src="js/study-data.js?v=22" defer></script>
-  <script src="js/study-tools.js?v=22" defer></script>
-  <script src="js/practice.js?v=22" defer></script>
-  <script src="js/training.js?v=22" defer></script>
-  <script src="js/reading.js?v=22" defer></script>
-  <script src="js/articles-ui.js?v=22" defer></script>
-  <script src="js/mobile-pwa.js?v=22" defer></script>
-  <script src="js/app.js?v=22" defer></script>
+  <script src="js/core.js?v=30" defer></script>
+  <script src="js/study-data.js?v=30" defer></script>
+  <script src="js/study-tools.js?v=30" defer></script>
+  <script src="js/practice.js?v=30" defer></script>
+  <script src="js/training.js?v=30" defer></script>
+  <script src="js/reading.js?v=30" defer></script>
+  <script src="js/articles-ui.js?v=30" defer></script>
+  <script src="js/mobile-pwa.js?v=30" defer></script>
+  <script src="js/app.js?v=30" defer></script>
 </body>
 
 </html>

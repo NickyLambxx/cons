@@ -85,11 +85,7 @@ function initMobileNav() {
             const q = e.target.value.trim();
             const container = $('#mobileSearchResults');
             if (!q) { showMobileSearchHistory(); return; }
-            const results = state.articles.filter(a => {
-                const t = a.title.toLowerCase();
-                const b = a.bodyHTML.replace(/<[^>]+>/g, ' ').toLowerCase();
-                return t.includes(q.toLowerCase()) || b.includes(q.toLowerCase());
-            }).slice(0, 15);
+            const results = getArticleSearchResults(q, state.articles).slice(0, 15);
             container.innerHTML = results.length
                 ? results.map(a => `<div class="mobile-search-result-item" data-id="${escapeHTML(a.id)}" data-title="${escapeHTML(a.title)}"><strong>${highlightPlainText(a.title, q)}</strong><span class="mobile-result-chapter">${highlightPlainText(a.chapterTitle, q)}</span></div>`).join('')
                 : '<div style="padding:20px;text-align:center;color:var(--muted)">Ничего не найдено</div>';
@@ -104,7 +100,7 @@ function initMobileNav() {
                     renderArticles(state.articles);
                     setTimeout(() => {
                         const target = document.getElementById(el.dataset.id);
-                        if (target) { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); target.classList.add('highlight'); setTimeout(() => target.classList.remove('highlight'), 1500); }
+                        if (target) { scrollArticleToTop(target); target.classList.add('highlight'); setTimeout(() => target.classList.remove('highlight'), 1500); }
                     }, 300);
                 });
             });
@@ -202,7 +198,7 @@ function initEvents() {
         const toast = $('#undoProgressToast');
         if (toast) toast.hidden = false;
         clearTimeout(undoTimer);
-        undoTimer = setTimeout(() => { if (toast) toast.hidden = true; resetSnapshot = null; }, 8000);
+        undoTimer = setTimeout(() => { if (toast) toast.hidden = true; resetSnapshot = null; }, 7000);
     });
     safeAddListener('#undoProgressBtn', 'click', () => {
         if (!resetSnapshot) return;
@@ -218,11 +214,7 @@ function initEvents() {
     
     $$('dialog').forEach(dlg => {
         dlg.addEventListener('click', (e) => {
-            const rect = dlg.getBoundingClientRect();
-            if (e.clientX < rect.left || e.clientX > rect.right || 
-                e.clientY < rect.top || e.clientY > rect.bottom) {
-                dlg.close();
-            }
+            if (e.target === dlg) dlg.close();
         });
     });
 

@@ -42,10 +42,17 @@ test('мобильные цели касания имеют минимум 44px 
   assert.match(css, /\.study-filter-grid \{ grid-template-columns: 1fr/);
 });
 
-test('жизненные ситуации добавляются к статьям', () => {
-  assert.match(html, /class="practice-situation"/);
-  assert.match(read('js/articles-ui.js'), /ARTICLE_PRACTICE\[a\.id\]/);
-  assert.match(practice, /const ARTICLE_PRACTICE/);
+test('жизненные ситуации полностью удалены', () => {
+  assert.doesNotMatch(html, /practice-situation|Жизненная ситуация/);
+  assert.doesNotMatch(read('js/articles-ui.js'), /ARTICLE_PRACTICE/);
+  assert.doesNotMatch(practice, /const ARTICLE_PRACTICE/);
+});
+
+test('задание 13 подтверждает сброс и оставляет ошибочный ответ на экране', () => {
+  for (const id of ['resetHighscoreDialog', 'cancelResetHighscore', 'confirmResetHighscore', 'nextGameQuestionBtn']) {
+    assert.match(html, new RegExp(`id="${id}"`));
+  }
+  assert.match(training, /if \(isCorrect\)[\s\S]+setTimeout\(nextQuestion, 1500\)[\s\S]+nextButton\.hidden = false/);
 });
 
 test('банк аргументов и тренажёр ошибок доступны на компьютере и телефоне', () => {

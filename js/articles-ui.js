@@ -257,7 +257,7 @@ function renderArticles(list = state.articles) {
         noteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             noteContainer.hidden = !noteContainer.hidden;
-            if (!noteContainer.hidden) noteArea.focus();
+            if (!noteContainer.hidden) revealNoteEditor(noteArea);
         });
 
         noteArea.addEventListener('input', debounce((e) => {
@@ -265,18 +265,6 @@ function renderArticles(list = state.articles) {
             if (e.target.value.trim()) noteBtn.classList.add('active');
             else noteBtn.classList.remove('active');
         }, 500));
-
-        const practice = ARTICLE_PRACTICE[a.id];
-        const practiceBlock = $('.practice-situation', node);
-        if (practice && practiceBlock) {
-            practiceBlock.hidden = false;
-            $('.practice-story', node).textContent = practice.situation;
-            $('.practice-question', node).textContent = practice.question;
-            const answer = $('.practice-answer', node);
-            const label = document.createElement('strong');
-            label.textContent = 'Разбор: ';
-            answer.append(label, document.createTextNode(practice.answer));
-        }
 
         if (a.title.includes('Статья 65')) {
             const mapBtn = document.createElement('button');
@@ -607,9 +595,21 @@ function showToast(msg = "Ссылка скопирована!") {
     setTimeout(() => { toast.classList.remove("show"); }, 3000);
 }
 
+function revealNoteEditor(noteArea) {
+    if (!noteArea) return;
+    noteArea.focus({ preventScroll: true });
+    const bringIntoView = () => noteArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    requestAnimationFrame(bringIntoView);
+    setTimeout(bringIntoView, 350);
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', bringIntoView, { once: true });
+    }
+}
+
 function initDictionary() {
     let activeLetter = 'all';
-    const renderDictionary = () => {
+    let renderFrame = 0;
+    const renderDictionaryNow = () => {
         const list = $('#dictionaryList');
         if (!list) return;
         const query = ($('#dictionarySearch')?.value || '').trim().toLocaleLowerCase('ru');
@@ -624,16 +624,20 @@ function initDictionary() {
             div.className = 'dict-item';
             const name = document.createElement('span');
             name.className = 'dict-term';
-            name.textContent = term.charAt(0).toLocaleUpperCase('ru') + term.slice(1);
+            name.innerHTML = highlightPlainText(term.charAt(0).toLocaleUpperCase('ru') + term.slice(1), query);
             const definition = document.createElement('span');
             definition.className = 'dict-def';
-            definition.textContent = DICTIONARY[term];
+            definition.innerHTML = highlightPlainText(DICTIONARY[term], query);
             div.append(name, definition);
             list.appendChild(div);
         });
         if (!terms.length) list.innerHTML = '<div class="empty-state">Термины не найдены.</div>';
         const count = $('#dictionaryCount');
         if (count) count.textContent = `Найдено: ${terms.length}`;
+    };
+    const renderDictionary = () => {
+        cancelAnimationFrame(renderFrame);
+        renderFrame = requestAnimationFrame(renderDictionaryNow);
     };
 
     const alphabet = $('#dictionaryAlphabet');
@@ -652,7 +656,7 @@ function initDictionary() {
             alphabet.append(button);
         });
     }
-    $('#dictionarySearch')?.addEventListener('input', debounce(renderDictionary, 150));
+    $('#dictionarySearch')?.addEventListener('input', debounce(renderDictionary, 100));
     safeAddListener('#dictionaryBtn', 'click', () => {
         const dlg = $('#dictionaryDialog'); if (!dlg) return;
         renderDictionary();
