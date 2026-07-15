@@ -4,9 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build:qr": "esbuild scripts/qr-browser-entry.js --bundle --minify --format=iife --outfile=js/vendor/qrcode.js",
     "check:js": "node scripts/check-js.mjs",
     "test": "node --test tests/*.test.mjs",
     "check": "npm run check:js && npm test",
     "predeploy": "npm run check"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1",
+    "qrcode": "^1.5.4"
   }
 }

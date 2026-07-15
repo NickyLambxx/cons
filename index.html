@@ -29,7 +29,7 @@
   <meta name="twitter:image"       content="https://prep-mate.ru/og-image.png" />
 
   <link rel="manifest" href="./manifest.json" />
-  <link rel="stylesheet" href="./style.css?v=36" />
+  <link rel="stylesheet" href="./style.css?v=37" />
 
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" href="./logo.png" type="image/png">
@@ -99,6 +99,8 @@
         </div>
 
         <button id="notesBtn" class="btn btn-block">📝 Мои заметки <span id="notesCount" class="badge" hidden>0</span></button>
+
+        <button id="progressTransferBtn" class="btn btn-block">📱 Перенести прогресс</button>
 
         <button id="argumentBankBtn" class="btn btn-block">💬 Банк аргументов</button>
         <button id="findErrorBtn" class="btn btn-block">🔎 Исправь утверждение</button>
@@ -191,6 +193,7 @@
       <button class="sheet-tool-btn" id="mobileGame23">📋 Тренажёр к №23</button>
       <button class="sheet-tool-btn" id="mobileGame">🎮 Тренажёр полномочий</button>
       <button class="sheet-tool-btn" id="mobileNotesBtn">📝 Мои заметки</button>
+      <button class="sheet-tool-btn" id="mobileProgressTransfer">📱 Перенести прогресс</button>
       <button class="sheet-tool-btn" id="mobileArgumentBank">💬 Банк аргументов</button>
       <button class="sheet-tool-btn" id="mobileFindError">🔎 Исправь утверждение</button>
       <button class="sheet-tool-btn" id="mobileFontBtn">Aa Настройки текста</button>
@@ -429,6 +432,31 @@
     </div>
   </dialog>
 
+  <dialog id="progressTransferDialog" class="mini-dialog transfer-dialog">
+    <header class="dialog-header">
+      <div><h3>📱 Перенести прогресс</h3><p class="dialog-subtitle">Без регистрации и аккаунта</p></div>
+      <button id="closeProgressTransfer" class="btn btn-secondary">Закрыть</button>
+    </header>
+    <div class="progress-transfer-body">
+      <p>На втором устройстве откройте камеру и наведите её на QR-код. Переносятся прочитанные статьи, статусы, избранное и рекорд тренажёра №13.</p>
+      <canvas id="progressTransferQr" width="420" height="420" aria-label="QR-код для переноса прогресса"></canvas>
+      <p id="progressTransferStatus" class="transfer-status" aria-live="polite"></p>
+      <label class="transfer-link-label">Или отправьте ссылку
+        <input id="progressTransferLink" type="text" readonly aria-label="Ссылка для переноса прогресса">
+      </label>
+      <button id="copyProgressTransfer" class="btn btn-primary btn-block" type="button">Скопировать ссылку</button>
+      <p class="transfer-privacy">Заметки не включаются в QR: они могут содержать личный текст и сделать код слишком большим.</p>
+    </div>
+  </dialog>
+
+  <dialog id="transferImportDialog" class="mini-dialog">
+    <div class="confirm-dialog">
+      <h3>Перенести прогресс на это устройство?</h3>
+      <p id="transferImportSummary"></p>
+      <div class="confirm-actions"><button id="cancelTransferImport" class="btn btn-secondary" type="button">Отмена</button><button id="confirmTransferImport" class="btn btn-primary" type="button">Перенести</button></div>
+    </div>
+  </dialog>
+
   <dialog id="fontSettingsDialog" class="mini-dialog">
     <form method="dialog">
       <h3>Настройки текста</h3>
@@ -470,7 +498,7 @@
   <dialog id="gameDialog" class="game-dialog">
     <div class="game-header">
       <h3>Тренажёр полномочий (ЕГЭ №13)</h3>
-      <button id="closeGame" class="btn-ghost" aria-label="Закрыть тренажёр полномочий">✕</button>
+      <div style="display:flex;gap:8px;align-items:center"><button id="resetPowerGameSession" class="btn btn-secondary" title="Начать тренировку заново" aria-label="Начать тренировку заново">🔄</button><button id="closeGame" class="btn-ghost" aria-label="Закрыть тренажёр полномочий">✕</button></div>
     </div>
     <div id="gameStartScreen">
       <p>Вам будет дано полномочие. Ваша задача — определить, кто его осуществляет.</p>
@@ -545,15 +573,17 @@
     </article>
   </template>
 
-  <script src="js/core.js?v=36" defer></script>
-  <script src="js/study-data.js?v=36" defer></script>
-  <script src="js/study-tools.js?v=36" defer></script>
-  <script src="js/practice.js?v=36" defer></script>
-  <script src="js/training.js?v=36" defer></script>
-  <script src="js/reading.js?v=36" defer></script>
-  <script src="js/articles-ui.js?v=36" defer></script>
-  <script src="js/mobile-pwa.js?v=36" defer></script>
-  <script src="js/app.js?v=36" defer></script>
+  <script src="js/vendor/qrcode.js?v=37" defer></script>
+  <script src="js/core.js?v=37" defer></script>
+  <script src="js/study-data.js?v=37" defer></script>
+  <script src="js/study-tools.js?v=37" defer></script>
+  <script src="js/practice.js?v=37" defer></script>
+  <script src="js/training.js?v=37" defer></script>
+  <script src="js/reading.js?v=37" defer></script>
+  <script src="js/articles-ui.js?v=37" defer></script>
+  <script src="js/mobile-pwa.js?v=37" defer></script>
+  <script src="js/data-transfer.js?v=37" defer></script>
+  <script src="js/app.js?v=37" defer></script>
 </body>
 
 </html>

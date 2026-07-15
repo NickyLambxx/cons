@@ -1,5 +1,16 @@
 /* PrepMate: training.js */
-const game = { score: 0, currentQuestion: null, isBusy: false, nextTimer: 0 };
+const game = { score: 0, currentQuestion: null, currentQuestionIndex: -1, isBusy: false, nextTimer: 0 };
+
+function restorePowerGameSession() {
+    const session = getTrainingSession('powers');
+    if (!session || !Number.isInteger(session.questionIndex) || !POWERS[session.questionIndex]) return false;
+    game.score = Number.isInteger(session.score) ? Math.max(0, session.score) : 0;
+    updateGameScore();
+    $('#gameStartScreen').hidden = true;
+    $('#gamePlayScreen').hidden = false;
+    showPowerQuestion(session.questionIndex, false);
+    return true;
+}
 
 function initGame() {
     safeAddListener('#gameBtn', 'click', () => {
@@ -7,10 +18,14 @@ function initGame() {
         if (hs) hs.textContent = localStorage.getItem(LS.HIGHSCORE) || 0;
         const start = $('#gameStartScreen');
         const play = $('#gamePlayScreen');
-        if (start) start.hidden = false;
-        if (play) play.hidden = true;
+        const resumed = restorePowerGameSession();
+        if (!resumed) {
+            if (start) start.hidden = false;
+            if (play) play.hidden = true;
+        }
         const dlg = $('#gameDialog');
         if (dlg) dlg.showModal();
+        if (resumed) showToast('Тренировка продолжена с сохранённого вопроса');
     });
 
     safeAddListener('#closeGame', 'click', () => $('#gameDialog').close());
@@ -24,6 +39,7 @@ function initGame() {
         showToast('Рекорд сброшен');
     });
     safeAddListener('#startGameBtn', 'click', () => {
+        clearTrainingSession('powers');
         game.score = 0;
         updateGameScore();
         $('#gameStartScreen').hidden = true;
@@ -31,25 +47,44 @@ function initGame() {
         nextQuestion();
     });
 
-    $$('.ans-btn').forEach(btn => btn.addEventListener('click', (e) => checkAnswer(e.target)));
+    $$('.ans-btn').forEach(btn => btn.addEventListener('click', (e) => checkAnswer(e.currentTarget)));
     safeAddListener('#nextGameQuestionBtn', 'click', nextQuestion);
+    safeAddListener('#resetPowerGameSession', 'click', () => {
+        clearTrainingSession('powers');
+        game.score = 0;
+        updateGameScore();
+        nextQuestion();
+        showToast('Тренировка начата заново');
+    });
+    initTrainingKeyboardShortcuts();
 }
 
 function nextQuestion() {
     clearTimeout(game.nextTimer);
     game.isBusy = false;
     const randomIndex = Math.floor(Math.random() * POWERS.length);
-    game.currentQuestion = POWERS[randomIndex];
+    showPowerQuestion(randomIndex, true);
+}
+
+function showPowerQuestion(questionIndex, animate = true) {
+    game.currentQuestionIndex = questionIndex;
+    game.currentQuestion = POWERS[questionIndex];
     const qText = $('#questionText');
     if (qText) {
-        qText.style.opacity = 0;
-        setTimeout(() => { qText.textContent = game.currentQuestion.text; qText.style.opacity = 1; }, 200);
+        if (animate) {
+            qText.style.opacity = 0;
+            setTimeout(() => { qText.textContent = game.currentQuestion.text; qText.style.opacity = 1; }, 200);
+        } else {
+            qText.textContent = game.currentQuestion.text;
+            qText.style.opacity = 1;
+        }
     }
     $$('.ans-btn').forEach(btn => btn.className = 'ans-btn');
     const fb = $('#gameFeedback');
     if (fb) fb.textContent = "";
     const nextButton = $('#nextGameQuestionBtn');
     if (nextButton) nextButton.hidden = true;
+    saveTrainingSession('powers', { questionIndex: game.currentQuestionIndex, score: game.score });
 }
 
 function checkAnswer(btn) {
@@ -83,6 +118,38 @@ function checkAnswer(btn) {
 function updateGameScore() {
     const sc = $('#currentScore');
     if (sc) sc.textContent = game.score;
+}
+
+function setNumberedButtonContent(button, text, index) {
+    button.textContent = '';
+    const number = document.createElement('span');
+    number.className = 'answer-number';
+    number.setAttribute('aria-hidden', 'true');
+    number.textContent = String(index + 1);
+    button.append(number, document.createTextNode(text));
+}
+
+let trainingKeyboardInitialized = false;
+function initTrainingKeyboardShortcuts() {
+    if (trainingKeyboardInitialized) return;
+    trainingKeyboardInitialized = true;
+    $$('.ans-btn').forEach((button, index) => setNumberedButtonContent(button, button.textContent, index));
+    document.addEventListener('keydown', event => {
+        if (!/^[1-5]$/.test(event.key) || event.ctrlKey || event.altKey || event.metaKey) return;
+        if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) return;
+        const index = Number(event.key) - 1;
+        const openDialog = [
+            ['#gameDialog', '.ans-btn'],
+            ['#game23Dialog', '.task23-option'],
+            ['#mixedTrainingDialog', '.mixed-answer'],
+            ['#findErrorDialog', '.mixed-answer']
+        ].find(([dialogSelector]) => $(dialogSelector)?.open);
+        if (!openDialog) return;
+        const button = $$(openDialog[1], $(openDialog[0]))[index];
+        if (!button || button.disabled || button.hidden) return;
+        event.preventDefault();
+        button.click();
+    });
 }
 
 /* --- ЗАДАНИЕ №23 (РАСШИРЕННАЯ БАЗА) --- */
@@ -555,11 +622,23 @@ const TASKS_23 = [
 
 const game23 = { currentTaskIndex: 0, selectedIds: new Set(), initialized: false };
 
+function restoreTask23Session() {
+    const session = getTrainingSession('task23');
+    if (!session || !Array.isArray(session.order) || !Number.isInteger(session.index)) return false;
+    const tasksByQuestion = new Map(TASKS_23.map(task => [task.question, task]));
+    const restored = session.order.map(question => tasksByQuestion.get(question)).filter(Boolean);
+    if (restored.length !== TASKS_23.length || !restored[session.index]) return false;
+    TASKS_23.splice(0, TASKS_23.length, ...restored);
+    game23.currentTaskIndex = session.index;
+    game23.initialized = true;
+    return true;
+}
+
 function initGame23() {
     safeAddListener('#game23Btn', 'click', () => {
         // Инициализировать только при первом открытии
         if (!game23.initialized) {
-            TASKS_23.sort(() => Math.random() - 0.5);
+            if (!restoreTask23Session()) TASKS_23.sort(() => Math.random() - 0.5);
             game23.initialized = true;
         }
         renderTask23();
@@ -568,6 +647,7 @@ function initGame23() {
     safeAddListener('#closeGame23', 'click', () => $('#game23Dialog').close());
 
     safeAddListener('#resetGame23', 'click', () => {
+        clearTrainingSession('task23');
         game23.currentTaskIndex = 0;
         game23.selectedIds = new Set();
         TASKS_23.sort(() => Math.random() - 0.5);
@@ -592,11 +672,11 @@ function renderTask23() {
     // Перемешиваем варианты ответов
     const shuffled = [...task.options].sort(() => Math.random() - 0.5);
 
-    shuffled.forEach(opt => {
+    shuffled.forEach((opt, index) => {
         const div = document.createElement('button');
         div.type = 'button';
         div.className = 'task23-option';
-        div.textContent = opt.text;
+        setNumberedButtonContent(div, opt.text, index);
         div.dataset.id = opt.id;
         div.addEventListener('click', () => toggleOption23(div, opt.id));
         container.appendChild(div);
@@ -606,6 +686,10 @@ function renderTask23() {
     $('#checkTask23Btn').style.display = 'inline-block';
     $('#nextTask23Btn').style.display = 'none';
     $('#task23Feedback').textContent = '';
+    saveTrainingSession('task23', {
+        order: TASKS_23.map(item => item.question),
+        index: game23.currentTaskIndex
+    });
 }
 
 function toggleOption23(el, id) {
@@ -662,6 +746,7 @@ const flashcards = {
     index: 0,
     deck: 'all'
 };
+const flashcardSwipe = { startX: 0, startY: 0, tracking: false, suppressClick: false, moving: false };
 
 function getFlashcardDeck(deck = 'all') {
     const patterns = {
@@ -707,6 +792,23 @@ function resetFlashcardScroll() {
     requestAnimationFrame(updateFlashcardScrollIndicator);
 }
 
+function moveFlashcard(direction) {
+    if (flashcardSwipe.moving) return;
+    const nextIndex = flashcards.index + direction;
+    if (nextIndex < 0 || nextIndex >= flashcards.terms.length) return;
+    const card = $('#flashcard');
+    if (!card) return;
+    flashcardSwipe.moving = true;
+    card.classList.remove('flipped');
+    card.classList.add(direction > 0 ? 'swipe-next' : 'swipe-prev');
+    setTimeout(() => {
+        card.classList.remove('swipe-next', 'swipe-prev');
+        flashcards.index = nextIndex;
+        renderFlashcard();
+        flashcardSwipe.moving = false;
+    }, 220);
+}
+
 function initFlashcards() {
     safeAddListener('#flashcardsBtn', 'click', () => {
         // Инициализировать только если пусто (первое открытие)
@@ -725,27 +827,32 @@ function initFlashcards() {
     safeAddListener('#flashcardDeck', 'change', resetFlashcardDeck);
     $('.flashcard .back')?.addEventListener('scroll', updateFlashcardScrollIndicator, { passive: true });
 
-    safeAddListener('#fcNext', 'click', () => {
-        if (flashcards.index < flashcards.terms.length - 1) {
-            $('#flashcard').classList.remove('flipped');
-            setTimeout(() => {
-                flashcards.index++;
-                renderFlashcard();
-            }, 300);
-        }
-    });
+    safeAddListener('#fcNext', 'click', () => moveFlashcard(1));
+    safeAddListener('#fcPrev', 'click', () => moveFlashcard(-1));
 
-    safeAddListener('#fcPrev', 'click', () => {
-        if (flashcards.index > 0) {
-            $('#flashcard').classList.remove('flipped');
-            setTimeout(() => {
-                flashcards.index--;
-                renderFlashcard();
-            }, 300);
-        }
+    const card = $('#flashcard');
+    card?.addEventListener('pointerdown', event => {
+        if (event.pointerType === 'mouse' && event.button !== 0) return;
+        flashcardSwipe.startX = event.clientX;
+        flashcardSwipe.startY = event.clientY;
+        flashcardSwipe.tracking = true;
     });
+    card?.addEventListener('pointerup', event => {
+        if (!flashcardSwipe.tracking) return;
+        flashcardSwipe.tracking = false;
+        const deltaX = event.clientX - flashcardSwipe.startX;
+        const deltaY = event.clientY - flashcardSwipe.startY;
+        if (Math.abs(deltaX) < 48 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.2) return;
+        flashcardSwipe.suppressClick = true;
+        moveFlashcard(deltaX < 0 ? 1 : -1);
+    });
+    card?.addEventListener('pointercancel', () => { flashcardSwipe.tracking = false; });
 
     safeAddListener('#flashcard', 'click', () => {
+        if (flashcardSwipe.suppressClick) {
+            flashcardSwipe.suppressClick = false;
+            return;
+        }
         const card = $('#flashcard');
         card.classList.toggle('flipped');
         if (card.classList.contains('flipped')) resetFlashcardScroll();
@@ -790,6 +897,19 @@ function createMixedQuestions() {
     return shuffle([...terms, ...powers, ...constitution]);
 }
 
+function restoreMixedTrainingSession() {
+    const session = getTrainingSession('mixed');
+    const validQuestions = Array.isArray(session?.questions)
+        && session.questions.length > 0
+        && session.questions.every(item => item && typeof item.question === 'string' && Array.isArray(item.answers) && typeof item.correct === 'string');
+    if (!validQuestions || !Number.isInteger(session.index) || !session.questions[session.index]) return false;
+    mixedTraining.questions = session.questions;
+    mixedTraining.index = session.index;
+    mixedTraining.score = Number.isInteger(session.score) ? Math.max(0, session.score) : 0;
+    mixedTraining.transitioning = false;
+    return true;
+}
+
 function renderMixedQuestion() {
     const item = mixedTraining.questions[mixedTraining.index];
     const answers = $('#mixedAnswers');
@@ -803,13 +923,19 @@ function renderMixedQuestion() {
     $('#mixedCounter').textContent = `${mixedTraining.index + 1} / ${mixedTraining.questions.length}`;
     $('#mixedQuestion').textContent = item.question;
     answers.innerHTML = '';
-    item.answers.forEach(answer => {
+    item.answers.forEach((answer, index) => {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'mixed-answer';
-        button.textContent = answer;
+        button.dataset.answer = answer;
+        setNumberedButtonContent(button, answer, index);
         button.addEventListener('click', () => checkMixedAnswer(button, answer));
         answers.append(button);
+    });
+    saveTrainingSession('mixed', {
+        questions: mixedTraining.questions,
+        index: mixedTraining.index,
+        score: mixedTraining.score
     });
 }
 
@@ -822,7 +948,7 @@ function checkMixedAnswer(button, answer) {
     button.classList.add(correct ? 'correct' : 'wrong');
     $$('#mixedAnswers .mixed-answer').forEach(option => {
         option.disabled = true;
-        if (option.textContent === item.correct) option.classList.add('correct');
+        if (option.dataset.answer === item.correct) option.classList.add('correct');
     });
     const feedback = $('#mixedFeedback');
     feedback.textContent = correct ? 'Верно!' : `Правильный ответ: ${item.correct}`;
@@ -835,12 +961,16 @@ function checkMixedAnswer(button, answer) {
 
 function initMixedTraining() {
     safeAddListener('#mixedTrainingBtn', 'click', () => {
-        mixedTraining.questions = createMixedQuestions();
-        mixedTraining.index = 0;
-        mixedTraining.score = 0;
-        mixedTraining.transitioning = false;
+        const resumed = restoreMixedTrainingSession();
+        if (!resumed) {
+            mixedTraining.questions = createMixedQuestions();
+            mixedTraining.index = 0;
+            mixedTraining.score = 0;
+            mixedTraining.transitioning = false;
+        }
         renderMixedQuestion();
         $('#mixedTrainingDialog').showModal();
+        if (resumed) showToast('Смешанная тренировка продолжена');
     });
     safeAddListener('#closeMixedTraining', 'click', () => $('#mixedTrainingDialog').close());
     safeAddListener('#mixedNext', 'click', () => {
@@ -849,6 +979,7 @@ function initMixedTraining() {
         mixedTraining.transitioning = true;
         next.disabled = true;
         if (mixedTraining.index === -1) {
+            clearTrainingSession('mixed');
             mixedTraining.questions = createMixedQuestions();
             mixedTraining.index = 0;
             mixedTraining.score = 0;
@@ -870,6 +1001,7 @@ function initMixedTraining() {
         next.textContent = 'Начать заново';
         next.hidden = false;
         mixedTraining.index = -1;
+        clearTrainingSession('mixed');
         requestAnimationFrame(() => { mixedTraining.transitioning = false; next.disabled = false; });
     });
 }

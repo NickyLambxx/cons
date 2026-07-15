@@ -133,6 +133,7 @@ function openDialogById(id) {
 }
 
 function boot() {
+    migrateStoredData();
     applyTheme(true);
     loadFavorites();
     loadNotes();
@@ -146,6 +147,7 @@ function boot() {
     initGame23(); 
     initFlashcards(); 
     initMixedTraining();
+    initProgressTransfer();
     initDictionary(); 
     initMap(); 
     initMobileNav(); 

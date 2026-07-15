@@ -129,9 +129,15 @@ function renderFindErrorTask() {
     const answers = $('#findErrorAnswers'); answers.innerHTML = '';
     task.options.forEach((option, index) => {
         const button = document.createElement('button');
-        button.type = 'button'; button.className = 'mixed-answer'; button.textContent = option;
+        button.type = 'button'; button.className = 'mixed-answer';
+        setNumberedButtonContent(button, option, index);
         button.addEventListener('click', () => checkFindErrorAnswer(button, index));
         answers.append(button);
+    });
+    saveTrainingSession('findError', {
+        tasks: findErrorState.tasks,
+        index: findErrorState.index,
+        score: findErrorState.score
     });
 }
 
@@ -154,6 +160,7 @@ function checkFindErrorAnswer(button, index) {
 }
 
 function resetFindErrorTraining() {
+    clearTrainingSession('findError');
     findErrorState.tasks = shuffle(FIND_ERROR_TASKS).map(task => {
         const correctText = task.options[task.correct];
         const options = shuffle(task.options);
@@ -164,7 +171,22 @@ function resetFindErrorTraining() {
 }
 
 function startFindErrorTraining() {
-    resetFindErrorTraining();
+    const session = getTrainingSession('findError');
+    const valid = Array.isArray(session?.tasks)
+        && session.tasks.length > 0
+        && Number.isInteger(session.index)
+        && session.tasks[session.index]
+        && session.tasks.every(task => task && typeof task.statement === 'string' && Array.isArray(task.options) && Number.isInteger(task.correct));
+    if (valid) {
+        findErrorState.tasks = session.tasks;
+        findErrorState.index = session.index;
+        findErrorState.score = Number.isInteger(session.score) ? Math.max(0, session.score) : 0;
+        findErrorState.completed = false;
+        renderFindErrorTask();
+        showToast('Тренировка продолжена с сохранённого вопроса');
+    } else {
+        resetFindErrorTraining();
+    }
     const dialog = $('#findErrorDialog');
     if (!dialog.open) dialog.showModal();
 }
@@ -187,6 +209,7 @@ function initPracticeTools() {
         $('#findErrorAnswers').innerHTML = '';
         $('#findErrorFeedback').textContent = findErrorState.score >= Math.ceil(findErrorState.tasks.length * 0.8) ? 'Отлично: формулировки усвоены точно.' : 'Повторите статьи, в которых были ошибки.';
         findErrorState.completed = true;
+        clearTrainingSession('findError');
         $('#findErrorNext').textContent = 'Начать заново';
         $('#findErrorNext').hidden = false;
     });
