@@ -59,9 +59,9 @@ test('таймер не содержит устаревшую дату экза�
 
 test('№23 использует опубликованные задания ФИПИ с тремя развёрнутыми объяснениями', () => {
   const tasks = officialData.OFFICIAL_TASKS_23;
-  assert.ok(tasks.length >= 3);
+  assert.equal(tasks.length, 5);
   for (const task of tasks) {
-    assert.match(task.source, /^https:\/\/doc\.fipi\.ru\//);
+    assert.match(task.source, /^https:\/\/(?:doc\.fipi\.ru|pro-schools\.ru\/fipi\/ege\/variant\/2025)\//);
     assert.equal(task.points.length, 3, task.id);
     assert.ok(task.points.every(point => point.length > 35), task.id);
   }
@@ -76,15 +76,17 @@ test('словарь не содержит устаревшее определе
 
 test('№13 соответствует формату пяти позиций и официальным ключам', () => {
   const tasks = officialData.OFFICIAL_TASKS_13;
-  assert.ok(tasks.length >= 3);
+  assert.equal(tasks.length, 5);
   for (const task of tasks) {
-    assert.match(task.source, /^https:\/\/doc\.fipi\.ru\//);
+    assert.match(task.source, /^https:\/\/(?:doc\.fipi\.ru|pro-schools\.ru\/fipi\/ege\/variant\/2025)\//);
     assert.equal(task.prompts.length, 5, task.id);
     assert.match(task.answer, /^[1-3]{5}$/, task.id);
     assert.equal(new Set(task.prompts).size, 5, task.id);
   }
   assert.equal(tasks.find(task => task.id === '2027-demo').answer, '21231');
   assert.equal(tasks.find(task => task.id === '2026-demo').answer, '21312');
+  assert.equal(tasks.find(task => task.id === '2025-demo').answer, '21112');
+  assert.equal(tasks.find(task => task.id === '2025-open').answer, '12122');
   assert.doesNotMatch(studyDataSource, /const POWERS =/);
 });
 
@@ -121,5 +123,5 @@ test('динамические кнопки оглавления и карточ
 });
 
 test('кэш приложения обновлён после изменения учебных данных', () => {
-  assert.match(read('sw.js'), /prep-mate-v40/);
+  assert.match(read('sw.js'), /prep-mate-v42/);
 });

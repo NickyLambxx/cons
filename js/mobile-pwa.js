@@ -6,6 +6,40 @@ function closeMobileExtras() {
     if (overlay) overlay.hidden = true;
 }
 
+function getMobileSearchSnippet(article, query) {
+    const titleMatches = article.title.toLocaleLowerCase('ru').includes(query.toLocaleLowerCase('ru'));
+    const sources = [
+        { label: 'Текст статьи', html: article.bodyHTML },
+        ...(state.searchIncludeExplanations ? [{ label: 'Пояснение', html: article.explainHTML }] : [])
+    ];
+    for (const source of sources) {
+        const template = document.createElement('template');
+        template.innerHTML = source.html || '';
+        const plain = (template.content.textContent || '').replace(/\s+/g, ' ').trim();
+        const position = plain.toLocaleLowerCase('ru').indexOf(query.toLocaleLowerCase('ru'));
+        if (position >= 0) {
+            const start = Math.max(0, position - 45);
+            const end = Math.min(plain.length, position + query.length + 75);
+            return `<span class="mobile-result-source">${source.label}:</span> ${start ? '…' : ''}${highlightPlainText(plain.slice(start, end), query)}${end < plain.length ? '…' : ''}`;
+        }
+        if (titleMatches && source.label === 'Текст статьи') {
+            return `<span class="mobile-result-source">${source.label}:</span> ${escapeHTML(plain.slice(0, 115))}${plain.length > 115 ? '…' : ''}`;
+        }
+    }
+    return 'Совпадение в названии статьи';
+}
+
+function showAllMobileSearchResults(query) {
+    saveSearchQuery(query);
+    $('#mobileSearchOverlay').hidden = true;
+    $$('.nav-item').forEach(button => button.classList.remove('active'));
+    filterArticles(query);
+    requestAnimationFrame(() => {
+        const firstResult = $('#content .card');
+        if (firstResult) scrollSearchMatchToTop(firstResult, 'auto');
+    });
+}
+
 function initMobileNav() {
     initPinnedMobileTools();
     safeAddListener('#navHome', 'click', () => {
@@ -86,10 +120,14 @@ function initMobileNav() {
             const q = e.target.value.trim();
             const container = $('#mobileSearchResults');
             if (!q) { showMobileSearchHistory(); return; }
-            const results = getArticleSearchResults(q, state.articles).slice(0, 15);
+            const allResults = getArticleSearchResults(q, state.articles);
+            const results = allResults.slice(0, 15);
             container.innerHTML = results.length
-                ? results.map(a => `<div class="mobile-search-result-item" data-id="${escapeHTML(a.id)}" data-title="${escapeHTML(a.title)}"><strong>${highlightPlainText(a.title, q)}</strong><span class="mobile-result-chapter">${highlightPlainText(a.chapterTitle, q)}</span></div>`).join('')
+                ? `<div class="mobile-search-count" role="status">Найдено статей: ${allResults.length}${allResults.length > 15 ? ' · показаны первые 15' : ''}</div>`
+                    + results.map(a => `<button type="button" class="mobile-search-result-item" data-id="${escapeHTML(a.id)}"><strong>${highlightPlainText(a.title, q)}</strong><span class="mobile-result-chapter">${highlightPlainText(a.chapterTitle, q)}</span><span class="mobile-result-snippet">${getMobileSearchSnippet(a, q)}</span></button>`).join('')
+                    + (allResults.length > 15 ? `<button type="button" class="mobile-search-show-all">Показать все ${allResults.length} статей</button>` : '')
                 : '<div style="padding:20px;text-align:center;color:var(--muted)">Ничего не найдено</div>';
+            container.querySelector('.mobile-search-show-all')?.addEventListener('click', () => showAllMobileSearchResults(q));
             container.querySelectorAll('.mobile-search-result-item').forEach(el => {
                 el.addEventListener('click', () => {
                     const selectedArticle = state.articles.find(article => article.id === el.dataset.id);
@@ -117,14 +155,7 @@ function initMobileNav() {
             if (e.key === 'Enter') {
                 const q = mobileInput.value.trim();
                 if (q) {
-                    saveSearchQuery(q);
-                    $('#mobileSearchOverlay').hidden = true;
-                    $$('.nav-item').forEach(b => b.classList.remove('active'));
-                    filterArticles(q);
-                    requestAnimationFrame(() => {
-                        const firstResult = $('#content .card');
-                        if (firstResult) scrollSearchMatchToTop(firstResult, 'auto');
-                    });
+                    showAllMobileSearchResults(q);
                 }
             }
         });
@@ -182,10 +213,10 @@ function showMobileSearchHistory() {
     container.innerHTML =
         '<div style="padding:6px 4px 8px;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px">Недавние запросы</div>' +
         state.searchHistory.map(q =>
-            `<div class="mobile-search-result-item mobile-history-item" data-q="${q}" style="display:flex;align-items:center;gap:10px">
+            `<button type="button" class="mobile-search-result-item mobile-history-item" data-q="${escapeHTML(q)}" style="display:flex;align-items:center;gap:10px">
                 <span style="font-size:16px;opacity:0.5">🕐</span>
-                <span>${q}</span>
-            </div>`
+                <span>${escapeHTML(q)}</span>
+            </button>`
         ).join('');
     container.querySelectorAll('.mobile-history-item').forEach(el => {
         el.addEventListener('click', () => {

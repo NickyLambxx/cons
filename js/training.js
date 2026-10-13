@@ -139,14 +139,21 @@ function initFlashcards() {
         }
         const card = $('#flashcard');
         card.classList.toggle('flipped');
+        card.setAttribute('aria-pressed', String(card.classList.contains('flipped')));
         if (card.classList.contains('flipped')) resetFlashcardScroll();
         else updateFlashcardScrollIndicator();
+    });
+    safeAddListener('#flashcard', 'keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        event.currentTarget.click();
     });
 }
 
 function renderFlashcard() {
     if (flashcards.terms.length === 0) return;
     const term = flashcards.terms[flashcards.index];
+    $('#flashcard')?.setAttribute('aria-pressed', 'false');
     
     $('#fcTerm').textContent = term.charAt(0).toUpperCase() + term.slice(1);
     $('#fcDef').textContent = DICTIONARY[term];

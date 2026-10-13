@@ -29,7 +29,7 @@
   <meta name="twitter:image"       content="https://prep-mate.ru/og-image.png" />
 
   <link rel="manifest" href="./manifest.json" />
-  <link rel="stylesheet" href="./style.css?v=40" />
+  <link rel="stylesheet" href="./style.css?v=42" />
 
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" href="./logo.png" type="image/png">
@@ -182,8 +182,8 @@
   <nav class="mobile-nav">
     <button class="nav-item" id="navHome">🏠<br>Главная</button>
     <button class="nav-item" id="navSearch">🔍<br>Поиск</button>
-    <button class="nav-item" id="navFav">⭐<br>Избранное</button>
-    <button class="nav-item" id="navTools">🛠️<br>Инструменты</button>
+    <button class="nav-item" id="navFav" aria-label="Избранное">⭐<br>Избран.</button>
+    <button class="nav-item" id="navTools" aria-label="Инструменты">🛠️<br>Сервисы</button>
     <button class="nav-item" id="navMenu">☰<br>Меню</button>
   </nav>
 
@@ -313,7 +313,7 @@
         <select id="flashcardDeck"><option value="all">Все темы</option><option value="foundations">Основы государства</option><option value="rights">Права и свободы</option><option value="government">Органы власти</option><option value="federation">Федеративное устройство</option><option value="justice">Право и суд</option></select>
       </label>
       <div class="flashcard-container">
-        <div id="flashcard" class="flashcard">
+        <div id="flashcard" class="flashcard" role="button" tabindex="0" aria-label="Перевернуть карточку" aria-pressed="false">
           <div class="front">
             <div id="fcTerm">Термин</div>
             <div class="hint">Нажмите, чтобы перевернуть</div>
@@ -507,7 +507,7 @@
 
   <dialog id="gameDialog" class="game-dialog">
     <div class="game-header">
-      <h3>ЕГЭ №13 — соответствие полномочий</h3>
+      <h3>ЕГЭ №13 — соответствие</h3>
       <div style="display:flex;gap:8px;align-items:center"><button id="resetPowerGameSession" class="btn btn-secondary" title="Начать тренировку заново" aria-label="Начать тренировку заново">🔄</button><button id="closeGame" class="btn-ghost" aria-label="Закрыть тренажёр полномочий">✕</button></div>
     </div>
     <div id="gameStartScreen">
@@ -578,18 +578,18 @@
     </article>
   </template>
 
-  <script src="js/vendor/qrcode.js?v=40" defer></script>
-  <script src="js/core.js?v=40" defer></script>
-  <script src="js/study-data.js?v=40" defer></script>
-  <script src="js/study-tools.js?v=40" defer></script>
-  <script src="js/practice.js?v=40" defer></script>
-  <script src="js/training.js?v=40" defer></script>
-  <script src="js/official-exam.js?v=40" defer></script>
-  <script src="js/reading.js?v=40" defer></script>
-  <script src="js/articles-ui.js?v=40" defer></script>
-  <script src="js/mobile-pwa.js?v=40" defer></script>
-  <script src="js/data-transfer.js?v=40" defer></script>
-  <script src="js/app.js?v=40" defer></script>
+  <script src="js/vendor/qrcode.js?v=42" defer></script>
+  <script src="js/core.js?v=42" defer></script>
+  <script src="js/study-data.js?v=42" defer></script>
+  <script src="js/study-tools.js?v=42" defer></script>
+  <script src="js/practice.js?v=42" defer></script>
+  <script src="js/training.js?v=42" defer></script>
+  <script src="js/official-exam.js?v=42" defer></script>
+  <script src="js/reading.js?v=42" defer></script>
+  <script src="js/articles-ui.js?v=42" defer></script>
+  <script src="js/mobile-pwa.js?v=42" defer></script>
+  <script src="js/data-transfer.js?v=42" defer></script>
+  <script src="js/app.js?v=42" defer></script>
 </body>
 
 </html>

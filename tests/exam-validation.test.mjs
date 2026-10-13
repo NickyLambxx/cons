@@ -8,6 +8,8 @@ const official = vm.runInNewContext(`${read('js/official-exam.js')}; ({ OFFICIAL
 const authorPractice = vm.runInNewContext(`${read('js/practice.js')}; ({ FIND_ERROR_TASKS })`);
 
 test('каждая позиция №13 имеет ровно один допустимый ключ, а в №23 — три ориентира', () => {
+  assert.equal(official.OFFICIAL_TASKS_13.length, 5);
+  assert.equal(official.OFFICIAL_TASKS_23.length, 5);
   const ids = new Set();
   for (const task of official.OFFICIAL_TASKS_13) {
     assert.ok(!ids.has(task.id), `Дубль №13: ${task.id}`);
