@@ -7,7 +7,9 @@ const read = (path) => readFileSync(path, 'utf8');
 const scriptFiles = ['core.js', 'study-data.js', 'practice.js', 'training.js', 'reading.js', 'articles-ui.js', 'mobile-pwa.js', 'app.js'];
 const appSource = scriptFiles.map((file) => read(`js/${file}`)).join('\n');
 const studyDataSource = read('js/study-data.js');
-const studyData = vm.runInNewContext(`${studyDataSource}; ({ DICTIONARY, POWERS, FLASHCARD_TERMS })`);
+const studyData = vm.runInNewContext(`${studyDataSource}; ({ DICTIONARY, FLASHCARD_TERMS })`);
+const officialExamSource = read('js/official-exam.js');
+const officialData = vm.runInNewContext(`${officialExamSource}; ({ OFFICIAL_TASKS_13, OFFICIAL_TASKS_23 })`);
 const chaptersSource = Array.from({ length: 9 }, (_, index) => read(`chapters/chapter${index + 1}.html`)).join('\n');
 
 function extractLiteral(name, source = appSource) {
@@ -55,29 +57,15 @@ test('таймер не содержит устаревшую дату экза�
   assert.doesNotMatch(appSource, /2026-06-11|ЕГЭ уже идет/);
 });
 
-test('база задания 23 структурно корректна и учитывает поправки 2020 года', () => {
-  const tasks = extractLiteral('TASKS_23');
-  assert.equal(tasks.length, 39);
+test('№23 использует опубликованные задания ФИПИ с тремя развёрнутыми объяснениями', () => {
+  const tasks = officialData.OFFICIAL_TASKS_23;
+  assert.ok(tasks.length >= 3);
   for (const task of tasks) {
-    assert.ok(task.question.length > 3);
-    assert.equal(new Set(task.options.map(({ id }) => id)).size, task.options.length);
-    assert.ok(task.options.filter(({ correct }) => correct).length >= 3, task.question);
+    assert.match(task.source, /^https:\/\/doc\.fipi\.ru\//);
+    assert.equal(task.points.length, 3, task.id);
+    assert.ok(task.points.every(point => point.length > 35), task.id);
   }
-
-  const federationCouncil = tasks.find(({ question }) => question === 'Полномочия Совета Федерации');
-  assert.ok(federationCouncil.options.some(({ text, correct }) => correct && text.includes('консультаций по кандидатуре Генерального прокурора')));
-
-  const dissolution = tasks.find(({ question }) => question.startsWith('Случаи, когда Государственная Дума'));
-  assert.ok(dissolution.options.some(({ text, correct }) => correct && text.includes('по основаниям статьи 117')));
-
-  const secular = tasks.find(({ question }) => question.includes('светское государство'));
-  assert.equal(secular.options.filter(({ correct }) => correct).length, 3);
-
-  const presumption = tasks.find(({ question }) => question.includes('презумпции невиновности'));
-  assert.ok(presumption.options.some(({ text, correct }) => !correct && text.includes('свидетельствовать против самого себя')));
-
-  assert.ok(!tasks.some(({ question }) => question === 'Социальные права граждан РФ'));
-  assert.doesNotMatch(JSON.stringify(tasks), /Высшие органы власти являются выборными и сменяемыми|Неприкосновенность жилища без судебного решения/);
+  assert.doesNotMatch(appSource, /const TASKS_23 =/);
 });
 
 test('словарь не содержит устаревшее определение прожиточного минимума', () => {
@@ -86,14 +74,18 @@ test('словарь не содержит устаревшее определе
   assert.doesNotMatch(dictionary['прожиточный минимум'], /стоимостная оценка потребительской корзины/i);
 });
 
-test('тренажёр полномочий содержит только уникальные актуальные формулировки и Конституционный Суд', () => {
-  const powers = studyData.POWERS;
-  assert.equal(powers.length, 99);
-  assert.equal(new Set(powers.map(({ text }) => text)).size, powers.length);
-  assert.deepEqual([...new Set(powers.map(({ target }) => target))].sort(), ['gd', 'gov', 'ks', 'president', 'sf']);
-  assert.ok(powers.filter(({ target }) => target === 'ks').length >= 8);
-  assert.doesNotMatch(JSON.stringify(powers), /с согласия ГД|Представление Совету Федерации кандидатуры Генпрокурора|по представлению Президента\)"?,?"?target":"sf/);
-  assert.match(read('index.html'), /data-target="ks">Конституционный Суд РФ/);
+test('№13 соответствует формату пяти позиций и официальным ключам', () => {
+  const tasks = officialData.OFFICIAL_TASKS_13;
+  assert.ok(tasks.length >= 3);
+  for (const task of tasks) {
+    assert.match(task.source, /^https:\/\/doc\.fipi\.ru\//);
+    assert.equal(task.prompts.length, 5, task.id);
+    assert.match(task.answer, /^[1-3]{5}$/, task.id);
+    assert.equal(new Set(task.prompts).size, 5, task.id);
+  }
+  assert.equal(tasks.find(task => task.id === '2027-demo').answer, '21231');
+  assert.equal(tasks.find(task => task.id === '2026-demo').answer, '21312');
+  assert.doesNotMatch(studyDataSource, /const POWERS =/);
 });
 
 test('словарь и карточки используют точные определения без служебных дублей', () => {
@@ -121,7 +113,7 @@ test('проверенные устаревшие цифры и формулир
 test('динамические кнопки оглавления и карточек доступны с клавиатуры', () => {
   const index = read('index.html');
   assert.match(appSource, /document\.createElement\('button'\)/);
-  assert.match(read('js/training.js'), /const div = document\.createElement\('button'\)/);
+  assert.match(read('js/official-exam.js'), /document\.createElement\('select'\)/);
   assert.match(appSource, /aria-expanded/);
   for (const label of ['Добавить заметку', 'Создать цитату', 'Добавить в избранное', 'Скопировать ссылку на статью']) {
     assert.match(index, new RegExp(`aria-label="${label}"`));
@@ -129,5 +121,5 @@ test('динамические кнопки оглавления и карточ
 });
 
 test('кэш приложения обновлён после изменения учебных данных', () => {
-  assert.match(read('sw.js'), /prep-mate-v37/);
+  assert.match(read('sw.js'), /prep-mate-v40/);
 });

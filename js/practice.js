@@ -157,6 +157,7 @@ function checkFindErrorAnswer(button, index) {
     feedback.style.color = correct ? '#22c55e' : '#ef4444';
     const next = $('#findErrorNext'); next.hidden = false;
     next.textContent = 'Следующее утверждение';
+    if (typeof revealTrainerFeedback === 'function') revealTrainerFeedback('#findErrorFeedback');
 }
 
 function resetFindErrorTraining() {
@@ -209,6 +210,7 @@ function initPracticeTools() {
         $('#findErrorAnswers').innerHTML = '';
         $('#findErrorFeedback').textContent = findErrorState.score >= Math.ceil(findErrorState.tasks.length * 0.8) ? 'Отлично: формулировки усвоены точно.' : 'Повторите статьи, в которых были ошибки.';
         findErrorState.completed = true;
+        recordTrainingResult('findError', findErrorState.score, findErrorState.tasks.length);
         clearTrainingSession('findError');
         $('#findErrorNext').textContent = 'Начать заново';
         $('#findErrorNext').hidden = false;

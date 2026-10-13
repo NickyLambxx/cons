@@ -7,6 +7,7 @@ function closeMobileExtras() {
 }
 
 function initMobileNav() {
+    initPinnedMobileTools();
     safeAddListener('#navHome', 'click', () => {
         closeMobileExtras();
         if (state.showFavoritesOnly) setFavFilterMode();
@@ -128,6 +129,47 @@ function initMobileNav() {
             }
         });
     }
+}
+
+function initPinnedMobileTools() {
+    const container = $('#mobileToolsSheet .mobile-sheet-body');
+    if (!container) return;
+    let pinned = [];
+    try { pinned = JSON.parse(localStorage.getItem(LS.MOBILE_PINNED) || '[]'); } catch (_) { pinned = []; }
+    if (!Array.isArray(pinned)) pinned = [];
+    [...container.querySelectorAll('.sheet-tool-btn')].forEach((button, index) => {
+        const row = document.createElement('div');
+        row.className = 'mobile-tool-row';
+        row.dataset.order = String(index);
+        const pin = document.createElement('button');
+        pin.type = 'button';
+        pin.className = 'mobile-tool-pin';
+        pin.textContent = '☆';
+        pin.title = 'Закрепить инструмент наверху';
+        pin.setAttribute('aria-label', `Закрепить ${button.textContent.trim()}`);
+        pin.addEventListener('click', () => {
+            pinned = pinned.includes(button.id) ? pinned.filter(id => id !== button.id) : [...pinned, button.id];
+            localStorage.setItem(LS.MOBILE_PINNED, JSON.stringify(pinned));
+            reorder();
+        });
+        button.before(row);
+        row.append(button, pin);
+    });
+    function reorder() {
+        [...container.querySelectorAll('.mobile-tool-row')].sort((a, b) => {
+            const first = pinned.includes(a.querySelector('.sheet-tool-btn').id) ? 0 : 1;
+            const second = pinned.includes(b.querySelector('.sheet-tool-btn').id) ? 0 : 1;
+            return first - second || Number(a.dataset.order) - Number(b.dataset.order);
+        }).forEach(row => {
+            const button = row.querySelector('.sheet-tool-btn');
+            const pin = row.querySelector('.mobile-tool-pin');
+            const selected = pinned.includes(button.id);
+            pin.textContent = selected ? '★' : '☆';
+            pin.setAttribute('aria-pressed', String(selected));
+            container.append(row);
+        });
+    }
+    reorder();
 }
 
 function showMobileSearchHistory() {

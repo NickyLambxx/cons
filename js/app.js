@@ -143,8 +143,8 @@ function boot() {
     initFontSettings(); 
     initSearchHistory(); 
     initTimer(); 
-    initGame(); 
-    initGame23(); 
+    initOfficialExam();
+    initTrainingKeyboardShortcuts();
     initFlashcards(); 
     initMixedTraining();
     initProgressTransfer();

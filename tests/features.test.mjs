@@ -52,7 +52,9 @@ test('задание 13 подтверждает сброс и оставляе�
   for (const id of ['resetHighscoreDialog', 'cancelResetHighscore', 'confirmResetHighscore', 'nextGameQuestionBtn']) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
-  assert.match(training, /if \(isCorrect\)[\s\S]+setTimeout\(nextQuestion, 1500\)[\s\S]+nextButton\.hidden = false/);
+  const official = read('js/official-exam.js');
+  assert.match(official, /select\.disabled = true/);
+  assert.match(official, /nextGameQuestionBtn'\)\.hidden = false/);
 });
 
 test('банк аргументов и тренажёр ошибок доступны на компьютере и телефоне', () => {

@@ -29,7 +29,7 @@
   <meta name="twitter:image"       content="https://prep-mate.ru/og-image.png" />
 
   <link rel="manifest" href="./manifest.json" />
-  <link rel="stylesheet" href="./style.css?v=37" />
+  <link rel="stylesheet" href="./style.css?v=40" />
 
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" href="./logo.png" type="image/png">
@@ -88,6 +88,7 @@
             <button id="searchTriggerBtn" class="btn-search" title="Найти" aria-label="Открыть поиск">🔍</button>
           </div>
           <div id="searchHistory" class="search-history" hidden></div>
+          <label class="search-scope"><input class="search-explanations-toggle" type="checkbox" checked> Искать также в пояснениях</label>
         </div>
 
         <div class="progress-summary" id="progressSummary" title="Прочитано статей">
@@ -160,12 +161,14 @@
       <section class="study-filters" aria-label="Фильтры учебных материалов">
         <div class="study-filters-heading">
           <strong>Подобрать статьи</strong>
-          <button id="resetStudyFilters" class="filter-reset" type="button">Сбросить</button>
+          <div><button id="toggleStudyFilters" class="filter-reset" type="button" aria-controls="studyFilterBody" aria-expanded="true">Свернуть</button><button id="resetStudyFilters" class="filter-reset" type="button">Сбросить</button></div>
         </div>
+        <div id="studyFilterBody">
         <div class="study-filter-grid">
           <label>Глава<select id="chapterFilter"><option value="all">Все главы</option></select></label>
           <label>Задание ЕГЭ<select id="examFilter"><option value="all">Все задания</option><option value="13">№13 — органы власти</option><option value="23">№23 — Конституция</option><option value="rights">Права и свободы</option><option value="federation">Федеративное устройство</option></select></label>
           <label>Статус<select id="statusFilter"><option value="all">Любой статус</option><option value="new">Не начато</option><option value="learning">Изучаю</option><option value="review">Повторить</option><option value="mastered">Освоено</option></select></label>
+        </div>
         </div>
         <div id="filterSummary" class="filter-summary" aria-live="polite">Показаны все статьи</div>
       </section>
@@ -206,6 +209,7 @@
       <input id="mobileSearchInput" type="search" placeholder="Статья, слово, номер…" autocomplete="off" />
       <button id="mobileSearchClose" class="btn-ghost" aria-label="Закрыть поиск">✕</button>
     </div>
+    <label class="search-scope"><input class="search-explanations-toggle" type="checkbox" checked> Искать также в пояснениях</label>
     <div id="mobileSearchResults" class="mobile-search-results"></div>
   </div>
 
@@ -237,17 +241,20 @@
 
   <dialog id="mapDialog" class="large-dialog">
     <header class="dialog-header">
-      <h3>Федеративное устройство (Ст. 65)</h3>
+      <h3>Субъекты РФ и федеральные округа (ст. 65)</h3>
       <button id="closeMap" class="btn btn-secondary">Закрыть</button>
     </header>
     <div class="map-wrapper">
+      <div class="map-tabs"><button id="mapViewSubjects" class="btn btn-primary" type="button" aria-pressed="true">Субъекты по ст. 65</button><button id="mapViewDistricts" class="btn btn-secondary" type="button" aria-pressed="false">Федеральные округа</button></div>
+      <div id="mapSubjectPanel" class="map-subject-panel"><p>Шесть видов субъектов, перечисленных в статье 65 Конституции РФ:</p><div id="mapSubjectList"></div></div>
+      <div id="mapDistrictPanel" hidden>
       <div class="map-container" id="mapContainer">
         <div class="map-zoom-controls">
           <button id="zoomIn" class="btn" aria-label="Увеличить масштаб">+</button>
           <button id="zoomOut" class="btn" aria-label="Уменьшить масштаб">-</button>
           <button id="zoomReset" class="btn" aria-label="Сбросить масштаб">⟲</button>
         </div>
-        <h4 class="map-instruction">Нажмите на федеральный округ</h4>
+        <h4 class="map-instruction">Схема округов: нажмите на область карты</h4>
         <div id="zoomLayer" style="transition: transform 0.2s ease-out; transform-origin: center;">
           <svg id="russiaMap" viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">
             <path class="region" id="reg-fe" d="M650,50 L950,50 L980,150 L900,450 L750,500 L600,350 L650,200 Z"
@@ -265,28 +272,28 @@
         </div>
       </div>
       <div id="mapInfoPanel" class="map-info-panel">
+        <p class="map-distinction"><strong>Субъекты РФ</strong> перечислены в статье 65 Конституции. <strong>Федеральные округа</strong> — способ организации работы полпредов Президента; это не субъекты РФ. Границы ниже схематичные.</p>
         <h4 id="mapRegionTitle">Выберите регион</h4>
         <ul id="mapRegionList" class="region-list"></ul>
+      </div>
       </div>
     </div>
   </dialog>
 
   <dialog id="game23Dialog" class="large-dialog">
     <div class="game-header">
-      <h3>Тренажёр положений Конституции для задания №23</h3>
+      <h3>ЕГЭ №23 — задания ФИПИ</h3>
       <div style="display:flex;gap:8px;align-items:center">
         <button id="resetGame23" class="btn btn-secondary" style="font-size:12px;margin-left:8px" aria-label="Начать задание 23 заново">🔄</button>
         <button id="closeGame23" class="btn-ghost" aria-label="Закрыть задание 23">✕</button>
       </div>
     </div>
     <div class="game23-body">
-      <p class="game23-task">Выберите положения Конституции РФ, которыми можно подтвердить характеристику:</p>
+      <p class="game23-task">Реальные задания из вариантов ФИПИ в сокращённой формулировке; оригинал доступен по ссылке. Запишите три развёрнутых объяснения и сравните их с примером ответа.</p>
       <h2 id="task23Question" class="task23-question">...</h2>
-      <p class="game23-hint">Выберите 3 верных положения из списка:</p>
-      <p class="game23-format-note">Это тренировочный формат. На ЕГЭ нужно самостоятельно записать три развёрнутых объяснения.</p>
       <div id="task23Options" class="task23-options"></div>
       <div class="game23-controls">
-        <button id="checkTask23Btn" class="btn btn-primary btn-lg" disabled>Проверить ответ</button>
+        <button id="checkTask23Btn" class="btn btn-primary btn-lg">Показать ориентир</button>
         <button id="nextTask23Btn" class="btn btn-secondary" style="display:none">Следующий вопрос</button>
       </div>
       <div id="task23Feedback" class="game-feedback"></div>
@@ -417,7 +424,7 @@
   </dialog>
 
   <dialog id="resetHighscoreDialog" class="mini-dialog">
-    <div class="confirm-dialog"><h3>Сбросить рекорд?</h3><p>Рекорд тренажёра задания №13 будет удалён.</p><div class="confirm-actions"><button id="cancelResetHighscore" class="btn btn-secondary" type="button">Отмена</button><button id="confirmResetHighscore" class="btn btn-danger" type="button">Сбросить</button></div></div>
+    <div class="confirm-dialog"><h3>Сбросить статистику №13?</h3><p>Лучший балл и число попыток задания №13 будут удалены.</p><div class="confirm-actions"><button id="cancelResetHighscore" class="btn btn-secondary" type="button">Отмена</button><button id="confirmResetHighscore" class="btn btn-danger" type="button">Сбросить</button></div></div>
   </dialog>
 
   <dialog id="printOptionsDialog" class="mini-dialog">
@@ -438,14 +445,17 @@
       <button id="closeProgressTransfer" class="btn btn-secondary">Закрыть</button>
     </header>
     <div class="progress-transfer-body">
-      <p>На втором устройстве откройте камеру и наведите её на QR-код. Переносятся прочитанные статьи, статусы, избранное и рекорд тренажёра №13.</p>
+      <p>QR переносит учебный прогресс и результаты тренировок. Чтобы перенести вообще всё, включая заметки, папки и незавершённые задания, используйте файл резервной копии.</p>
+      <div id="trainingResultsSummary" class="transfer-results"></div>
       <canvas id="progressTransferQr" width="420" height="420" aria-label="QR-код для переноса прогресса"></canvas>
       <p id="progressTransferStatus" class="transfer-status" aria-live="polite"></p>
       <label class="transfer-link-label">Или отправьте ссылку
         <input id="progressTransferLink" type="text" readonly aria-label="Ссылка для переноса прогресса">
       </label>
       <button id="copyProgressTransfer" class="btn btn-primary btn-block" type="button">Скопировать ссылку</button>
-      <p class="transfer-privacy">Заметки не включаются в QR: они могут содержать личный текст и сделать код слишком большим.</p>
+      <button id="exportFullBackup" class="btn btn-secondary btn-block" type="button">Скачать полную копию</button>
+      <label class="btn btn-secondary btn-block backup-upload">Восстановить из файла<input id="importFullBackup" type="file" accept="application/json,.json" hidden></label>
+      <p class="transfer-privacy">Полная копия содержит личные заметки: храните файл у себя и не публикуйте его. Импорт объединяет учебные данные с текущими.</p>
     </div>
   </dialog>
 
@@ -497,31 +507,26 @@
 
   <dialog id="gameDialog" class="game-dialog">
     <div class="game-header">
-      <h3>Тренажёр полномочий (ЕГЭ №13)</h3>
+      <h3>ЕГЭ №13 — соответствие полномочий</h3>
       <div style="display:flex;gap:8px;align-items:center"><button id="resetPowerGameSession" class="btn btn-secondary" title="Начать тренировку заново" aria-label="Начать тренировку заново">🔄</button><button id="closeGame" class="btn-ghost" aria-label="Закрыть тренажёр полномочий">✕</button></div>
     </div>
     <div id="gameStartScreen">
-      <p>Вам будет дано полномочие. Ваша задача — определить, кто его осуществляет.</p>
+      <p>Реальные задания ФИПИ: сопоставьте пять позиций с органами власти. Ответ записывается последовательностью из пяти цифр.</p>
       <div class="stats-preview" style="display:flex;align-items:center;gap:10px;justify-content:center">
-        <span>Рекорд: <span id="highScore">0</span></span>
-        <button id="resetHighscoreBtn" title="Сбросить рекорд" class="btn-reset-highscore" aria-label="Сбросить рекорд">🗑</button>
+        <span>Лучший балл за задание: <span id="highScore">0</span>/2</span>
+        <button id="resetHighscoreBtn" title="Сбросить статистику задания №13" class="btn-reset-highscore" aria-label="Сбросить статистику задания №13">🗑</button>
       </div>
       <button id="startGameBtn" class="btn btn-primary btn-lg">Начать тренировку</button>
     </div>
     <div id="gamePlayScreen" hidden>
-      <div class="game-score">Счет: <span id="currentScore">0</span></div>
+      <div class="game-score">Верно: <span id="currentScore">0</span></div>
       <div class="question-card">
         <div class="question-text" id="questionText">Вопрос...</div>
       </div>
-      <div class="answers-grid">
-        <button class="ans-btn" data-target="president">Президент РФ</button>
-        <button class="ans-btn" data-target="sf">Совет Федерации</button>
-        <button class="ans-btn" data-target="gd">Государственная Дума</button>
-        <button class="ans-btn" data-target="gov">Правительство РФ</button>
-        <button class="ans-btn" data-target="ks">Конституционный Суд РФ</button>
-      </div>
+      <div id="official13Choices" class="official13-choices"></div>
+      <div id="official13Rows" class="official13-rows"></div>
       <div id="gameFeedback" class="game-feedback"></div>
-      <button id="nextGameQuestionBtn" class="btn btn-primary" type="button" hidden>Следующий вопрос</button>
+      <div class="trainer-actions"><button id="checkGameAnswerBtn" class="btn btn-primary" type="button">Проверить</button><button id="nextGameQuestionBtn" class="btn btn-secondary" type="button" hidden>Следующее задание</button></div>
     </div>
   </dialog>
 
@@ -573,17 +578,18 @@
     </article>
   </template>
 
-  <script src="js/vendor/qrcode.js?v=37" defer></script>
-  <script src="js/core.js?v=37" defer></script>
-  <script src="js/study-data.js?v=37" defer></script>
-  <script src="js/study-tools.js?v=37" defer></script>
-  <script src="js/practice.js?v=37" defer></script>
-  <script src="js/training.js?v=37" defer></script>
-  <script src="js/reading.js?v=37" defer></script>
-  <script src="js/articles-ui.js?v=37" defer></script>
-  <script src="js/mobile-pwa.js?v=37" defer></script>
-  <script src="js/data-transfer.js?v=37" defer></script>
-  <script src="js/app.js?v=37" defer></script>
+  <script src="js/vendor/qrcode.js?v=40" defer></script>
+  <script src="js/core.js?v=40" defer></script>
+  <script src="js/study-data.js?v=40" defer></script>
+  <script src="js/study-tools.js?v=40" defer></script>
+  <script src="js/practice.js?v=40" defer></script>
+  <script src="js/training.js?v=40" defer></script>
+  <script src="js/official-exam.js?v=40" defer></script>
+  <script src="js/reading.js?v=40" defer></script>
+  <script src="js/articles-ui.js?v=40" defer></script>
+  <script src="js/mobile-pwa.js?v=40" defer></script>
+  <script src="js/data-transfer.js?v=40" defer></script>
+  <script src="js/app.js?v=40" defer></script>
 </body>
 
 </html>

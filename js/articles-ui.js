@@ -162,7 +162,7 @@ function renderArticles(list = state.articles) {
         }
     }
 
-    updateFilterSummary(displayList.length, list === state.articles ? state.articles.length : list.length);
+    updateFilterSummary(displayList.length, list === state.articles ? state.articles.length : list.length, list);
 
     if (displayList.length === 0) {
         container.innerHTML = '<div class="empty-state">По выбранным условиям ничего не найдено. Попробуйте сбросить фильтры.</div>';
@@ -263,7 +263,7 @@ function renderArticles(list = state.articles) {
             mapBtn.className = 'btn btn-primary';
             mapBtn.style.marginTop = '10px';
             mapBtn.textContent = '🗺️ Открыть карту РФ';
-            mapBtn.onclick = () => $('#mapDialog').showModal();
+            mapBtn.onclick = () => { populateMapSubjects(); $('#mapDialog').showModal(); };
             $('.body', node).appendChild(mapBtn);
         }
 
@@ -659,8 +659,38 @@ function initDictionary() {
 
 
 /* --- IMPROVED MAP LOGIC (ZOOM) --- */
+function populateMapSubjects() {
+    const target = $('#mapSubjectList');
+    if (!target || target.children.length) return;
+    const article = state.articles.find(item => item.id === 'art65');
+    if (!article) return;
+    const template = document.createElement('template');
+    template.innerHTML = article.bodyHTML;
+    const paragraphs = [...template.content.querySelectorAll('p')].slice(1, 7);
+    const labels = ['Республики', 'Края', 'Области', 'Города федерального значения', 'Автономная область', 'Автономные округа'];
+    paragraphs.forEach((paragraph, index) => {
+        const section = document.createElement('section');
+        const title = document.createElement('h4');
+        title.textContent = labels[index];
+        const text = document.createElement('p');
+        text.textContent = paragraph.textContent.trim();
+        section.append(title, text);
+        target.append(section);
+    });
+}
+
 function initMap() {
     safeAddListener('#closeMap', 'click', () => $('#mapDialog').close());
+    const showMapTab = subjects => {
+        $('#mapSubjectPanel').hidden = !subjects;
+        $('#mapDistrictPanel').hidden = subjects;
+        $('#mapViewSubjects').setAttribute('aria-pressed', String(subjects));
+        $('#mapViewDistricts').setAttribute('aria-pressed', String(!subjects));
+        $('#mapViewSubjects').classList.toggle('btn-primary', subjects);
+        $('#mapViewDistricts').classList.toggle('btn-primary', !subjects);
+    };
+    safeAddListener('#mapViewSubjects', 'click', () => showMapTab(true));
+    safeAddListener('#mapViewDistricts', 'click', () => showMapTab(false));
     const title = $('#mapRegionTitle');
     const list = $('#mapRegionList');
     const zoomLayer = $('#zoomLayer');

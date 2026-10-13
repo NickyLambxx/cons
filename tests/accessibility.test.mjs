@@ -20,5 +20,6 @@ test('icon-only controls have accessible names', () => {
 
 test('task 23 drill explains the real exam response format', () => {
   const html = readFileSync('index.html', 'utf8');
-  assert.match(html, /На ЕГЭ нужно самостоятельно записать три развёрнутых объяснения/);
+  assert.match(html, /Запишите три развёрнутых объяснения/);
+  assert.match(readFileSync('js/official-exam.js', 'utf8'), /<textarea rows=/);
 });

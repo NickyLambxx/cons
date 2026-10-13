@@ -38,6 +38,7 @@ const state = {
     articleStatuses: {},
     studyFilters: { chapter: 'all', exam: 'all', status: 'all' },
     activeSearchQuery: '',
+    searchIncludeExplanations: true,
     mapZoom: 1,
     mapPan: { x: 0, y: 0 }
 };
@@ -52,10 +53,13 @@ const LS = {
     FONT_TYPE: 'ic-font-type',
     HIGHSCORE: 'ic-game-highscore',
     SEARCH: 'ic-search-history',
+    SEARCH_SCOPE: 'ic-search-explanations-v1',
     PROGRESS: 'ic-chapter-progress',
     CACHE_CHAPTERS: 'ic-chapters-cache',
     ARTICLE_STATUS: 'ic-article-statuses',
     TRAINING_SESSIONS: 'ic-training-sessions-v1',
+    TRAINING_RESULTS: 'ic-training-results-v1',
+    MOBILE_PINNED: 'ic-mobile-pinned-tools-v1',
     DATA_SCHEMA: 'ic-data-schema-version'
 };
 
@@ -94,4 +98,25 @@ function clearTrainingSession(name) {
     const sessions = loadTrainingSessions();
     delete sessions[name];
     try { localStorage.setItem(LS.TRAINING_SESSIONS, JSON.stringify(sessions)); } catch (_) { }
+}
+
+function loadTrainingResults() {
+    try {
+        const results = JSON.parse(localStorage.getItem(LS.TRAINING_RESULTS) || '{}');
+        return results && typeof results === 'object' && !Array.isArray(results) ? results : {};
+    } catch (_) { return {}; }
+}
+
+function recordTrainingResult(name, score, total) {
+    const results = loadTrainingResults();
+    const previous = results[name] || {};
+    results[name] = {
+        attempts: (Number(previous.attempts) || 0) + 1,
+        best: Math.max(Number(previous.best) || 0, score),
+        bestTotal: Math.max(Number(previous.bestTotal) || 0, total),
+        last: score,
+        lastTotal: total,
+        updatedAt: Date.now()
+    };
+    localStorage.setItem(LS.TRAINING_RESULTS, JSON.stringify(results));
 }

@@ -6,6 +6,7 @@ const read = file => readFileSync(file, 'utf8');
 const core = read('js/core.js');
 const transfer = read('js/data-transfer.js');
 const training = read('js/training.js');
+const officialExam = read('js/official-exam.js');
 const practice = read('js/practice.js');
 const chapter1 = read('chapters/chapter1.html');
 const html = read('index.html');
@@ -35,10 +36,12 @@ test('QR-перенос объединяет прогресс, статусы, �
 });
 
 test('незаконченные тренажёры сохраняют текущий вопрос', () => {
-  for (const name of ['powers', 'task23', 'mixed']) {
-    assert.ok(training.includes(`saveTrainingSession('${name}'`));
-    assert.ok(training.includes(`getTrainingSession('${name}'`));
+  for (const name of ['task13', 'task23']) {
+    assert.ok(officialExam.includes(`saveTrainingSession('${name}'`));
+    assert.ok(officialExam.includes(`getTrainingSession('${name}'`));
   }
+  assert.ok(training.includes("saveTrainingSession('mixed'"));
+  assert.ok(training.includes("getTrainingSession('mixed'"));
   assert.match(practice, /saveTrainingSession\('findError'/);
   assert.match(practice, /getTrainingSession\('findError'/);
 });

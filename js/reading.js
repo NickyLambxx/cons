@@ -66,6 +66,18 @@ function initTimer() {
 
 /* --- ПОИСК --- */
 function initSearchHistory() {
+    state.searchIncludeExplanations = localStorage.getItem(LS.SEARCH_SCOPE) !== 'false';
+    $$('.search-explanations-toggle').forEach(toggle => {
+        toggle.checked = state.searchIncludeExplanations;
+        toggle.addEventListener('change', () => {
+            state.searchIncludeExplanations = toggle.checked;
+            localStorage.setItem(LS.SEARCH_SCOPE, String(toggle.checked));
+            $$('.search-explanations-toggle').forEach(other => { other.checked = toggle.checked; });
+            const query = $('#mobileSearchOverlay')?.hidden === false ? $('#mobileSearchInput')?.value : $('#searchInput')?.value;
+            if (query) filterArticles(query);
+            if ($('#mobileSearchOverlay')?.hidden === false) $('#mobileSearchInput')?.dispatchEvent(new Event('input'));
+        });
+    });
     const stored = localStorage.getItem(LS.SEARCH);
     try { if (stored) state.searchHistory = JSON.parse(stored); } catch (e) { localStorage.removeItem(LS.SEARCH); }
 
@@ -148,7 +160,8 @@ function getArticleSearchResults(query, sourceList = state.articles) {
 
     return sourceList.filter(article => {
         const title = article.title.toLocaleLowerCase('ru');
-        const visibleText = `${htmlToSearchText(article.bodyHTML)} ${htmlToSearchText(article.explainHTML)}`;
+        const visibleText = htmlToSearchText(article.bodyHTML)
+            + (state.searchIncludeExplanations ? ` ${htmlToSearchText(article.explainHTML)}` : '');
         return title.includes(normalizedQuery) || visibleText.includes(normalizedQuery);
     });
 }

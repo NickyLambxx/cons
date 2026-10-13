@@ -81,6 +81,7 @@ function setArticleStatus(id, status) {
     }
     localStorage.setItem(LS.ARTICLE_STATUS, JSON.stringify(state.articleStatuses));
     updateProgressUI();
+    updateStudyFilterCounts();
 }
 
 function applyStudyFilters(list) {
@@ -94,9 +95,30 @@ function applyStudyFilters(list) {
     });
 }
 
-function updateFilterSummary(visible, total = state.articles.length) {
+function updateFilterSummary(visible, total = state.articles.length, sourceList = null) {
     const summary = $('#filterSummary');
     if (summary) summary.textContent = visible === total ? `Показаны все статьи: ${total}` : `Показано статей: ${visible} из ${total}`;
+    updateStudyFilterCounts(sourceList);
+}
+
+function updateStudyFilterCounts(sourceList = null) {
+    const searchList = sourceList || (state.activeSearchQuery ? getArticleSearchResults(state.activeSearchQuery) : state.articles);
+    const filterKeys = { chapterFilter: 'chapter', examFilter: 'exam', statusFilter: 'status' };
+    Object.entries(filterKeys).forEach(([id, key]) => {
+        const select = $(`#${id}`);
+        if (!select) return;
+        [...select.options].forEach(option => {
+            if (!option.dataset.label) option.dataset.label = option.textContent.replace(/ \(\d+\)$/, '');
+            const count = searchList.filter(article => {
+                const meta = getArticleStudyMeta(article);
+                const values = { ...state.studyFilters, [key]: option.value };
+                return (values.chapter === 'all' || article.chapterTitle === values.chapter)
+                    && (values.exam === 'all' || meta.exam.includes(values.exam))
+                    && (values.status === 'all' || (state.articleStatuses[article.id] || 'new') === values.status);
+            }).length;
+            option.textContent = `${option.dataset.label} (${count})`;
+        });
+    });
 }
 
 function syncChapterFilter() {
@@ -118,6 +140,19 @@ function resetStudyFilters() {
 
 function initStudyTools() {
     loadArticleStatuses();
+    const toggle = $('#toggleStudyFilters');
+    const body = $('#studyFilterBody');
+    if (toggle && body) {
+        const mobile = matchMedia('(max-width: 768px)').matches;
+        body.hidden = mobile;
+        toggle.setAttribute('aria-expanded', String(!mobile));
+        toggle.textContent = mobile ? 'Показать фильтры' : 'Свернуть';
+        toggle.addEventListener('click', () => {
+            body.hidden = !body.hidden;
+            toggle.setAttribute('aria-expanded', String(!body.hidden));
+            toggle.textContent = body.hidden ? 'Показать фильтры' : 'Свернуть';
+        });
+    }
     [['chapterFilter', 'chapter'], ['examFilter', 'exam'], ['statusFilter', 'status']].forEach(([id, key]) => {
         safeAddListener(`#${id}`, 'change', event => {
             state.studyFilters[key] = event.target.value;
