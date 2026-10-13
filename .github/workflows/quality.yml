@@ -21,3 +21,34 @@ jobs:
 
       - name: Проверить сайт
         run: npm run check
+
+  live-smoke:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получить код
+        uses: actions/checkout@v4
+
+      - name: Установить pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+
+      - name: Настроить Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Установить зависимости
+        run: pnpm install --frozen-lockfile
+
+      - name: Подготовить браузер для проверки интерфейса
+        run: pnpm exec playwright-core install chromium
+
+      - name: Дождаться новой версии на сайте
+        run: pnpm run smoke:live
+
+      - name: Проверить компьютер и телефон в браузере
+        run: pnpm run smoke:live:ui

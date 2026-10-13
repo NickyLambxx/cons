@@ -14,7 +14,7 @@ async function fetchText(path) {
 
 let lastError;
 let completed = false;
-for (let attempt = 1; attempt <= 12; attempt += 1) {
+for (let attempt = 1; attempt <= 24; attempt += 1) {
   try {
     const index = await fetchText('/');
     if (!index.includes(`style.css?v=${queryVersion}`) || !index.includes(`official-exam.js?v=${queryVersion}`)) throw new Error(`Главная страница ещё не обновилась до ${expected}`);
@@ -27,8 +27,8 @@ for (let attempt = 1; attempt <= 12; attempt += 1) {
     break;
   } catch (error) {
     lastError = error;
-    console.warn(`Попытка ${attempt}/12: ${error.message}`);
-    if (attempt < 12) await new Promise(resolve => setTimeout(resolve, 10000));
+    console.warn(`Попытка ${attempt}/24: ${error.message}`);
+    if (attempt < 24) await new Promise(resolve => setTimeout(resolve, 10000));
   }
 }
 if (!completed) {
