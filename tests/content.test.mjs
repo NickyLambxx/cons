@@ -57,11 +57,13 @@ test('таймер не содержит устаревшую дату экза�
   assert.doesNotMatch(appSource, /2026-06-11|ЕГЭ уже идет/);
 });
 
-test('№23 использует опубликованные задания ФИПИ с тремя развёрнутыми объяснениями', () => {
+test('№23 различает материалы ФИПИ и книжные адаптации с тремя объяснениями', () => {
   const tasks = officialData.OFFICIAL_TASKS_23;
-  assert.equal(tasks.length, 5);
+  assert.equal(tasks.length, 40);
+  assert.equal(tasks.filter(task => task.sourceKind === 'book').length, 5);
   for (const task of tasks) {
-    assert.match(task.source, /^https:\/\/(?:doc\.fipi\.ru|pro-schools\.ru\/fipi\/ege\/variant\/2025)\//);
+    if (task.sourceKind === 'book') assert.ok(!task.source, task.id);
+    else assert.match(task.source, /^https:\/\/(?:doc\.fipi\.ru|ege\.fipi\.ru\/bank|pro-schools\.ru\/fipi\/ege\/variant\/2025)\//);
     assert.equal(task.points.length, 3, task.id);
     assert.ok(task.points.every(point => point.length > 35), task.id);
   }
@@ -74,11 +76,18 @@ test('словарь не содержит устаревшее определе
   assert.doesNotMatch(dictionary['прожиточный минимум'], /стоимостная оценка потребительской корзины/i);
 });
 
-test('№13 соответствует формату пяти позиций и официальным ключам', () => {
+test('словарь не сводит любой референдум к общероссийскому голосованию', () => {
+  assert.match(studyData.DICTIONARY.референдум, /субъекта РФ или муниципального образования/);
+  assert.doesNotMatch(studyData.DICTIONARY.референдум, /всенародное голосование/);
+});
+
+test('№13 соответствует формату пяти позиций и проверенным ключам', () => {
   const tasks = officialData.OFFICIAL_TASKS_13;
-  assert.equal(tasks.length, 5);
+  assert.equal(tasks.length, 56);
+  assert.equal(tasks.filter(task => task.sourceKind === 'book').length, 6);
   for (const task of tasks) {
-    assert.match(task.source, /^https:\/\/(?:doc\.fipi\.ru|pro-schools\.ru\/fipi\/ege\/variant\/2025)\//);
+    if (task.sourceKind === 'book') assert.ok(!task.source, task.id);
+    else assert.match(task.source, /^https:\/\/(?:doc\.fipi\.ru|ege\.fipi\.ru\/bank|pro-schools\.ru\/fipi\/ege\/variant\/2025)\//);
     assert.equal(task.prompts.length, 5, task.id);
     assert.match(task.answer, /^[1-3]{5}$/, task.id);
     assert.equal(new Set(task.prompts).size, 5, task.id);
@@ -87,6 +96,12 @@ test('№13 соответствует формату пяти позиций и
   assert.equal(tasks.find(task => task.id === '2026-demo').answer, '21312');
   assert.equal(tasks.find(task => task.id === '2025-demo').answer, '21112');
   assert.equal(tasks.find(task => task.id === '2025-open').answer, '12122');
+  assert.equal(tasks.find(task => task.id === 'book-2026-1').answer, '21121');
+  assert.equal(tasks.find(task => task.id === 'book-2026-2').answer, '13213');
+  assert.equal(tasks.find(task => task.id === 'book-2025-1').answer, '12212');
+  assert.equal(tasks.find(task => task.id === 'book-2025-2').answer, '23312');
+  assert.equal(tasks.find(task => task.id === 'book-2025-4').answer, '11232');
+  assert.equal(tasks.find(task => task.id === 'book-2023-4').answer, '12211');
   assert.doesNotMatch(studyDataSource, /const POWERS =/);
 });
 
@@ -98,10 +113,11 @@ test('словарь и карточки используют точные оп�
   assert.ok(!dictionary.думе);
   assert.match(dictionary['муниципальное образование'], /муниципальный округ/);
 
-  for (const excluded of ['лицензирование', 'охрана', 'республиканская', 'светское', 'собрание', 'социальное', 'убежище политическое']) {
-    assert.ok(!terms.includes(excluded), `Лишняя карточка: ${excluded}`);
+  for (const excluded of ['охрана', 'республиканская', 'светское', 'собрание', 'социальное', 'убежище политическое']) {
+    assert.ok(!dictionary[excluded], `Дублирующий словарный термин: ${excluded}`);
   }
   assert.equal(new Set(terms).size, terms.length);
+  assert.equal(terms.length, Object.keys(dictionary).length);
   assert.match(appSource, /\[\.\.\.FLASHCARD_TERMS\]/);
 });
 
@@ -123,5 +139,5 @@ test('динамические кнопки оглавления и карточ
 });
 
 test('кэш приложения обновлён после изменения учебных данных', () => {
-  assert.match(read('sw.js'), /prep-mate-v42/);
+  assert.match(read('sw.js'), /prep-mate-v47/);
 });

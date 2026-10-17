@@ -10,14 +10,14 @@ test('банк содержит готовые аргументы с конст�
   assert.equal(data.ARGUMENT_BANK.length, 50);
   assert.ok(new Set(data.ARGUMENT_BANK.map(item => item.topic)).size >= 8);
   for (const item of data.ARGUMENT_BANK) {
-    assert.match(item.article, /^Статья \d+$/);
+    assert.match(item.article, /^Стать(?:я \d+|и \d+(?:, \d+)+)$/);
     assert.ok(item.text.length > 70, item.title);
   }
   assert.equal(new Set(data.ARGUMENT_BANK.map(item => `${item.article}:${item.title}`)).size, data.ARGUMENT_BANK.length);
 });
 
 test('тренажёр ошибок структурно корректен и не закрепляет неверные формулировки', () => {
-  assert.equal(data.FIND_ERROR_TASKS.length, 36);
+  assert.equal(data.FIND_ERROR_TASKS.length, 50);
   for (const task of data.FIND_ERROR_TASKS) {
     assert.equal(task.options.length, 4, task.statement);
     assert.ok(task.correct >= 0 && task.correct < task.options.length);
