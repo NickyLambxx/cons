@@ -29,7 +29,7 @@
   <meta name="twitter:image"       content="https://prep-mate.ru/og-image.png" />
 
   <link rel="manifest" href="./manifest.json" />
-  <link rel="stylesheet" href="./style.css?v=42" />
+  <link rel="stylesheet" href="./style.css?v=47" />
 
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" href="./logo.png" type="image/png">
@@ -166,7 +166,7 @@
         <div id="studyFilterBody">
         <div class="study-filter-grid">
           <label>Глава<select id="chapterFilter"><option value="all">Все главы</option></select></label>
-          <label>Задание ЕГЭ<select id="examFilter"><option value="all">Все задания</option><option value="13">№13 — органы власти</option><option value="23">№23 — Конституция</option><option value="rights">Права и свободы</option><option value="federation">Федеративное устройство</option></select></label>
+          <label>Задание ЕГЭ<select id="examFilter"><option value="all">Все задания</option><option value="13">№13 — власть и ведение</option><option value="23">№23 — Конституция</option><option value="rights">Права и свободы</option><option value="federation">Федеративное устройство</option></select></label>
           <label>Статус<select id="statusFilter"><option value="all">Любой статус</option><option value="new">Не начато</option><option value="learning">Изучаю</option><option value="review">Повторить</option><option value="mastered">Освоено</option></select></label>
         </div>
         </div>
@@ -282,15 +282,19 @@
 
   <dialog id="game23Dialog" class="large-dialog">
     <div class="game-header">
-      <h3>ЕГЭ №23 — задания ФИПИ</h3>
+      <h3>ЕГЭ №23 — тренажёр</h3>
       <div style="display:flex;gap:8px;align-items:center">
         <button id="resetGame23" class="btn btn-secondary" style="font-size:12px;margin-left:8px" aria-label="Начать задание 23 заново">🔄</button>
         <button id="closeGame23" class="btn-ghost" aria-label="Закрыть задание 23">✕</button>
       </div>
     </div>
     <div class="game23-body">
-      <p class="game23-task">Реальные задания из вариантов ФИПИ в сокращённой формулировке; оригинал доступен по ссылке. Запишите три развёрнутых объяснения и сравните их с примером ответа.</p>
-      <h2 id="task23Question" class="task23-question">...</h2>
+      <p class="game23-task">40 заданий по материалам ФИПИ и сборникам. Формулировки авторские; источник указан под заданием.</p>
+      <div class="task23-prompt">
+        <p id="task23Context" class="task23-context"></p>
+        <h2 id="task23Question" class="task23-question">...</h2>
+        <p id="task23Instruction" class="task23-instruction"></p>
+      </div>
       <div id="task23Options" class="task23-options"></div>
       <div class="game23-controls">
         <button id="checkTask23Btn" class="btn btn-primary btn-lg">Показать ориентир</button>
@@ -326,7 +330,7 @@
       </div>
       <div class="flashcard-controls">
         <button id="fcPrev" class="btn">← Назад</button>
-        <span id="fcCounter">1 / 10</span>
+        <span id="fcCounter">1 / 80</span>
         <button id="fcNext" class="btn">Вперед →</button>
       </div>
     </div>
@@ -385,7 +389,7 @@
   <dialog id="mixedTrainingDialog" class="large-dialog">
     <header class="dialog-header"><div><h3>🧠 Смешанная тренировка</h3><p class="dialog-subtitle">Термины, полномочия и Конституция в одной серии</p></div><button id="closeMixedTraining" class="btn btn-secondary">Закрыть</button></header>
     <div class="mixed-training-body">
-      <div class="mixed-training-progress"><span id="mixedType">Тема</span><strong id="mixedCounter">1 / 10</strong></div>
+      <div class="mixed-training-progress"><span id="mixedType">Тема</span><strong id="mixedCounter">1 / 50</strong></div>
       <h2 id="mixedQuestion">Вопрос</h2>
       <div id="mixedAnswers" class="mixed-answers"></div>
       <div id="mixedFeedback" class="game-feedback" aria-live="polite"></div>
@@ -411,7 +415,7 @@
       <button id="closeFindError" class="btn btn-secondary">Закрыть</button>
     </header>
     <div class="find-error-body">
-      <div class="mixed-training-progress"><span>Конституция РФ</span><strong id="findErrorCounter">1 / 36</strong></div>
+      <div class="mixed-training-progress"><span>Конституция РФ</span><strong id="findErrorCounter">1 / 50</strong></div>
       <div class="error-statement"><span>Неверное утверждение</span><p id="findErrorStatement"></p></div>
       <div id="findErrorAnswers" class="mixed-answers"></div>
       <div id="findErrorFeedback" class="game-feedback" aria-live="polite"></div>
@@ -511,7 +515,7 @@
       <div style="display:flex;gap:8px;align-items:center"><button id="resetPowerGameSession" class="btn btn-secondary" title="Начать тренировку заново" aria-label="Начать тренировку заново">🔄</button><button id="closeGame" class="btn-ghost" aria-label="Закрыть тренажёр полномочий">✕</button></div>
     </div>
     <div id="gameStartScreen">
-      <p>Реальные задания ФИПИ: сопоставьте пять позиций с органами власти. Ответ записывается последовательностью из пяти цифр.</p>
+      <p>56 заданий: 50 из материалов ФИПИ и 6 адаптаций из печатных сборников. Установите соответствие между полномочиями и органами власти либо между вопросами и уровнями ведения. Ответ — последовательность из пяти цифр.</p>
       <div class="stats-preview" style="display:flex;align-items:center;gap:10px;justify-content:center">
         <span>Лучший балл за задание: <span id="highScore">0</span>/2</span>
         <button id="resetHighscoreBtn" title="Сбросить статистику задания №13" class="btn-reset-highscore" aria-label="Сбросить статистику задания №13">🗑</button>
@@ -578,18 +582,18 @@
     </article>
   </template>
 
-  <script src="js/vendor/qrcode.js?v=42" defer></script>
-  <script src="js/core.js?v=42" defer></script>
-  <script src="js/study-data.js?v=42" defer></script>
-  <script src="js/study-tools.js?v=42" defer></script>
-  <script src="js/practice.js?v=42" defer></script>
-  <script src="js/training.js?v=42" defer></script>
-  <script src="js/official-exam.js?v=42" defer></script>
-  <script src="js/reading.js?v=42" defer></script>
-  <script src="js/articles-ui.js?v=42" defer></script>
-  <script src="js/mobile-pwa.js?v=42" defer></script>
-  <script src="js/data-transfer.js?v=42" defer></script>
-  <script src="js/app.js?v=42" defer></script>
+  <script src="js/vendor/qrcode.js?v=47" defer></script>
+  <script src="js/core.js?v=47" defer></script>
+  <script src="js/study-data.js?v=47" defer></script>
+  <script src="js/study-tools.js?v=47" defer></script>
+  <script src="js/practice.js?v=47" defer></script>
+  <script src="js/training.js?v=47" defer></script>
+  <script src="js/official-exam.js?v=47" defer></script>
+  <script src="js/reading.js?v=47" defer></script>
+  <script src="js/articles-ui.js?v=47" defer></script>
+  <script src="js/mobile-pwa.js?v=47" defer></script>
+  <script src="js/data-transfer.js?v=47" defer></script>
+  <script src="js/app.js?v=47" defer></script>
 </body>
 
 </html>

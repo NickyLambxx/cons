@@ -167,23 +167,46 @@ function renderFlashcard() {
 /* --- СМЕШАННАЯ ТРЕНИРОВКА --- */
 const mixedTraining = { questions: [], index: 0, score: 0, answered: false, transitioning: false };
 const POWER_LABELS = { president: 'Президент РФ', sf: 'Совет Федерации', gd: 'Государственная Дума', gov: 'Правительство РФ', ks: 'Конституционный Суд РФ' };
+const MIXED_QUESTION_COUNT = 50;
 
 function shuffle(values) { return [...values].sort(() => Math.random() - 0.5); }
 
-function createMixedQuestions() {
-    const terms = shuffle(FLASHCARD_TERMS).slice(0, 7).map(term => ({
+function normalizePowerPrompt(prompt) {
+    return prompt.toLocaleLowerCase('ru').replace(/ё/g, 'е')
+        .replace(/российской федерации|российская федерация|российскую федерацию/g, 'рф')
+        .replace(/^(осуществление|обеспечение)\s+/, '')
+        .replace(/\bуправления\b/g, 'управление')
+        .replace(/[^а-я0-9]+/g, ' ').trim();
+}
+
+function createMixedQuestions(fullPool = false) {
+    const terms = shuffle(FLASHCARD_TERMS).slice(0, fullPool ? FLASHCARD_TERMS.length : 20).map(term => ({
         type: 'Термины',
         question: `Какое определение соответствует термину «${term}»?`,
         answers: shuffle([DICTIONARY[term], ...shuffle(FLASHCARD_TERMS.filter(item => item !== term)).slice(0, 3).map(item => DICTIONARY[item])]),
         correct: DICTIONARY[term]
     }));
-    const corrections = shuffle(FIND_ERROR_TASKS).slice(0, 3).map(task => ({
+    const corrections = shuffle(FIND_ERROR_TASKS).slice(0, fullPool ? FIND_ERROR_TASKS.length : 15).map(task => ({
         type: 'Проверка формулировок',
         question: `Как исправить утверждение: «${task.statement}»?`,
         answers: shuffle(task.options),
         correct: task.options[task.correct]
     }));
-    return shuffle([...terms, ...corrections]);
+    const seenPowers = new Set();
+    const powers = shuffle(OFFICIAL_TASKS_13.flatMap(task => task.prompts.map((prompt, index) => ({ task, prompt, index }))))
+        .filter(({ prompt }) => {
+            const key = normalizePowerPrompt(prompt);
+            if (seenPowers.has(key)) return false;
+            seenPowers.add(key);
+            return true;
+        })
+        .slice(0, fullPool ? Infinity : 15).map(({ task, prompt, index }) => ({
+            type: 'Полномочия и ведение',
+            question: `К какой категории относится: «${prompt}»?`,
+            answers: shuffle(task.choices),
+            correct: task.choices[Number(task.answer[index]) - 1]
+        }));
+    return shuffle([...terms, ...corrections, ...powers]);
 }
 
 function restoreMixedTrainingSession() {
@@ -192,7 +215,17 @@ function restoreMixedTrainingSession() {
         && session.questions.length > 0
         && session.questions.every(item => item && typeof item.question === 'string' && Array.isArray(item.answers) && typeof item.correct === 'string');
     if (!validQuestions || !Number.isInteger(session.index) || !session.questions[session.index]) return false;
-    mixedTraining.questions = session.questions;
+    mixedTraining.questions = [...session.questions];
+    if (mixedTraining.questions.length < MIXED_QUESTION_COUNT) {
+        const seen = new Set(mixedTraining.questions.map(item => normalizePowerPrompt(item.question)));
+        for (const item of createMixedQuestions(true)) {
+            const key = normalizePowerPrompt(item.question);
+            if (seen.has(key)) continue;
+            mixedTraining.questions.push(item);
+            seen.add(key);
+            if (mixedTraining.questions.length === MIXED_QUESTION_COUNT) break;
+        }
+    }
     mixedTraining.index = session.index;
     mixedTraining.score = Number.isInteger(session.score) ? Math.max(0, session.score) : 0;
     mixedTraining.transitioning = false;
@@ -287,7 +320,8 @@ function initMixedTraining() {
         $('#mixedCounter').textContent = '';
         $('#mixedQuestion').textContent = `${mixedTraining.score} из ${mixedTraining.questions.length}`;
         $('#mixedAnswers').innerHTML = '';
-        $('#mixedFeedback').textContent = mixedTraining.score >= 8 ? 'Отличный результат!' : 'Повторите ошибки и попробуйте ещё раз.';
+        $('#mixedFeedback').textContent = mixedTraining.score >= Math.ceil(mixedTraining.questions.length * 0.8)
+            ? 'Отличный результат!' : 'Повторите ошибки и попробуйте ещё раз.';
         next.textContent = 'Начать заново';
         next.hidden = false;
         mixedTraining.index = -1;

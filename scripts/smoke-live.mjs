@@ -1,6 +1,6 @@
 /* Read-only live check after publishing: HTTP status, cache version and critical assets. */
 const origin = process.env.PREPMATE_ORIGIN || 'https://prep-mate.ru';
-const expected = process.argv[2] || 'v42';
+const expected = process.argv[2] || 'v47';
 const queryVersion = expected.replace(/^v/, '');
 const paths = ['/', '/style.css', '/js/official-exam.js', '/js/data-transfer.js', '/manifest.json', '/robots.txt', '/sitemap.xml', ...Array.from({ length: 9 }, (_, index) => `/chapters/chapter${index + 1}.html`)];
 
