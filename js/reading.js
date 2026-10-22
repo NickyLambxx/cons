@@ -93,6 +93,7 @@ function initSearchHistory() {
     });
 
     const debouncedSearch = debounce((q) => {
+        if (input.value !== q) return;
         if (!q && state.searchHistory.length > 0) {
             renderSearchHistory();
             container.hidden = false;
@@ -103,6 +104,7 @@ function initSearchHistory() {
     }, 300);
 
     input.addEventListener('input', (e) => {
+        updateLayoutSuggestion(e.target.value, 'desktop');
         debouncedSearch(e.target.value);
     });
 
@@ -193,6 +195,7 @@ function updateMobileSearchBanner(query) {
 
 function filterArticles(query) {
     query = query.trim().toLocaleLowerCase('ru');
+    updateLayoutSuggestion(query, 'desktop');
     state.activeSearchQuery = query;
     document.body.classList.toggle('search-active', Boolean(query));
     updateMobileSearchBanner(query);

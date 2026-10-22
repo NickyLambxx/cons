@@ -167,6 +167,7 @@ function initHeaderGroups() {
 function boot() {
     initHeaderGroups();
     initLessonTools();
+    initReferenceTools();
     migrateStoredData();
     applyTheme(true);
     loadFavorites();

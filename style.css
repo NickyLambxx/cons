@@ -57,6 +57,35 @@
 .content-shell { min-width: 0; display: grid; gap: 16px; }
 .header-tools .btn { min-height: 44px; display: inline-flex; align-items: center; gap: 5px; padding: 8px 10px; }
 .tool-label { font-size: 11px; font-weight: 650; }
+.layout-suggestion { border: 1px solid var(--accent); border-radius: 10px; padding: 10px; background: var(--card); font-size: 13px; }
+.layout-suggestion p { margin: 0 0 8px; }
+.layout-suggestion .btn { width: 100%; white-space: normal; overflow-wrap: anywhere; }
+#mobileLayoutSuggestion { margin: 8px 12px; }
+#referenceDialog[open] { display: flex; flex-direction: column; max-height: min(90dvh, 900px); overflow: hidden; }
+#referenceDialog .dialog-header { flex: 0 0 auto; }
+.reference-controls { flex: 0 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.reference-controls label { display: grid; gap: 5px; color: var(--muted); font-size: 12px; min-width: 0; }
+.reference-controls .reference-search-label { grid-column: 1 / -1; }
+.reference-controls input, .reference-controls select { width: 100%; min-width: 0; min-height: 44px; padding: 8px; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; font: inherit; font-size: 14px; }
+.reference-body { overflow-y: auto; overscroll-behavior: contain; min-height: 0; padding: 16px; }
+.reference-intro, .reference-source { color: var(--muted); line-height: 1.55; font-size: 13px; margin: 0 0 12px; }
+.reference-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 12px 0; }
+.reference-entry { border: 1px solid var(--border); background: var(--surface2); border-radius: 12px; padding: 14px; overflow-wrap: anywhere; }
+.reference-entry h4 { margin: 9px 0; font-size: 16px; line-height: 1.4; }
+.reference-entry p { font-size: 14px; line-height: 1.55; }
+.reference-subject { font-weight: 650; }
+.reference-badge { display: inline-block; color: var(--accent); font-weight: 700; font-size: 13px; }
+.reference-article { white-space: normal; text-align: left; }
+@media (max-width: 768px) {
+    .reference-list { grid-template-columns: minmax(0, 1fr); }
+    .reference-controls { padding: 10px; gap: 8px; }
+    .reference-controls select, .reference-controls input { font-size: 16px; }
+    .reference-body { padding: 12px; }
+    #referenceDialog .dialog-header { gap: 8px; padding: 12px; }
+    #referenceDialog .dialog-header h3 { font-size: 17px; }
+}
+@media print { #referenceDialog, .layout-suggestion { display: none !important; } }
+@media (max-width: 480px) { .reference-controls { grid-template-columns: minmax(0, 1fr); } }
 .quick-answer13 { display: grid; gap: 7px; text-align: left; margin: 12px 0 16px; font-weight: 650; }
 .quick-answer13 input { min-width: 0; width: 100%; box-sizing: border-box; min-height: 44px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px; font: inherit; font-size: 18px; letter-spacing: .15em; background: var(--card); color: var(--text); }
 .quick-answer13 span { color: var(--muted); font-size: 12px; font-weight: 400; letter-spacing: normal; }

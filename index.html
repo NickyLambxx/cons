@@ -29,7 +29,7 @@
   <meta name="twitter:image"       content="https://prep-mate.ru/og-image.png" />
 
   <link rel="manifest" href="./manifest.json" />
-  <link rel="stylesheet" href="./style.css?v=53" />
+  <link rel="stylesheet" href="./style.css?v=54" />
 
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" href="./logo.png" type="image/png">
@@ -110,6 +110,7 @@
           <label class="search-scope"><input class="search-explanations-toggle" type="checkbox" checked> Искать также в пояснениях</label>
         </div>
 
+        <div id="desktopLayoutSuggestion" class="layout-suggestion" hidden></div>
         <div class="progress-summary" id="progressSummary" title="Прочитано статей">
           <div style="display:flex;align-items:center;justify-content:space-between">
             <span id="progressText">0 / 0 статей прочитано</span>
@@ -124,6 +125,8 @@
 
         <button id="lessonModeBtn" class="btn btn-block" type="button">🖥️ Режим урока</button>
         <button id="proceduresBtn" class="btn btn-block" type="button">🔀 Схемы процедур</button>
+        <button id="referenceRightsBtn" class="btn btn-block" type="button">👥 Каждый или гражданин РФ</button>
+        <button id="referenceNumbersBtn" class="btn btn-block" type="button">🔢 Числа в Конституции</button>
         <button id="argumentBankBtn" class="btn btn-block">💬 Банк аргументов</button>
         <button id="findErrorBtn" class="btn btn-block">🔎 Исправь утверждение</button>
 
@@ -213,6 +216,8 @@
     <div class="mobile-sheet-body">
       <button class="sheet-tool-btn" id="mobileFlashcards">🗂️ Карточки терминов</button>
       <button class="sheet-tool-btn" id="mobileDictionary">📖 Словарь</button>
+      <button class="sheet-tool-btn" id="mobileReferenceRights">👥 Каждый или гражданин РФ</button>
+      <button class="sheet-tool-btn" id="mobileReferenceNumbers">🔢 Числа в Конституции</button>
       <button class="sheet-tool-btn" id="mobileLessonMode">🖥️ Режим урока</button>
       <button class="sheet-tool-btn" id="mobileProcedures">🔀 Схемы процедур</button>
       <button class="sheet-tool-btn" id="mobileMixedTraining">🧠 Смешанная тренировка</button>
@@ -233,11 +238,22 @@
       <button id="mobileSearchClose" class="btn-ghost" aria-label="Закрыть поиск">✕</button>
     </div>
     <label class="search-scope"><input class="search-explanations-toggle" type="checkbox" checked> Искать также в пояснениях</label>
+    <div id="mobileLayoutSuggestion" class="layout-suggestion" hidden></div>
     <div id="mobileSearchResults" class="mobile-search-results"></div>
   </div>
 
   <button id="backToTop" class="btn-up" aria-label="Вернуться в начало">⬆</button>
   <button id="btn-return" class="btn-return" aria-label="Вернуться к чтению">↩ Назад к чтению</button>
+
+  <dialog id="referenceDialog" class="large-dialog" aria-labelledby="referenceTitle">
+    <header class="dialog-header"><h3 id="referenceTitle">Справочники по Конституции</h3><button id="closeReference" class="btn" type="button">Закрыть</button></header>
+    <div class="reference-controls">
+      <label>Раздел<select id="referenceMode"><option value="rights">Каждый или гражданин РФ</option><option value="numbers">Числа в Конституции</option></select></label>
+      <label>Категория<select id="referenceGroup"></select></label>
+      <label class="reference-search-label">Поиск<input id="referenceSearch" type="search" placeholder="Право, число, должность или статья…" autocomplete="off"></label>
+    </div>
+    <div id="referenceBody" class="reference-body"><p id="referenceIntro" class="reference-intro"></p><p id="referenceCount" class="filter-summary" role="status"></p><div id="referenceList" class="reference-list"></div><p class="reference-source">Основание: <a href="https://minjust.gov.ru/ru/documents/8011/" target="_blank" rel="noopener">официальный текст Конституции РФ на сайте Минюста</a>.</p></div>
+  </dialog>
 
   <dialog id="proceduresDialog" class="large-dialog" aria-labelledby="proceduresTitle">
     <header class="dialog-header"><h3 id="proceduresTitle">Схемы государственных процедур</h3><button id="closeProcedures" class="btn" type="button">Закрыть</button></header>
@@ -619,19 +635,20 @@
     </article>
   </template>
 
-  <script src="js/vendor/qrcode.js?v=53" defer></script>
-  <script src="js/core.js?v=53" defer></script>
-  <script src="js/study-data.js?v=53" defer></script>
-  <script src="js/study-tools.js?v=53" defer></script>
-  <script src="js/practice.js?v=53" defer></script>
-  <script src="js/training.js?v=53" defer></script>
-  <script src="js/official-exam.js?v=53" defer></script>
-  <script src="js/reading.js?v=53" defer></script>
-  <script src="js/articles-ui.js?v=53" defer></script>
-  <script src="js/mobile-pwa.js?v=53" defer></script>
-  <script src="js/data-transfer.js?v=53" defer></script>
-  <script src="js/lesson-tools.js?v=53" defer></script>
-  <script src="js/app.js?v=53" defer></script>
+  <script src="js/vendor/qrcode.js?v=54" defer></script>
+  <script src="js/core.js?v=54" defer></script>
+  <script src="js/study-data.js?v=54" defer></script>
+  <script src="js/study-tools.js?v=54" defer></script>
+  <script src="js/practice.js?v=54" defer></script>
+  <script src="js/training.js?v=54" defer></script>
+  <script src="js/official-exam.js?v=54" defer></script>
+  <script src="js/reading.js?v=54" defer></script>
+  <script src="js/articles-ui.js?v=54" defer></script>
+  <script src="js/mobile-pwa.js?v=54" defer></script>
+  <script src="js/data-transfer.js?v=54" defer></script>
+  <script src="js/lesson-tools.js?v=54" defer></script>
+  <script src="js/reference-tools.js?v=54" defer></script>
+  <script src="js/app.js?v=54" defer></script>
 </body>
 
 </html>

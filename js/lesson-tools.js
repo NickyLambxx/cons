@@ -77,6 +77,7 @@ function rememberReadingLocation() {
         explanations: $$('#content .explain[open]').map(item => item.closest('.card').id),
         notes: $$('#content .note-container:not([hidden])').map(item => item.closest('.card').id),
         hash: location.hash,
+        reference: $('#referenceDialog').open ? { ...referenceState, scrollTop: $('#referenceBody').scrollTop } : null,
         dictionary: $('#dictionaryDialog').open ? { query: $('#dictionarySearch').value, letter: $('#dictionaryAlphabet .active')?.dataset.letter || 'all', scrollTop: $('#dictionaryList').scrollTop } : null,
         scheme: scheme.open ? { id: $('#procedureSelect').value, scrollTop: scheme.querySelector('.procedures-body').scrollTop, openBranches: $$('#procedureContent details').map(details => details.open) } : null,
         articleDialog: articleDialog.open ? { title: $('#dialogTitle').textContent, html: $('#dialogBody').innerHTML, scrollTop: articleDialog.scrollTop } : null
@@ -90,7 +91,7 @@ function updateReadingReturnButton() {
     const button = $('#btn-return');
     if (!last) { hideReturnButton(); return; }
     const article = state.articles.find(item => item.id === last.anchor.cardId);
-    button.textContent = last.dictionary ? '↩ Назад к словарю' : last.scheme ? '↩ Назад к схеме' : `↩ Назад к чтению${article ? ` · ${article.title}` : ''}`;
+    button.textContent = last.reference ? '↩ Назад к справочнику' : last.dictionary ? '↩ Назад к словарю' : last.scheme ? '↩ Назад к схеме' : `↩ Назад к чтению${article ? ` · ${article.title}` : ''}`;
     button.setAttribute('aria-label', button.textContent.slice(2));
     showReturnButton();
 }
@@ -101,6 +102,7 @@ function navigateReadingArticle(id, remember = true) {
     $('#proceduresDialog').close();
     $('#articleDialog').close();
     $('#dictionaryDialog').close();
+    $('#referenceDialog').close();
     closeMobileExtras();
     let target = document.getElementById(id);
     if (!target) {
@@ -144,7 +146,12 @@ function restoreReadingLocation() {
     previous.notes.forEach(id => { const note = document.getElementById(id)?.querySelector('.note-container'); if (note) note.hidden = false; });
     history.replaceState(null, '', previous.hash || location.pathname + location.search);
     restoreReadingAnchor(previous.anchor);
-    if (previous.dictionary) {
+    if (previous.reference) {
+        Object.assign(referenceState, { mode: previous.reference.mode, group: previous.reference.group, query: previous.reference.query });
+        renderReferenceTools();
+        $('#referenceDialog').showModal();
+        $('#referenceBody').scrollTop = previous.reference.scrollTop;
+    } else if (previous.dictionary) {
         $('#dictionaryDialog').showModal();
         $('#dictionaryDialog').dispatchEvent(new CustomEvent('restore-view', { detail: previous.dictionary }));
     } else if (previous.scheme) {
@@ -331,7 +338,7 @@ function initLessonTools() {
         row.append(button, pointerButton);
         dialog.querySelector('.game-header, .dialog-header').after(row);
     });
-    ['proceduresDialog', 'flashcardsDialog'].forEach(id => {
+    ['proceduresDialog', 'flashcardsDialog', 'referenceDialog'].forEach(id => {
         const row = document.createElement('div');
         row.className = 'lesson-dialog-controls';
         row.innerHTML = '<button type="button" class="btn lesson-pointer-toggle" aria-pressed="false">Указка</button>';

@@ -119,6 +119,7 @@ function initMobileNav() {
         mobileInput.addEventListener('input', debounce((e) => {
             const q = e.target.value.trim();
             const container = $('#mobileSearchResults');
+            updateLayoutSuggestion(q, 'mobile');
             if (!q) { showMobileSearchHistory(); return; }
             const allResults = getArticleSearchResults(q, state.articles);
             const results = allResults.slice(0, 15);
@@ -155,6 +156,7 @@ function initMobileNav() {
             if (e.key === 'Enter') {
                 const q = mobileInput.value.trim();
                 if (q) {
+                    if (keyboardLayoutAlternative(q)) { updateLayoutSuggestion(q, 'mobile'); $('#mobileLayoutSuggestion button')?.focus(); return; }
                     showAllMobileSearchResults(q);
                 }
             }
