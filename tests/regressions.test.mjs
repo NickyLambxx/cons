@@ -91,7 +91,7 @@ test('все новые элементы управления присутств
   for (const id of ['resetHighscoreDialog', 'nextGameQuestionBtn', 'mixedNext', 'dictionaryDialog']) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
-  assert.match(read('sw.js'), /prep-mate-v48/);
+  assert.match(read('sw.js'), /prep-mate-v49/);
   assert.match(mobile, /7000/);
   assert.match(mobile, /if \(e\.target === dlg\) dlg\.close\(\)/);
 });
