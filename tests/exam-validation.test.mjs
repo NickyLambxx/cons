@@ -63,6 +63,25 @@ test('микс содержит 50 разных вопросов по трём �
   for (const item of mixed) assert.ok(item.answers.includes(item.correct), item.question);
 });
 
+test('в миксе определения подбираются из тематически близкой группы', () => {
+  const context = vm.createContext({});
+  vm.runInContext(`${read('js/study-data.js')}\n${read('js/practice.js')}\n${read('js/official-exam.js')}\n${read('js/training.js')}`, context);
+  const result = vm.runInContext(`(() => {
+    const groups = MIXED_TERM_GROUPS;
+    const allTerms = Object.keys(DICTIONARY);
+    const covered = allTerms.every(term => groups.some(group => group.includes(term)));
+    const questions = createMixedQuestions(true).filter(item => item.type === 'Термины');
+    const valid = questions.every(item => {
+      const term = item.question.match(/«(.+)»/)[1];
+      return item.answers.every(answer => groups.some(group => group.includes(term) && group.some(candidate => DICTIONARY[candidate] === answer)));
+    });
+    return { covered, valid, count: questions.length };
+  })()`, context);
+  assert.equal(result.covered, true);
+  assert.equal(result.valid, true);
+  assert.equal(result.count, 80);
+});
+
 test('случайная сборка микса не создаёт повторов внутри серии', () => {
   const context = vm.createContext({});
   vm.runInContext(`${read('js/study-data.js')}\n${read('js/practice.js')}\n${read('js/official-exam.js')}\n${read('js/training.js')}`, context);

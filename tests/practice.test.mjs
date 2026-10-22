@@ -32,3 +32,46 @@ test('тренажёр ошибок структурно корректен и �
   assert.match(source, /textContent = 'Начать заново'/);
   assert.doesNotMatch(source, /findErrorState\.index === findErrorState\.tasks\.length - 1 \? 'Показать результат'/);
 });
+
+test('старая сохранённая серия заменяется актуальными 50 заданиями без сброса других данных', () => {
+  const context = vm.createContext({});
+  vm.runInContext(source, context);
+  const result = vm.runInContext(`(() => {
+    const old = { tasks: FIND_ERROR_TASKS.slice(0, 36), index: 8, score: 5 };
+    const cleared = [];
+    globalThis.getTrainingSession = key => key === 'findError' ? old : null;
+    globalThis.clearTrainingSession = key => cleared.push(key);
+    globalThis.shuffle = items => [...items];
+    globalThis.showToast = () => {};
+    renderFindErrorTask = () => {};
+    globalThis.$ = () => ({ open: true });
+    startFindErrorTraining();
+    return { length: findErrorState.tasks.length, index: findErrorState.index, score: findErrorState.score, cleared };
+  })()`, context);
+  assert.equal(result.length, 50);
+  assert.equal(result.index, 0);
+  assert.equal(result.score, 0);
+  assert.deepEqual([...result.cleared], ['findError']);
+});
+
+test('в вариантах исправления нет заведомо посторонних работодателей и школ', () => {
+  const options = data.FIND_ERROR_TASKS.flatMap(task => task.options.slice(1));
+  assert.equal(options.filter(option => /работодатель|школа|банк|профсоюз/i.test(option)).length, 0);
+});
+
+test('актуальная незавершённая серия продолжает сохраняться', () => {
+  const context = vm.createContext({});
+  vm.runInContext(source, context);
+  const result = vm.runInContext(`(() => {
+    const saved = { version: FIND_ERROR_BANK_VERSION, tasks: FIND_ERROR_TASKS, index: 8, score: 5 };
+    globalThis.getTrainingSession = () => saved;
+    globalThis.showToast = () => {};
+    globalThis.$ = () => ({ open: true });
+    renderFindErrorTask = () => {};
+    startFindErrorTraining();
+    return { length: findErrorState.tasks.length, index: findErrorState.index, score: findErrorState.score };
+  })()`, context);
+  assert.equal(result.length, 50);
+  assert.equal(result.index, 8);
+  assert.equal(result.score, 5);
+});
