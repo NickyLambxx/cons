@@ -171,11 +171,7 @@ function scrollArticleToTop(target, behavior = 'smooth') {
     const header = $('.site-header');
     const offset = ($('#lessonToolbar:not([hidden])')?.getBoundingClientRect().height || header?.getBoundingClientRect().height || 70) + 12;
     target.style.scrollMarginTop = `${offset}px`;
-    const root = document.documentElement;
-    const previousScrollBehavior = root.style.scrollBehavior;
-    if (behavior === 'auto') root.style.scrollBehavior = 'auto';
-    target.scrollIntoView({ block: 'start', behavior });
-    if (behavior === 'auto') requestAnimationFrame(() => { root.style.scrollBehavior = previousScrollBehavior; });
+    target.scrollIntoView({ block: 'start', behavior: behavior === 'auto' ? 'instant' : behavior });
 }
 
 function scrollSearchMatchToTop(target, behavior = 'smooth') {

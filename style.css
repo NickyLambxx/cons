@@ -57,6 +57,22 @@
 .content-shell { min-width: 0; display: grid; gap: 16px; }
 .header-tools .btn { min-height: 44px; display: inline-flex; align-items: center; gap: 5px; padding: 8px 10px; }
 .tool-label { font-size: 11px; font-weight: 650; }
+.quick-answer13 { display: grid; gap: 7px; text-align: left; margin: 12px 0 16px; font-weight: 650; }
+.quick-answer13 input { min-width: 0; width: 100%; box-sizing: border-box; min-height: 44px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px; font: inherit; font-size: 18px; letter-spacing: .15em; background: var(--card); color: var(--text); }
+.quick-answer13 span { color: var(--muted); font-size: 12px; font-weight: 400; letter-spacing: normal; }
+.quick-answer13 input[aria-invalid="true"] { border-color: #ef4444; }
+.dictionary-article-link { text-decoration: underline; text-underline-offset: 3px; }
+.flashcard.definition-first .front { justify-content: flex-start; font-size: 1.05em; font-weight: 400; color: var(--text); text-align: left; }
+.flashcard.definition-first .back { font-size: 1.5em; font-weight: 700; color: var(--accent); }
+.flashcard .front { scrollbar-width: none; }
+.flashcard .front::-webkit-scrollbar { display: none; }
+#fcTerm, #fcDef { flex-shrink: 0; }
+.flashcard-wrapper { gap: 12px; }
+.flashcard-wrapper > .deck-picker { width: 100%; margin: 0; }
+.lesson-dialog-controls { gap: 8px; }
+.lesson-pointer-toggle[aria-pressed="true"] { background: var(--accent); color: white; }
+.lesson-pointer[popover] { position: fixed; margin: 0; padding: 0; width: 22px; height: 22px; box-sizing: border-box; border: 2px solid white; border-radius: 50%; background: #e11d48; box-shadow: 0 0 0 2px #881337, 0 0 18px 6px rgba(225,29,72,.5); pointer-events: none; overflow: visible; }
+.lesson-pointer::backdrop { display: none; }
 
 /* Lesson display and linked procedure diagrams. */
 .lesson-toolbar { position: sticky; top: 0; z-index: 2100; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 20px; background: var(--card); border-bottom: 2px solid var(--accent); }

@@ -27,7 +27,7 @@ test('notes target is visible immediately during highlight', () => {
 test('mobile trainers expose visible scrolling and reset flashcard position', () => {
   assert.match(html, /id="flashcardScrollIndicator"/);
   assert.doesNotMatch(html, /mobile-game-scroll-hint/);
-  assert.match(training, /back\.scrollTop = 0/);
+  assert.match(training, /face\.scrollTop = 0/);
   assert.match(css, /\.flashcard-scroll-indicator\s*\{[^}]*width:\s*6px/);
   assert.match(css, /\.flashcard-scroll-indicator span\s*\{[^}]*left:\s*1px[^}]*right:\s*1px/);
   assert.match(css, /\.flashcard-scroll-indicator span\s*\{[^}]*opacity:\s*\.82/);
@@ -91,7 +91,7 @@ test('все новые элементы управления присутств
   for (const id of ['resetHighscoreDialog', 'nextGameQuestionBtn', 'mixedNext', 'dictionaryDialog']) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
-  assert.match(read('sw.js'), /prep-mate-v52/);
+  assert.match(read('sw.js'), /prep-mate-v53/);
   assert.match(mobile, /7000/);
   assert.match(mobile, /if \(e\.target === dlg\) dlg\.close\(\)/);
 });

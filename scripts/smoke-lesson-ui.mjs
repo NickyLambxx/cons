@@ -1,17 +1,17 @@
 import assert from 'node:assert/strict';
-import { existsSync, mkdirSync } from 'node:fs';
+import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { chromium } from 'playwright-core';
+import { launchBrowser, createContext, browserEngine } from './browser-runtime.mjs';
 
 const origin = process.env.PREPMATE_ORIGIN || 'https://prep-mate.ru';
 const screenshotDir = process.env.PREPMATE_SCREENSHOT_DIR;
 if (screenshotDir) mkdirSync(screenshotDir, { recursive: true });
-const executablePath = [process.env.PREPMATE_BROWSER_EXECUTABLE, 'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', '/usr/bin/google-chrome', '/usr/bin/chromium', chromium.executablePath()].find(path => path && existsSync(path));
-const browser = await chromium.launch({ executablePath, headless: true });
+const browser = await launchBrowser();
+console.log(`Browser engine: ${browserEngine}`);
 try {
     for (const width of [1366, 834, 390, 320]) {
         const mobile = width <= 768;
-        const context = await browser.newContext({ viewport: { width, height: 900 }, isMobile: width < 1000, hasTouch: width < 1000, serviceWorkers: 'block' });
+        const context = await createContext(browser, { viewport: { width, height: 900 }, isMobile: width < 1000, hasTouch: width < 1000, serviceWorkers: 'block' });
         const page = await context.newPage();
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
@@ -56,7 +56,8 @@ try {
         await page.locator('.procedure-flow button').nth(1).click();
         assert.equal(await page.locator('#proceduresDialog').isVisible(), false);
         assert.ok(await page.locator('#art111').isVisible());
-        assert.match(await page.locator('#btn-return').innerText(), /Назад к схеме/);
+        await page.locator('#btn-return').waitFor({ state: 'visible' });
+        assert.match(await page.locator('#btn-return').textContent(), /Назад к схеме/);
         await page.locator('#btn-return').click();
         assert.ok(await page.locator('#proceduresDialog').isVisible());
         assert.equal(await page.locator('#procedureSelect').inputValue(), 'government');
@@ -70,6 +71,11 @@ try {
         });
         await openTool('#lessonModeBtn', '#mobileLessonMode');
         assert.ok(await page.locator('#lessonToolbar').isVisible());
+        await page.locator('#lessonToolbar .lesson-pointer-toggle').click();
+        if (width < 1000) await page.touchscreen.tap(Math.min(width - 40, 400), 450);
+        else await page.mouse.move(400, 450);
+        assert.ok(await page.locator('.lesson-pointer').isVisible(), `указка видна на странице: ${JSON.stringify(await page.evaluate(() => ({ enabled: lessonPointer.enabled, hidden: lessonPointer.overlay.hidden, left: lessonPointer.overlay.style.left, top: lessonPointer.overlay.style.top, pointer: typeof PointerEvent, touch: navigator.maxTouchPoints })))}`);
+        assert.ok(await page.evaluate(() => !document.elementFromPoint(Math.min(innerWidth - 40, 400), 450)?.classList.contains('lesson-pointer')), 'указка не перехватывает нажатия');
         assert.equal(await page.locator('.sidebar').isVisible(), false);
         await page.locator('#lessonArticleSelect').selectOption('art15');
         assert.equal(await page.locator('#art15').evaluate(el => getComputedStyle(el).opacity), '1', 'текст виден в режиме урока');
@@ -81,6 +87,9 @@ try {
         if (screenshotDir) await page.screenshot({ path: join(screenshotDir, `lesson-${width}.png`) });
         await page.locator('#lessonToolSelect').selectOption('gameBtn');
         await page.locator('#startGameBtn').click();
+        if (width < 1000) await page.touchscreen.tap(150, 300);
+        else await page.mouse.move(150, 300);
+        assert.ok(await page.locator('.lesson-pointer').isVisible(), 'указка видна поверх диалога');
         await page.locator('#gameDialog .lesson-answer-toggle').click();
         assert.match(await page.locator('#gameFeedback').innerText(), /Верный ответ:/);
         for (const select of await page.locator('#official13Rows select').all()) await select.selectOption('1');
@@ -96,6 +105,7 @@ try {
         assert.equal(await page.locator('#task23Feedback').isVisible(), false, 'следующий ответ снова скрыт');
         await page.locator('#closeGame23').click();
         await page.locator('#exitLessonMode').click();
+        assert.equal(await page.locator('.lesson-pointer').isVisible(), false, 'указка выключена после урока');
         assert.equal(await page.locator('#lessonToolbar').isVisible(), false);
         assert.ok(await page.locator('.site-header').isVisible());
         assert.ok(await page.locator('#art15 .card-footer').isVisible());

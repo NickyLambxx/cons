@@ -580,9 +580,31 @@ function revealNoteEditor(noteArea) {
     }
 }
 
+function dictionaryDefinitionHTML(text, query) {
+    const references = /(?:ст\.|стать[яиею])\s*(\d+(?:\.\d+)?(?:\s*[,–-]\s*\d+(?:\.\d+)?)*)/gi;
+    let html = '', end = 0;
+    for (const match of text.matchAll(references)) {
+        html += highlightPlainText(text.slice(end, match.index), query);
+        const numberStart = match[0].indexOf(match[1]);
+        html += highlightPlainText(match[0].slice(0, numberStart), query);
+        let numberEnd = 0;
+        for (const number of match[1].matchAll(/\d+(?:\.\d+)?/g)) {
+            html += highlightPlainText(match[1].slice(numberEnd, number.index), query);
+            const article = state.articles.find(item => item.title === `Статья ${number[0]}`);
+            const label = highlightPlainText(number[0], query);
+            html += article ? `<a class="dictionary-article-link" href="#${article.id}" data-target="${article.id}" aria-label="Открыть статью ${number[0]}">${label}</a>` : label;
+            numberEnd = number.index + number[0].length;
+        }
+        html += highlightPlainText(match[1].slice(numberEnd), query);
+        end = match.index + match[0].length;
+    }
+    return html + highlightPlainText(text.slice(end), query);
+}
+
 function initDictionary() {
     let activeLetter = 'all';
     let renderFrame = 0;
+    let searchTimer;
     const renderDictionaryNow = () => {
         const list = $('#dictionaryList');
         if (!list) return;
@@ -601,7 +623,7 @@ function initDictionary() {
             name.innerHTML = highlightPlainText(term.charAt(0).toLocaleUpperCase('ru') + term.slice(1), query);
             const definition = document.createElement('span');
             definition.className = 'dict-def';
-            definition.innerHTML = highlightPlainText(DICTIONARY[term], query);
+            definition.innerHTML = dictionaryDefinitionHTML(DICTIONARY[term], query);
             div.append(name, definition);
             list.appendChild(div);
         });
@@ -630,7 +652,23 @@ function initDictionary() {
             alphabet.append(button);
         });
     }
-    $('#dictionarySearch')?.addEventListener('input', debounce(renderDictionary, 100));
+    $('#dictionarySearch')?.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(renderDictionary, 100); });
+    safeAddListener('#dictionaryList', 'click', event => {
+        const link = event.target.closest('.dictionary-article-link');
+        if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        clearTimeout(searchTimer);
+        navigateReadingArticle(link.dataset.target);
+    });
+    safeAddListener('#dictionaryDialog', 'restore-view', event => {
+        clearTimeout(searchTimer);
+        cancelAnimationFrame(renderFrame);
+        activeLetter = event.detail.letter;
+        $('#dictionarySearch').value = event.detail.query;
+        $$('#dictionaryAlphabet button').forEach(button => button.classList.toggle('active', button.dataset.letter === activeLetter));
+        renderDictionaryNow();
+        $('#dictionaryList').scrollTop = event.detail.scrollTop;
+    });
     safeAddListener('#dictionaryBtn', 'click', () => {
         const dlg = $('#dictionaryDialog'); if (!dlg) return;
         renderDictionary();

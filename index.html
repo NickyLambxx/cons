@@ -29,7 +29,7 @@
   <meta name="twitter:image"       content="https://prep-mate.ru/og-image.png" />
 
   <link rel="manifest" href="./manifest.json" />
-  <link rel="stylesheet" href="./style.css?v=52" />
+  <link rel="stylesheet" href="./style.css?v=53" />
 
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" href="./logo.png" type="image/png">
@@ -92,6 +92,7 @@
     <label>Статья <select id="lessonArticleSelect" aria-label="Статья для демонстрации"></select></label>
     <label>Материал <select id="lessonToolSelect" aria-label="Открыть материал на уроке"><option value="">Выбрать…</option><option value="gameBtn">Задание №13</option><option value="game23Btn">Задание №23</option><option value="flashcardsBtn">Карточки</option><option value="mixedTrainingBtn">Микс</option><option value="findErrorBtn">Исправь утверждение</option><option value="proceduresBtn">Схемы процедур</option></select></label>
     <label><input id="lessonExplanations" type="checkbox"> Пояснения</label>
+    <button class="btn lesson-pointer-toggle" type="button" aria-pressed="false">Указка</button>
     <button id="exitLessonMode" class="btn" type="button">Завершить показ</button>
   </section>
 
@@ -350,6 +351,7 @@
       <label class="deck-picker">Тема карточек
         <select id="flashcardDeck"><option value="all">Все темы</option><option value="foundations">Основы государства</option><option value="rights">Права и свободы</option><option value="government">Органы власти</option><option value="federation">Федеративное устройство</option><option value="justice">Право и суд</option></select>
       </label>
+      <label class="deck-picker">Направление карточек<select id="flashcardDirection"><option value="term">Термин → определение</option><option value="definition">Определение → термин</option></select></label>
       <div class="flashcard-container">
         <div id="flashcard" class="flashcard" role="button" tabindex="0" aria-label="Перевернуть карточку" aria-pressed="false">
           <div class="front">
@@ -562,6 +564,7 @@
         <div class="question-text" id="questionText">Вопрос...</div>
       </div>
       <div id="official13Choices" class="official13-choices"></div>
+      <label class="quick-answer13">Быстрый ответ А–Д<input id="quickAnswer13" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="Например: 12321" aria-describedby="quickAnswer13Hint"><span id="quickAnswer13Hint" aria-live="polite">Введите пять цифр подряд или выберите ответы ниже.</span></label>
       <div id="official13Rows" class="official13-rows"></div>
       <div id="gameFeedback" class="game-feedback"></div>
       <div class="trainer-actions"><button id="checkGameAnswerBtn" class="btn btn-primary" type="button">Проверить</button><button id="nextGameQuestionBtn" class="btn btn-secondary" type="button" hidden>Следующее задание</button></div>
@@ -616,19 +619,19 @@
     </article>
   </template>
 
-  <script src="js/vendor/qrcode.js?v=52" defer></script>
-  <script src="js/core.js?v=52" defer></script>
-  <script src="js/study-data.js?v=52" defer></script>
-  <script src="js/study-tools.js?v=52" defer></script>
-  <script src="js/practice.js?v=52" defer></script>
-  <script src="js/training.js?v=52" defer></script>
-  <script src="js/official-exam.js?v=52" defer></script>
-  <script src="js/reading.js?v=52" defer></script>
-  <script src="js/articles-ui.js?v=52" defer></script>
-  <script src="js/mobile-pwa.js?v=52" defer></script>
-  <script src="js/data-transfer.js?v=52" defer></script>
-  <script src="js/lesson-tools.js?v=52" defer></script>
-  <script src="js/app.js?v=52" defer></script>
+  <script src="js/vendor/qrcode.js?v=53" defer></script>
+  <script src="js/core.js?v=53" defer></script>
+  <script src="js/study-data.js?v=53" defer></script>
+  <script src="js/study-tools.js?v=53" defer></script>
+  <script src="js/practice.js?v=53" defer></script>
+  <script src="js/training.js?v=53" defer></script>
+  <script src="js/official-exam.js?v=53" defer></script>
+  <script src="js/reading.js?v=53" defer></script>
+  <script src="js/articles-ui.js?v=53" defer></script>
+  <script src="js/mobile-pwa.js?v=53" defer></script>
+  <script src="js/data-transfer.js?v=53" defer></script>
+  <script src="js/lesson-tools.js?v=53" defer></script>
+  <script src="js/app.js?v=53" defer></script>
 </body>
 
 </html>

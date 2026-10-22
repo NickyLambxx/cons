@@ -377,6 +377,32 @@ function examSourceMarkup(task, compact = false) {
     return `<a href="${task.source}" target="_blank" rel="noopener">${compact ? 'Источник ФИПИ' : `Источник: ${escapeHTML(task.label)}, ФИПИ`}</a>`;
 }
 
+function syncQuickAnswer13() {
+    const input = $('#quickAnswer13');
+    const values = $$('#official13Rows select').map(select => select.value);
+    const firstEmpty = values.indexOf('');
+    input.value = firstEmpty < 0 ? values.join('') : values.slice(firstEmpty).every(value => !value) ? values.slice(0, firstEmpty).join('') : '';
+    input.setCustomValidity('');
+    input.removeAttribute('aria-invalid');
+    $('#quickAnswer13Hint').textContent = `Выбрано позиций: ${values.filter(Boolean).length} из 5. Цифры идут в порядке А–Д.`;
+}
+
+function applyQuickAnswer13() {
+    if (officialExamState.checked13) return;
+    const input = $('#quickAnswer13');
+    const digits = input.value.replace(/\s/g, '');
+    const choices = OFFICIAL_TASKS_13[officialExamState.task13].choices.length;
+    const valid = /^\d{0,5}$/.test(digits) && [...digits].every(digit => Number(digit) >= 1 && Number(digit) <= choices);
+    const error = `Введите не более пяти цифр от 1 до ${choices}.`;
+    input.setCustomValidity(valid ? '' : error);
+    input.setAttribute('aria-invalid', String(!valid));
+    if (!valid) { $('#quickAnswer13Hint').textContent = error; return; }
+    input.value = digits;
+    $$('#official13Rows select').forEach((select, index) => { select.value = digits[index] || ''; });
+    saveTrainingSession('task13', { index: officialExamState.task13, correct: officialExamState.correct13, answers: $$('#official13Rows select').map(select => select.value) });
+    $('#quickAnswer13Hint').textContent = `Выбрано позиций: ${digits.length} из 5. Цифры идут в порядке А–Д.`;
+}
+
 function renderOfficial13() {
     const task = OFFICIAL_TASKS_13[officialExamState.task13];
     const previous = getTrainingSession('task13');
@@ -395,11 +421,14 @@ function renderOfficial13() {
         select.setAttribute('aria-label', `Ответ для позиции ${'АБВГД'[index]}`);
         select.innerHTML = '<option value="">Выберите ответ</option>' + task.choices.map((choice, number) => `<option value="${number + 1}">${number + 1} — ${escapeHTML(choice)}</option>`).join('');
         select.value = savedAnswers[index] || '';
-        select.addEventListener('change', () => saveTrainingSession('task13', { index: officialExamState.task13, correct: officialExamState.correct13, answers: $$('#official13Rows select').map(item => item.value) }));
+        select.addEventListener('change', () => { syncQuickAnswer13(); saveTrainingSession('task13', { index: officialExamState.task13, correct: officialExamState.correct13, answers: $$('#official13Rows select').map(item => item.value) }); });
         row.append(span, select);
         rows.append(row);
     });
     $('#gameFeedback').innerHTML = examSourceMarkup(task);
+    $('#quickAnswer13').disabled = false;
+    $('#quickAnswer13').placeholder = `Например: ${task.choices.length >= 3 ? '12321' : '12121'}`;
+    syncQuickAnswer13();
     $('#checkGameAnswerBtn').hidden = false;
     $('#nextGameQuestionBtn').hidden = true;
     $('#gamePlayScreen').scrollTop = 0;
@@ -408,6 +437,7 @@ function renderOfficial13() {
 
 function checkOfficial13() {
     if (officialExamState.checked13) return;
+    if (!$('#quickAnswer13').checkValidity()) { showToast($('#quickAnswer13').validationMessage); $('#quickAnswer13').focus(); return; }
     const selects = $$('#official13Rows select');
     if (selects.some(select => !select.value)) { showToast('Заполните все пять позиций'); return; }
     const task = OFFICIAL_TASKS_13[officialExamState.task13];
@@ -422,6 +452,7 @@ function checkOfficial13() {
     $('#checkGameAnswerBtn').hidden = true;
     $('#nextGameQuestionBtn').hidden = false;
     officialExamState.checked13 = true;
+    $('#quickAnswer13').disabled = true;
     clearTrainingSession('task13');
     revealTrainerFeedback('#gameFeedback');
 }
@@ -479,6 +510,8 @@ function showOfficial23Model(withoutAnswer = false) {
 }
 
 function initOfficialExam() {
+    safeAddListener('#quickAnswer13', 'input', applyQuickAnswer13);
+    safeAddListener('#quickAnswer13', 'keydown', event => { if (event.key === 'Enter') { event.preventDefault(); checkOfficial13(); } });
     safeAddListener('#gameBtn', 'click', () => {
         const session = getTrainingSession('task13');
         officialExamState.task13 = Number.isInteger(session?.index) && OFFICIAL_TASKS_13[session.index] ? session.index : 0;

@@ -55,13 +55,13 @@ function resetFlashcardDeck() {
 
 function updateFlashcardScrollIndicator() {
     const card = $('#flashcard');
-    const back = $('.flashcard .back');
+    const back = card?.querySelector(card.classList.contains('flipped') ? '.back' : '.front');
     const indicator = $('#flashcardScrollIndicator');
     const thumb = indicator?.querySelector('span');
     if (!card || !back || !indicator || !thumb) return;
 
     const overflow = back.scrollHeight > back.clientHeight + 2;
-    indicator.hidden = !card.classList.contains('flipped') || !overflow;
+    indicator.hidden = !overflow;
     if (indicator.hidden) return;
 
     const thumbHeight = Math.max(22, Math.round(back.clientHeight / back.scrollHeight * 100));
@@ -71,8 +71,7 @@ function updateFlashcardScrollIndicator() {
 }
 
 function resetFlashcardScroll() {
-    const back = $('.flashcard .back');
-    if (back) back.scrollTop = 0;
+    $$('.flashcard .front, .flashcard .back').forEach(face => { face.scrollTop = 0; });
     requestAnimationFrame(updateFlashcardScrollIndicator);
 }
 
@@ -109,7 +108,9 @@ function initFlashcards() {
         resetFlashcardDeck();
     });
     safeAddListener('#flashcardDeck', 'change', resetFlashcardDeck);
+    safeAddListener('#flashcardDirection', 'change', renderFlashcard);
     $('.flashcard .back')?.addEventListener('scroll', updateFlashcardScrollIndicator, { passive: true });
+    $('.flashcard .front')?.addEventListener('scroll', updateFlashcardScrollIndicator, { passive: true });
 
     safeAddListener('#fcNext', 'click', () => moveFlashcard(1));
     safeAddListener('#fcPrev', 'click', () => moveFlashcard(-1));
@@ -155,8 +156,12 @@ function renderFlashcard() {
     const term = flashcards.terms[flashcards.index];
     $('#flashcard')?.setAttribute('aria-pressed', 'false');
     
-    $('#fcTerm').textContent = term.charAt(0).toUpperCase() + term.slice(1);
-    $('#fcDef').textContent = DICTIONARY[term];
+    const reversed = $('#flashcardDirection').value === 'definition';
+    $('#flashcard').classList.remove('flipped');
+    $('#flashcard').classList.toggle('definition-first', reversed);
+    $('#fcTerm').textContent = reversed ? DICTIONARY[term] : term.charAt(0).toUpperCase() + term.slice(1);
+    $('#fcDef').textContent = reversed ? term.charAt(0).toUpperCase() + term.slice(1) : DICTIONARY[term];
+    $('.flashcard .hint').textContent = reversed ? 'Вспомните термин и нажмите для проверки' : 'Нажмите, чтобы перевернуть';
     $('#fcCounter').textContent = `${flashcards.index + 1} / ${flashcards.terms.length}`;
 
     $('#fcPrev').disabled = flashcards.index === 0;

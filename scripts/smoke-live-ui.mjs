@@ -1,26 +1,21 @@
 /* Post-deploy browser check on isolated desktop, tablet and phone-sized sessions. */
 import assert from 'node:assert/strict';
-import { existsSync, mkdirSync } from 'node:fs';
+import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { chromium } from 'playwright-core';
+import { launchBrowser, createContext, browserEngine } from './browser-runtime.mjs';
 
 const origin = process.env.PREPMATE_ORIGIN || 'https://prep-mate.ru';
 const screenshotDir = process.env.PREPMATE_SCREENSHOT_DIR;
 if (screenshotDir) mkdirSync(screenshotDir, { recursive: true });
-const browserCandidates = process.platform === 'win32'
-  ? ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe']
-  : ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser'];
-const executablePath = [process.env.PREPMATE_BROWSER_EXECUTABLE, ...browserCandidates, chromium.executablePath()].find(path => path && existsSync(path));
-if (!executablePath) throw new Error('Не найден Chrome/Edge. Укажите PREPMATE_BROWSER_EXECUTABLE.');
-
-const browser = await chromium.launch({ executablePath, headless: true, args: ['--no-sandbox'] });
+const browser = await launchBrowser();
+console.log(`Browser engine: ${browserEngine}`);
 try {
   for (const device of [
     { name: 'компьютер', slug: 'desktop', viewport: { width: 1366, height: 900 }, isMobile: false, usesMobileNavigation: false },
     { name: 'планшет', slug: 'tablet', viewport: { width: 834, height: 1112 }, isMobile: true, usesMobileNavigation: false },
     { name: 'телефон', slug: 'mobile', viewport: { width: 390, height: 844 }, isMobile: true, usesMobileNavigation: true }
   ]) {
-    const context = await browser.newContext({ viewport: device.viewport, isMobile: device.isMobile, hasTouch: device.isMobile, serviceWorkers: 'block' });
+    const context = await createContext(browser, { viewport: device.viewport, isMobile: device.isMobile, hasTouch: device.isMobile, serviceWorkers: 'block' });
     const page = await context.newPage();
     const pageErrors = [];
     const clickHeaderTool = async selector => {
@@ -67,6 +62,12 @@ try {
     assert.match(await page.locator('#questionText').innerText(), /Демоверсия ЕГЭ-2026/);
     await page.evaluate(() => { officialExamState.task13 = 50; renderOfficial13(); });
     assert.match(await page.locator('#questionText').innerText(), /вариант 1/);
+    await page.locator('#quickAnswer13').fill('21');
+    assert.deepEqual(await page.locator('#official13Rows select').evaluateAll(elements => elements.map(el => el.value)), ['2', '1', '', '', '']);
+    await page.locator('#quickAnswer13').fill('99999');
+    assert.equal(await page.locator('#quickAnswer13').getAttribute('aria-invalid'), 'true');
+    await page.locator('#quickAnswer13').fill('2 1 1 2 1');
+    assert.equal(await page.locator('#quickAnswer13').inputValue(), '21121');
     for (const [index, digit] of [...'21121'].entries()) {
       await page.locator('#official13Rows select').nth(index).selectOption(digit);
     }
@@ -124,6 +125,20 @@ try {
     };
     await openTool('#flashcardsBtn', '#mobileFlashcards');
     assert.match(await page.locator('#fcCounter').innerText(), /1 \/ 80/);
+    await page.locator('#flashcardDirection').selectOption('definition');
+    await page.evaluate(() => { flashcards.index = flashcards.terms.reduce((best, term, index, terms) => DICTIONARY[term].length > DICTIONARY[terms[best]].length ? index : best, 0); renderFlashcard(); });
+    const reversed = await page.evaluate(() => ({ text: document.querySelector('#fcTerm').textContent, expected: DICTIONARY[flashcards.terms[flashcards.index]], term: flashcards.terms[flashcards.index] }));
+    assert.equal(reversed.text, reversed.expected, 'определение на лицевой стороне');
+    if (screenshotDir) await page.screenshot({ path: join(screenshotDir, `reverse-cards-${device.slug}.png`), animations: 'disabled' });
+    await page.locator('.flashcard .front').evaluate(element => { element.scrollTop = element.scrollHeight; });
+    await page.evaluate(() => updateFlashcardScrollIndicator());
+    const frontOverflows = await page.locator('.flashcard .front').evaluate(element => element.scrollHeight > element.clientHeight + 2);
+    assert.equal(await page.locator('#flashcardScrollIndicator').isVisible(), frontOverflows, 'индикатор соответствует наличию прокрутки определения');
+    await page.locator('#flashcard').click();
+    assert.equal((await page.locator('#fcDef').innerText()).toLocaleLowerCase('ru'), reversed.term, 'термин на обороте');
+    await page.locator('#flashcardDirection').selectOption('term');
+    assert.equal(await page.locator('.flashcard .front').evaluate(element => element.scrollTop), 0, 'направление сбрасывает прокрутку');
+    await page.evaluate(() => { flashcards.index = 0; renderFlashcard(); });
     await page.locator('#flashcard').click();
     assert.ok((await page.locator('#fcDef').innerText()).length > 30, 'определение карточки');
     await page.locator('#fcNext').click();
@@ -134,6 +149,19 @@ try {
     await openTool('#dictionaryBtn', '#mobileDictionary');
     await page.locator('#dictionaryList .dict-item').first().waitFor();
     assert.equal(await page.locator('#dictionaryList .dict-item').count(), 80, '80 терминов словаря');
+    await page.locator('#dictionarySearch').fill('адвокат');
+    const articleLink = page.locator('#dictionaryList a[data-target="art48"]').first();
+    await articleLink.waitFor();
+    await articleLink.click();
+    assert.equal(await page.locator('#dictionaryDialog').isVisible(), false);
+    assert.ok(await page.locator('#art48').isVisible());
+    await page.locator('#btn-return').click();
+    assert.ok(await page.locator('#dictionaryDialog').isVisible());
+    assert.equal(await page.locator('#dictionarySearch').inputValue(), 'адвокат');
+    await page.locator('#dictionarySearch').fill('11');
+    await page.locator('#dictionaryList a mark').first().waitFor();
+    assert.match(await page.locator('#dictionaryList a mark').first().innerText(), /11/, 'подсветка цифр внутри ссылки');
+    if (screenshotDir) await page.screenshot({ path: join(screenshotDir, `dictionary-links-${device.slug}.png`), animations: 'disabled' });
     await page.locator('#closeDictionary').click();
 
     await openTool('#argumentBankBtn', '#mobileArgumentBank');
