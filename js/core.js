@@ -73,7 +73,13 @@ function migrateStoredData() {
     }
 }
 
+const lessonTrainingSessions = {};
+function isLessonMode() {
+    return typeof document !== 'undefined' && document.body.classList.contains('lesson-mode');
+}
+
 function loadTrainingSessions() {
+    if (isLessonMode()) return { ...lessonTrainingSessions };
     try {
         const value = JSON.parse(localStorage.getItem(LS.TRAINING_SESSIONS) || '{}');
         return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -87,6 +93,7 @@ function getTrainingSession(name) {
 }
 
 function saveTrainingSession(name, value) {
+    if (isLessonMode()) { lessonTrainingSessions[name] = { ...value, savedAt: Date.now() }; return; }
     try {
         const sessions = loadTrainingSessions();
         sessions[name] = { ...value, savedAt: Date.now() };
@@ -95,6 +102,7 @@ function saveTrainingSession(name, value) {
 }
 
 function clearTrainingSession(name) {
+    if (isLessonMode()) { delete lessonTrainingSessions[name]; return; }
     const sessions = loadTrainingSessions();
     delete sessions[name];
     try { localStorage.setItem(LS.TRAINING_SESSIONS, JSON.stringify(sessions)); } catch (_) { }
@@ -108,6 +116,7 @@ function loadTrainingResults() {
 }
 
 function recordTrainingResult(name, score, total) {
+    if (isLessonMode()) return;
     const results = loadTrainingResults();
     const previous = results[name] || {};
     results[name] = {

@@ -169,7 +169,7 @@ function getArticleSearchResults(query, sourceList = state.articles) {
 function scrollArticleToTop(target, behavior = 'smooth') {
     if (!target) return;
     const header = $('.site-header');
-    const offset = (header?.getBoundingClientRect().height || 70) + 12;
+    const offset = ($('#lessonToolbar:not([hidden])')?.getBoundingClientRect().height || header?.getBoundingClientRect().height || 70) + 12;
     target.style.scrollMarginTop = `${offset}px`;
     const root = document.documentElement;
     const previousScrollBehavior = root.style.scrollBehavior;
@@ -215,7 +215,7 @@ function processText(text) {
     text = text.replace(articleRegex, (match, prefix, listContent) => {
         const linkedList = listContent.replace(/((?:часть|пункт)\s+)?(\d+(?:\.\d+)?)/gi, (m, keyword, num) => {
             if (keyword) return m;
-            const targetArt = state.articles.find(a => a.title.startsWith(`Статья ${num}`));
+            const targetArt = state.articles.find(a => a.title === `Статья ${num}`);
             if (targetArt) return `<a href="#${targetArt.id}" class="cross-link" data-target="${targetArt.id}">${num}</a>`;
             return num;
         });

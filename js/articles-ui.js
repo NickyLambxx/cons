@@ -59,16 +59,7 @@ function showReturnButton() { const btn = $('#btn-return'); if (btn) btn.classLi
 function hideReturnButton() { const btn = $('#btn-return'); if (btn) btn.classList.remove('visible'); }
 
 function returnBack() {
-    if (state.returnPosition !== null) {
-        state.isJumping = true;
-        window.scrollTo({ top: state.returnPosition, behavior: 'smooth' });
-        hideReturnButton();
-        setTimeout(() => {
-            state.isJumping = false;
-            state.returnPosition = null;
-            state.landingPosition = null;
-        }, 1000);
-    }
+    restoreReadingLocation();
 }
 
 function buildTOC() {
@@ -185,6 +176,7 @@ function renderArticles(list = state.articles) {
 
         let processedBody = highlightHTMLText(processText(a.bodyHTML), state.activeSearchQuery);
         $('.body', node).innerHTML = processedBody;
+        addProcedureShortcut(card);
 
         const explain = $('.explain', node);
         let processedExplain = a.explainHTML ? processText(a.explainHTML) : '';
@@ -295,6 +287,7 @@ function renderArticles(list = state.articles) {
     });
 
     initDynamicEvents(container);
+    applyLessonArticleSettings();
 }
 
 let _shareTitle = '';
@@ -556,18 +549,7 @@ function initDynamicEvents(container) {
     container.querySelectorAll('.cross-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault(); e.stopPropagation();
-            state.returnPosition = window.scrollY; state.isJumping = true;
-            const targetId = link.dataset.target;
-            const el = document.getElementById(targetId);
-            if (el) {
-                const offset = 80;
-                const elementPosition = el.getBoundingClientRect().top + window.scrollY;
-                window.scrollTo({ top: elementPosition - offset, behavior: "smooth" });
-                state.landingPosition = elementPosition - offset;
-                showReturnButton();
-                el.classList.add('highlight');
-                setTimeout(() => { el.classList.remove('highlight'); state.isJumping = false; }, 1000);
-            }
+            navigateReadingArticle(link.dataset.target);
         });
     });
 }

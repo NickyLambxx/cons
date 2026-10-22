@@ -58,6 +58,65 @@
 .header-tools .btn { min-height: 44px; display: inline-flex; align-items: center; gap: 5px; padding: 8px 10px; }
 .tool-label { font-size: 11px; font-weight: 650; }
 
+/* Lesson display and linked procedure diagrams. */
+.lesson-toolbar { position: sticky; top: 0; z-index: 2100; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 20px; background: var(--card); border-bottom: 2px solid var(--accent); }
+.lesson-toolbar label { display: flex; align-items: center; gap: 7px; font-size: 14px; }
+.lesson-toolbar select, .procedure-picker select { max-width: 100%; min-height: 44px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--card); font: inherit; }
+.lesson-toolbar select { max-width: 210px; }
+.lesson-toolbar input { width: 20px; height: 20px; accent-color: var(--accent); }
+.lesson-dialog-controls { display: none; }
+.lesson-mode .site-header, .lesson-mode .sidebar, .lesson-mode .mobile-nav, .lesson-mode .study-filters, .lesson-mode #content .meta, .lesson-mode #content .note-container, .lesson-mode #content .card-footer, .lesson-mode #mobileSearchBanner, .lesson-mode #contextMenu { display: none !important; }
+.lesson-mode .layout { display: block; max-width: 1100px; margin: 0 auto; padding: 24px; }
+.lesson-mode #content .body, .lesson-mode #content .explain-body { font-size: 22px; line-height: 1.7; }
+.lesson-mode #content .title { font-size: 28px; }
+.lesson-mode #backToTop, .lesson-mode #resetHighscoreBtn, .lesson-mode .game-score, .lesson-mode #official23SelfScore { display: none !important; }
+.lesson-mode #task23Feedback label { display: none; }
+.lesson-mode #content .card, #content .card.reading-stable { animation: none; opacity: 1; transform: none; }
+.lesson-mode:not(.lesson-explanations) #content .explain { display: none; }
+.lesson-mode .lesson-dialog-controls { display: flex; justify-content: flex-end; flex: 0 0 auto; padding: 8px 16px; background: var(--card); border-bottom: 1px solid var(--border); }
+.lesson-mode dialog .question-text, .lesson-mode .official13-row, .lesson-mode .task23-question, .lesson-mode #mixedQuestion, .lesson-mode #findErrorStatement { font-size: 21px; line-height: 1.5; }
+.lesson-mode:not(.lesson-answers-visible) :is(#gameFeedback, #task23Feedback, #mixedFeedback, #findErrorFeedback) { display: none !important; }
+.lesson-mode:not(.lesson-answers-visible) :is(.official13-row select.correct, .official13-row select.wrong, .mixed-answer.correct, .mixed-answer.wrong) { border-color: var(--border); background: var(--surface2); color: var(--text); }
+.lesson-mode:not(.lesson-answers-visible) #findErrorAnswers .mixed-answer { border-color: var(--border); background: var(--surface2); color: var(--text); }
+.reading-target { outline: 2px solid var(--accent); outline-offset: 3px; }
+#proceduresDialog[open] { display: flex; flex-direction: column; max-height: min(90dvh, 900px); overflow: hidden; }
+#proceduresDialog .dialog-header { flex: 0 0 auto; }
+.procedures-body { padding: 18px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.procedure-picker { display: grid; gap: 8px; color: var(--muted); font-size: 14px; }
+.procedure-flow { list-style: none; margin: 20px 0; padding: 0; display: grid; gap: 28px; }
+.procedure-flow li { position: relative; }
+.procedure-flow li:not(:last-child)::after { content: '↓'; position: absolute; bottom: -27px; left: 24px; color: var(--accent); font-size: 22px; }
+.procedure-step { width: 100%; display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; text-align: left; padding: 16px; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; font: inherit; line-height: 1.55; cursor: pointer; }
+.procedure-step:hover { border-color: var(--accent); }
+.procedure-step-number { display: grid; place-items: center; align-self: start; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: white; font-weight: 700; }
+.procedure-step strong, .procedure-step span > span, .procedure-step small { display: block; }
+.procedure-step strong { margin-bottom: 5px; }
+.procedure-step small { color: var(--accent); margin-top: 8px; }
+.procedure-branches { display: grid; gap: 10px; }
+.procedure-branches details { padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface2); }
+.procedure-branches summary { cursor: pointer; font-weight: 650; min-height: 32px; }
+.procedure-source { margin-top: 20px; color: var(--muted); font-size: 13px; }
+.procedure-shortcut { margin: 12px 0; white-space: normal; text-align: left; }
+.btn-return { max-width: calc(100vw - 32px); text-align: center; line-height: 1.35; }
+@media (max-width: 768px) {
+    .lesson-toolbar { gap: 8px; padding: 10px; }
+    .lesson-toolbar > strong { flex: 1; }
+    .lesson-toolbar > label { flex: 1 1 130px; min-width: 0; }
+    .lesson-toolbar > label:nth-of-type(3) { flex: 0 1 auto; }
+    .lesson-toolbar select { min-width: 0; width: 100%; }
+    .lesson-toolbar #exitLessonMode { flex: 1 1 auto; }
+    .lesson-mode .layout { padding: 12px; }
+    .lesson-mode #content .body, .lesson-mode #content .explain-body { font-size: 19px; }
+    .lesson-mode .btn-return { bottom: 20px; }
+    .lesson-mode .game-dialog { height: calc(100dvh - 20px); max-height: calc(100dvh - 20px); }
+    .procedure-step { grid-template-columns: 28px minmax(0, 1fr); gap: 9px; padding: 12px; }
+    .procedure-step-number { width: 28px; height: 28px; }
+    .procedures-body { padding: 12px; }
+}
+@media print {
+    .lesson-toolbar, #proceduresDialog, .lesson-dialog-controls { display: none !important; }
+}
+
 .study-filters {
     padding: 14px 16px;
     border: 1px solid var(--border);

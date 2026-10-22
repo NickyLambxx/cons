@@ -127,7 +127,8 @@ function openDialogById(id) {
     const art = state.articles.find(x => x.id === id); if (!art) return;
     const dlg = $('#articleDialog'); if (!dlg) return;
     $('#dialogTitle').textContent = art.title;
-    $('#dialogBody').innerHTML = processText(art.bodyHTML) + (art.explainHTML ? `<hr><div class="muted">Пояснение:</div>${processText(art.explainHTML)}` : '');
+    const showExplanation = !document.body.classList.contains('lesson-mode') || $('#lessonExplanations').checked;
+    $('#dialogBody').innerHTML = processText(art.bodyHTML) + (art.explainHTML && showExplanation ? `<hr><div class="muted">Пояснение:</div>${processText(art.explainHTML)}` : '');
     initDynamicEvents($('#dialogBody'));
     dlg.showModal();
 }
@@ -165,6 +166,7 @@ function initHeaderGroups() {
 
 function boot() {
     initHeaderGroups();
+    initLessonTools();
     migrateStoredData();
     applyTheme(true);
     loadFavorites();

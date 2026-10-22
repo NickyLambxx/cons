@@ -29,7 +29,7 @@
   <meta name="twitter:image"       content="https://prep-mate.ru/og-image.png" />
 
   <link rel="manifest" href="./manifest.json" />
-  <link rel="stylesheet" href="./style.css?v=51" />
+  <link rel="stylesheet" href="./style.css?v=52" />
 
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" href="./logo.png" type="image/png">
@@ -87,6 +87,14 @@
     </div>
   </header>
 
+  <section id="lessonToolbar" class="lesson-toolbar" aria-label="Управление уроком" hidden>
+    <strong>Режим урока</strong>
+    <label>Статья <select id="lessonArticleSelect" aria-label="Статья для демонстрации"></select></label>
+    <label>Материал <select id="lessonToolSelect" aria-label="Открыть материал на уроке"><option value="">Выбрать…</option><option value="gameBtn">Задание №13</option><option value="game23Btn">Задание №23</option><option value="flashcardsBtn">Карточки</option><option value="mixedTrainingBtn">Микс</option><option value="findErrorBtn">Исправь утверждение</option><option value="proceduresBtn">Схемы процедур</option></select></label>
+    <label><input id="lessonExplanations" type="checkbox"> Пояснения</label>
+    <button id="exitLessonMode" class="btn" type="button">Завершить показ</button>
+  </section>
+
   <main class="layout" role="main">
     <aside id="sidebarPanel" class="sidebar" aria-label="Оглавление">
       <div class="sidebar-inner">
@@ -113,6 +121,8 @@
 
         <button id="progressTransferBtn" class="btn btn-block">📱 Перенести прогресс</button>
 
+        <button id="lessonModeBtn" class="btn btn-block" type="button">🖥️ Режим урока</button>
+        <button id="proceduresBtn" class="btn btn-block" type="button">🔀 Схемы процедур</button>
         <button id="argumentBankBtn" class="btn btn-block">💬 Банк аргументов</button>
         <button id="findErrorBtn" class="btn btn-block">🔎 Исправь утверждение</button>
 
@@ -202,6 +212,8 @@
     <div class="mobile-sheet-body">
       <button class="sheet-tool-btn" id="mobileFlashcards">🗂️ Карточки терминов</button>
       <button class="sheet-tool-btn" id="mobileDictionary">📖 Словарь</button>
+      <button class="sheet-tool-btn" id="mobileLessonMode">🖥️ Режим урока</button>
+      <button class="sheet-tool-btn" id="mobileProcedures">🔀 Схемы процедур</button>
       <button class="sheet-tool-btn" id="mobileMixedTraining">🧠 Смешанная тренировка</button>
       <button class="sheet-tool-btn" id="mobileGame23">📋 Тренажёр к №23</button>
       <button class="sheet-tool-btn" id="mobileGame">🎮 Тренажёр полномочий</button>
@@ -224,7 +236,17 @@
   </div>
 
   <button id="backToTop" class="btn-up" aria-label="Вернуться в начало">⬆</button>
-  <button id="btn-return" class="btn-return" aria-label="Вернуться назад">↩ Вернуться назад</button>
+  <button id="btn-return" class="btn-return" aria-label="Вернуться к чтению">↩ Назад к чтению</button>
+
+  <dialog id="proceduresDialog" class="large-dialog" aria-labelledby="proceduresTitle">
+    <header class="dialog-header"><h3 id="proceduresTitle">Схемы государственных процедур</h3><button id="closeProcedures" class="btn" type="button">Закрыть</button></header>
+    <div class="procedures-body">
+      <label class="procedure-picker">Выберите процедуру<select id="procedureSelect"><option value="federal-law">Принятие федерального закона</option><option value="constitutional-law">Принятие ФКЗ</option><option value="government">Формирование Правительства</option></select></label>
+      <p class="muted">Нажмите на этап, чтобы прочитать статью. Кнопка «Назад к схеме» вернёт вас сюда.</p>
+      <div id="procedureContent"></div>
+      <p class="procedure-source">Основание: <a href="https://minjust.gov.ru/ru/documents/8011/" target="_blank" rel="noopener">Конституция РФ, официальный текст Минюста</a>. Схемы показывают основные этапы; особенности указаны под ними.</p>
+    </div>
+  </dialog>
 
   <div id="contextMenu" class="action-sheet" hidden>
     <div class="action-sheet-header">Выделен текст</div>
@@ -594,18 +616,19 @@
     </article>
   </template>
 
-  <script src="js/vendor/qrcode.js?v=51" defer></script>
-  <script src="js/core.js?v=51" defer></script>
-  <script src="js/study-data.js?v=51" defer></script>
-  <script src="js/study-tools.js?v=51" defer></script>
-  <script src="js/practice.js?v=51" defer></script>
-  <script src="js/training.js?v=51" defer></script>
-  <script src="js/official-exam.js?v=51" defer></script>
-  <script src="js/reading.js?v=51" defer></script>
-  <script src="js/articles-ui.js?v=51" defer></script>
-  <script src="js/mobile-pwa.js?v=51" defer></script>
-  <script src="js/data-transfer.js?v=51" defer></script>
-  <script src="js/app.js?v=51" defer></script>
+  <script src="js/vendor/qrcode.js?v=52" defer></script>
+  <script src="js/core.js?v=52" defer></script>
+  <script src="js/study-data.js?v=52" defer></script>
+  <script src="js/study-tools.js?v=52" defer></script>
+  <script src="js/practice.js?v=52" defer></script>
+  <script src="js/training.js?v=52" defer></script>
+  <script src="js/official-exam.js?v=52" defer></script>
+  <script src="js/reading.js?v=52" defer></script>
+  <script src="js/articles-ui.js?v=52" defer></script>
+  <script src="js/mobile-pwa.js?v=52" defer></script>
+  <script src="js/data-transfer.js?v=52" defer></script>
+  <script src="js/lesson-tools.js?v=52" defer></script>
+  <script src="js/app.js?v=52" defer></script>
 </body>
 
 </html>
