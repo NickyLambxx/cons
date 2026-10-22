@@ -100,7 +100,7 @@ test('незавершённая старая серия микса расшир
     const restored = vm.runInContext(`(() => {
       const oldQuestions = createMixedQuestions().slice(0, 20);
       const oldQuestionsSnapshot = JSON.stringify(oldQuestions);
-      globalThis.getTrainingSession = () => ({ questions: oldQuestions, index: 7, score: 5 });
+      globalThis.getTrainingSession = () => ({ version: MIXED_BANK_VERSION, questions: oldQuestions, index: 7, score: 5 });
       const resumed = restoreMixedTrainingSession();
       return { resumed, questions: mixedTraining.questions, oldQuestionsSnapshot, index: mixedTraining.index, score: mixedTraining.score };
     })()`, context);
@@ -111,6 +111,16 @@ test('незавершённая старая серия микса расшир
     assert.equal(restored.index, 7);
     assert.equal(restored.score, 5);
   }
+});
+
+test('старая сохранённая серия микса не возвращает лёгкие варианты', () => {
+  const context = vm.createContext({});
+  vm.runInContext(`${read('js/study-data.js')}\n${read('js/practice.js')}\n${read('js/official-exam.js')}\n${read('js/training.js')}`, context);
+  const restored = vm.runInContext(`(() => {
+    globalThis.getTrainingSession = () => ({ questions: createMixedQuestions(), index: 7, score: 5 });
+    return restoreMixedTrainingSession();
+  })()`, context);
+  assert.equal(restored, false);
 });
 
 test('проверенные формулировки №13 и №23 не искажают конституционные полномочия и запреты', () => {

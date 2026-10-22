@@ -180,6 +180,7 @@ function normalizePowerPrompt(prompt) {
 }
 
 // Близкие понятия заставляют различать смысл, а не угадывать по теме ответа.
+const MIXED_BANK_VERSION = 2;
 const MIXED_TERM_GROUPS = [
     ['адвокат', 'адвокатура', 'нотариат', 'омбудсмен', 'прокуратура', 'суд', 'судья', 'судебная защита', 'правосудие', 'конституционный суд'],
     ['конституция', 'закон', 'федеральный закон', 'федеральный конституционный закон', 'указ', 'договор', 'ратификация'],
@@ -230,6 +231,7 @@ function createMixedQuestions(fullPool = false) {
 function restoreMixedTrainingSession() {
     const session = getTrainingSession('mixed');
     const validQuestions = Array.isArray(session?.questions)
+        && session.version === MIXED_BANK_VERSION
         && session.questions.length > 0
         && session.questions.every(item => item && typeof item.question === 'string' && Array.isArray(item.answers) && typeof item.correct === 'string');
     if (!validQuestions || !Number.isInteger(session.index) || !session.questions[session.index]) return false;
@@ -273,6 +275,7 @@ function renderMixedQuestion() {
         answers.append(button);
     });
     saveTrainingSession('mixed', {
+        version: MIXED_BANK_VERSION,
         questions: mixedTraining.questions,
         index: mixedTraining.index,
         score: mixedTraining.score
