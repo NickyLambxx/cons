@@ -393,7 +393,7 @@ function renderOfficial13() {
         span.textContent = `${'АБВГД'[index]}) ${prompt}`;
         const select = document.createElement('select');
         select.setAttribute('aria-label', `Ответ для позиции ${'АБВГД'[index]}`);
-        select.innerHTML = '<option value="">—</option>' + task.choices.map((_, number) => `<option value="${number + 1}">${number + 1}</option>`).join('');
+        select.innerHTML = '<option value="">Выберите ответ</option>' + task.choices.map((choice, number) => `<option value="${number + 1}">${number + 1} — ${escapeHTML(choice)}</option>`).join('');
         select.value = savedAnswers[index] || '';
         select.addEventListener('change', () => saveTrainingSession('task13', { index: officialExamState.task13, correct: officialExamState.correct13, answers: $$('#official13Rows select').map(item => item.value) }));
         row.append(span, select);
@@ -402,6 +402,7 @@ function renderOfficial13() {
     $('#gameFeedback').innerHTML = examSourceMarkup(task);
     $('#checkGameAnswerBtn').hidden = false;
     $('#nextGameQuestionBtn').hidden = true;
+    $('#gamePlayScreen').scrollTop = 0;
     saveTrainingSession('task13', { index: officialExamState.task13, correct: officialExamState.correct13, answers: savedAnswers });
 }
 
@@ -425,6 +426,10 @@ function checkOfficial13() {
     revealTrainerFeedback('#gameFeedback');
 }
 
+function updateOfficial23Attempt() {
+    $('#checkTask23Btn').disabled = !$$('#task23Options textarea').some(item => item.value.trim());
+}
+
 function renderOfficial23() {
     const task = OFFICIAL_TASKS_23[officialExamState.task23];
     const previous = getTrainingSession('task23');
@@ -436,16 +441,21 @@ function renderOfficial23() {
     $('#task23Options').innerHTML = [1, 2, 3].map(number => `<label class="official23-answer">Объяснение ${number}<textarea rows="3" aria-label="Объяснение ${number}" placeholder="Запишите развёрнутый ответ своими словами"></textarea></label>`).join('');
     $$('#task23Options textarea').forEach((textarea, index) => {
         textarea.value = savedAnswers[index] || '';
-        textarea.addEventListener('input', debounce(() => saveTrainingSession('task23', { index: officialExamState.task23, answers: $$('#task23Options textarea').map(item => item.value) }), 250));
+        textarea.addEventListener('input', updateOfficial23Attempt);
+        textarea.addEventListener('input', () => saveTrainingSession('task23', { index: officialExamState.task23, answers: $$('#task23Options textarea').map(item => item.value) }));
     });
     $('#task23Feedback').innerHTML = examSourceMarkup(task);
     $('#checkTask23Btn').hidden = false;
+    $('#skipTask23Btn').hidden = false;
+    $('#task23AttemptHint').hidden = false;
+    updateOfficial23Attempt();
     $('#nextTask23Btn').style.display = 'none';
     saveTrainingSession('task23', { index: officialExamState.task23, answers: savedAnswers });
 }
 
-function showOfficial23Model() {
+function showOfficial23Model(withoutAnswer = false) {
     if (officialExamState.shown23) return;
+    if (!withoutAnswer && !$$('#task23Options textarea').some(item => item.value.trim())) return;
     const task = OFFICIAL_TASKS_23[officialExamState.task23];
     const note = task.sourceKind === 'book'
         ? '<p>Ориентиры сверены с ответами сборника и Конституцией, но изложены своими словами. Это не официальный ключ ФИПИ; возможны другие верные объяснения.</p>'
@@ -460,6 +470,8 @@ function showOfficial23Model() {
         }
     });
     $('#checkTask23Btn').hidden = true;
+    $('#skipTask23Btn').hidden = true;
+    $('#task23AttemptHint').hidden = true;
     $('#nextTask23Btn').style.display = 'inline-block';
     officialExamState.shown23 = true;
     clearTrainingSession('task23');
@@ -489,6 +501,7 @@ function initOfficialExam() {
     safeAddListener('#game23Btn', 'click', () => { const session = getTrainingSession('task23'); officialExamState.task23 = Number.isInteger(session?.index) && OFFICIAL_TASKS_23[session.index] ? session.index : 0; renderOfficial23(); $('#game23Dialog').showModal(); });
     safeAddListener('#closeGame23', 'click', () => $('#game23Dialog').close());
     safeAddListener('#resetGame23', 'click', () => { clearTrainingSession('task23'); officialExamState.task23 = 0; renderOfficial23(); });
-    safeAddListener('#checkTask23Btn', 'click', showOfficial23Model);
+    safeAddListener('#checkTask23Btn', 'click', () => showOfficial23Model());
+    safeAddListener('#skipTask23Btn', 'click', () => showOfficial23Model(true));
     safeAddListener('#nextTask23Btn', 'click', () => { officialExamState.task23 = (officialExamState.task23 + 1) % OFFICIAL_TASKS_23.length; renderOfficial23(); });
 }

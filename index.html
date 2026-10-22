@@ -29,7 +29,7 @@
   <meta name="twitter:image"       content="https://prep-mate.ru/og-image.png" />
 
   <link rel="manifest" href="./manifest.json" />
-  <link rel="stylesheet" href="./style.css?v=50" />
+  <link rel="stylesheet" href="./style.css?v=51" />
 
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" href="./logo.png" type="image/png">
@@ -64,12 +64,22 @@
 
       <button id="flashcardsBtn" class="btn" aria-label="Карточки" title="Учить термины"><span aria-hidden="true">🗂️</span><span class="tool-label">Карточки</span></button>
       <button id="dictionaryBtn" class="btn" aria-label="Словарь" title="Словарь терминов"><span aria-hidden="true">📖</span><span class="tool-label">Словарь</span></button>
+      <div class="header-group">
+        <button class="btn header-group-toggle" type="button" aria-expanded="false" aria-controls="headerTrainers">Тренажёры ▾</button>
+        <div id="headerTrainers" class="header-group-items">
       <button id="mixedTrainingBtn" class="btn" aria-label="Смешанная тренировка" title="Смешанная тренировка"><span aria-hidden="true">🧠</span><span class="tool-label">Микс</span></button>
-      <button id="game23Btn" class="btn" aria-label="Тренажёр к заданию 23" title="Тренажёр положений Конституции для №23"><span aria-hidden="true">📋</span><span class="tool-label">№23</span></button>
-      <button id="gameBtn" class="btn" aria-label="Тренажёр полномочий" title="Кто за что отвечает?"><span aria-hidden="true">🎮</span><span class="tool-label">№13</span></button>
+      <button id="game23Btn" class="btn" aria-label="Тренажёр к заданию 23" title="Тренажёр положений Конституции для №23"><span aria-hidden="true">📋</span><span class="tool-label"><span class="tablet-task-prefix">Задание </span>№23</span></button>
+      <button id="gameBtn" class="btn" aria-label="Тренажёр полномочий" title="Кто за что отвечает?"><span aria-hidden="true">🎮</span><span class="tool-label"><span class="tablet-task-prefix">Задание </span>№13</span></button>
+        </div>
+      </div>
+      <div class="header-group">
+        <button class="btn header-group-toggle" type="button" aria-expanded="false" aria-controls="headerMore">Ещё ⋯</button>
+        <div id="headerMore" class="header-group-items">
       <button id="fontBtn" class="btn" aria-label="Настройки шрифта" title="Размер текста"><span aria-hidden="true">Aa</span><span class="tool-label">Текст</span></button>
       <button id="printBtn" class="btn" aria-label="Распечатать" title="Версия для печати"><span aria-hidden="true">🖨️</span><span class="tool-label">Печать</span></button>
       <button id="themeToggle" class="btn" aria-label="Переключить тему" title="Сменить тему"><span aria-hidden="true">🌓</span><span class="tool-label">Тема</span></button>
+        </div>
+      </div>
     </div>
 
     <div id="scrollProgress" class="progress">
@@ -296,8 +306,10 @@
         <p id="task23Instruction" class="task23-instruction"></p>
       </div>
       <div id="task23Options" class="task23-options"></div>
+      <p id="task23AttemptHint" class="dialog-subtitle">Сначала сформулируйте ответ, затем сравните его с ориентиром.</p>
       <div class="game23-controls">
-        <button id="checkTask23Btn" class="btn btn-primary btn-lg">Показать ориентир</button>
+        <button id="checkTask23Btn" class="btn btn-primary btn-lg" disabled>Сравнить с ориентиром</button>
+        <button id="skipTask23Btn" class="btn btn-secondary" type="button">Не знаю — показать без ответа</button>
         <button id="nextTask23Btn" class="btn btn-secondary" style="display:none">Следующий вопрос</button>
       </div>
       <div id="task23Feedback" class="game-feedback"></div>
@@ -582,18 +594,18 @@
     </article>
   </template>
 
-  <script src="js/vendor/qrcode.js?v=50" defer></script>
-  <script src="js/core.js?v=50" defer></script>
-  <script src="js/study-data.js?v=50" defer></script>
-  <script src="js/study-tools.js?v=50" defer></script>
-  <script src="js/practice.js?v=50" defer></script>
-  <script src="js/training.js?v=50" defer></script>
-  <script src="js/official-exam.js?v=50" defer></script>
-  <script src="js/reading.js?v=50" defer></script>
-  <script src="js/articles-ui.js?v=50" defer></script>
-  <script src="js/mobile-pwa.js?v=50" defer></script>
-  <script src="js/data-transfer.js?v=50" defer></script>
-  <script src="js/app.js?v=50" defer></script>
+  <script src="js/vendor/qrcode.js?v=51" defer></script>
+  <script src="js/core.js?v=51" defer></script>
+  <script src="js/study-data.js?v=51" defer></script>
+  <script src="js/study-tools.js?v=51" defer></script>
+  <script src="js/practice.js?v=51" defer></script>
+  <script src="js/training.js?v=51" defer></script>
+  <script src="js/official-exam.js?v=51" defer></script>
+  <script src="js/reading.js?v=51" defer></script>
+  <script src="js/articles-ui.js?v=51" defer></script>
+  <script src="js/mobile-pwa.js?v=51" defer></script>
+  <script src="js/data-transfer.js?v=51" defer></script>
+  <script src="js/app.js?v=51" defer></script>
 </body>
 
 </html>

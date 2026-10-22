@@ -155,9 +155,28 @@
 
 button, .btn, .nav-item, .sheet-tool-btn, .toc-chapter-header { min-height: 44px; }
 
+.header-group, .header-group-items { display: contents; }
+.tablet-task-prefix { display: none; }
+.header-tools .header-group-toggle { display: none; }
 @media (max-width: 1180px) and (min-width: 769px) {
     .site-header .brand h1 { font-size: 15px; }
-    .tool-label { display: none; }
+    .logo-container { display: none; }
+    .header-tools { gap: 6px; }
+    .header-tools .header-group { position: relative; display: block; }
+    .header-tools .header-group-toggle { display: inline-flex; }
+    .header-tools .header-group-items { display: none; position: absolute; top: calc(100% + 8px); right: 0; min-width: 210px; padding: 8px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); box-shadow: var(--shadow); }
+    .header-tools .header-group.is-open .header-group-items { display: grid; gap: 4px; }
+    .header-group-items .btn { justify-content: flex-start; }
+    .header-group-items .tool-label { font-size: 14px; }
+    .tablet-task-prefix { display: inline; }
+}
+
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+#task23AttemptHint { margin: 16px 0 8px; }
+@media (max-width: 768px) {
+    .official13-row { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px; text-align: left; }
+    .official13-row select { min-height: 44px; font-size: 16px; }
+    .game23-controls { flex-direction: column; }
 }
 
 @media (min-width: 769px) and (max-width: 900px) {

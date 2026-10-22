@@ -132,7 +132,39 @@ function openDialogById(id) {
     dlg.showModal();
 }
 
+function initHeaderGroups() {
+    const groups = $$('.header-group');
+    const closeGroups = () => groups.forEach(group => {
+        group.classList.remove('is-open');
+        group.querySelector('.header-group-toggle').setAttribute('aria-expanded', 'false');
+    });
+    groups.forEach(group => {
+        const toggle = group.querySelector('.header-group-toggle');
+        toggle.addEventListener('click', () => {
+            const opening = !group.classList.contains('is-open');
+            closeGroups();
+            if (opening) {
+                group.classList.add('is-open');
+                toggle.setAttribute('aria-expanded', 'true');
+            }
+        });
+        group.querySelector('.header-group-items').addEventListener('click', event => {
+            if (event.target.closest('button')) closeGroups();
+        });
+    });
+    document.addEventListener('click', event => { if (!event.target.closest('.header-group')) closeGroups(); });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            const active = groups.find(group => group.classList.contains('is-open'));
+            closeGroups();
+            active?.querySelector('.header-group-toggle').focus();
+        }
+    });
+    window.addEventListener('resize', closeGroups);
+}
+
 function boot() {
+    initHeaderGroups();
     migrateStoredData();
     applyTheme(true);
     loadFavorites();

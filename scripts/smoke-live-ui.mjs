@@ -23,12 +23,27 @@ try {
     const context = await browser.newContext({ viewport: device.viewport, isMobile: device.isMobile, hasTouch: device.isMobile, serviceWorkers: 'block' });
     const page = await context.newPage();
     const pageErrors = [];
+    const clickHeaderTool = async selector => {
+      const tool = page.locator(selector);
+      const group = tool.locator('xpath=ancestor::div[contains(@class,"header-group")]');
+      if (await group.count() && !(await tool.isVisible())) await group.locator('.header-group-toggle').click();
+      await tool.click();
+    };
     page.on('pageerror', error => pageErrors.push(error.message));
     await page.goto(`${origin}/?smoke=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForFunction(() => document.querySelectorAll('#content .card[data-article-id]').length === 142, null, { timeout: 30000 });
     assert.equal(await page.locator('#content .card[data-article-id]').count(), 142, 'число статей');
     const documentWidth = await page.evaluate(() => document.documentElement.scrollWidth);
     assert.ok(documentWidth <= device.viewport.width + 1, `горизонтальная прокрутка: ${documentWidth}px при окне ${device.viewport.width}px`);
+    if (device.slug === 'tablet') {
+      assert.ok(await page.locator('#flashcardsBtn .tool-label').isVisible(), 'подписи планшетного меню');
+      const trainersToggle = page.locator('[aria-controls="headerTrainers"]');
+      await trainersToggle.focus();
+      await page.keyboard.press('Enter');
+      assert.ok(await page.locator('#gameBtn').isVisible(), 'раскрытие тренажёров клавиатурой');
+      await page.keyboard.press('Escape');
+      assert.equal(await trainersToggle.getAttribute('aria-expanded'), 'false');
+    }
     if (screenshotDir) await page.screenshot({ path: join(screenshotDir, `home-${device.slug}.png`), animations: 'disabled' });
 
     if (device.usesMobileNavigation) {
@@ -43,7 +58,7 @@ try {
       await page.locator('#mobileGame').click();
     } else {
       await page.locator('#searchInput').fill('статья 111');
-      await page.locator('#gameBtn').click();
+      await clickHeaderTool('#gameBtn');
     }
 
     await page.locator('#startGameBtn').click();
@@ -65,7 +80,7 @@ try {
       await page.locator('#navTools').click();
       await page.locator('#mobileGame23').click();
     } else {
-      await page.locator('#game23Btn').click();
+      await clickHeaderTool('#game23Btn');
     }
     assert.equal(await page.locator('#task23Options textarea').count(), 3, 'три объяснения №23');
     await page.evaluate(() => { officialExamState.task23 = 35; renderOfficial23(); });
@@ -75,6 +90,9 @@ try {
     const dialogBox = await page.locator('#game23Dialog').boundingBox();
     assert.ok(dialogBox && dialogBox.x >= -1 && dialogBox.x + dialogBox.width <= device.viewport.width + 1, 'диалог №23 в пределах экрана');
     if (screenshotDir) await page.screenshot({ path: join(screenshotDir, `task23-prompt-${device.slug}.png`), animations: 'disabled' });
+    assert.equal(await page.locator('#checkTask23Btn').isDisabled(), true, 'ориентир после попытки');
+    await page.locator('#task23Options textarea').first().fill('Мой ответ с опорой на Конституцию РФ.');
+    assert.equal(await page.locator('#checkTask23Btn').isEnabled(), true, 'сравнение доступно после ввода');
     await page.locator('#checkTask23Btn').click();
     assert.equal(await page.locator('#task23Feedback ol li').count(), 3, 'три ориентира книжного №23');
     assert.match(await page.locator('#task23Feedback').innerText(), /не официальный ключ ФИПИ/);
@@ -82,6 +100,9 @@ try {
     await page.locator('#nextTask23Btn').click();
     assert.match(await page.locator('#task23Context').innerText(), /основы суверенитета/);
     assert.match(await page.locator('#task23Instruction').innerText(), /распространённым предложением/);
+    assert.equal(await page.locator('#checkTask23Btn').isDisabled(), true, 'новый вопрос не наследует ответ');
+    await page.locator('#skipTask23Btn').click();
+    assert.equal(await page.locator('#task23Feedback ol li').count(), 3, 'показ без ответа');
     await page.locator('#closeGame23').click();
 
     if (device.usesMobileNavigation) {
@@ -98,7 +119,7 @@ try {
         await page.locator('#navTools').click();
         await page.locator(mobile).click();
       } else {
-        await page.locator(desktop).click();
+        await clickHeaderTool(desktop);
       }
     };
     await openTool('#flashcardsBtn', '#mobileFlashcards');
