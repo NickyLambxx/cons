@@ -67,10 +67,14 @@ try {
       return {
         textWidth: context.measureText(select.options[0].textContent).width,
         availableWidth: select.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
-        arrowSpace: parseFloat(style.paddingRight)
+        arrowSpace: parseFloat(style.paddingRight),
+        font: style.font,
+        canvasFont: context.font,
+        fieldWidth: select.clientWidth,
+        stylesheet: document.querySelector('link[rel="stylesheet"]').href
       };
     });
-    assert.ok(answerSelectLayout.availableWidth >= answerSelectLayout.textWidth, 'подсказка выбора ответа помещается целиком');
+    assert.ok(answerSelectLayout.availableWidth >= answerSelectLayout.textWidth, `подсказка выбора ответа помещается целиком: ${JSON.stringify(answerSelectLayout)}`);
     assert.ok(answerSelectLayout.arrowSpace >= 28, 'стрелка выбора отделена от текста');
     if (screenshotDir) await page.screenshot({ path: join(screenshotDir, `task13-placeholder-${device.slug}.png`), animations: 'disabled' });
     assert.match(await page.locator('#questionText').innerText(), /Демоверсия ЕГЭ-2026/);
