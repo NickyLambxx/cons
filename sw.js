@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prep-mate-v55';
+const CACHE_NAME = 'prep-mate-v56';
 const ASSETS = [
   './',
   './index.html',

@@ -23,7 +23,7 @@ jobs:
         run: npm run check
 
   live-smoke:
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/task13-ci-layout')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: quality
     runs-on: ubuntu-latest
     strategy:
