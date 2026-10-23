@@ -9,7 +9,7 @@
     "test": "node --test tests/*.test.mjs",
     "check": "node scripts/check-js.mjs && node --test tests/*.test.mjs",
     "predeploy": "node scripts/check-js.mjs && node --test tests/*.test.mjs",
-    "smoke:live": "node scripts/smoke-live.mjs v54",
+    "smoke:live": "node scripts/smoke-live.mjs v55",
     "smoke:live:ui": "node scripts/smoke-live-ui.mjs && node scripts/smoke-lesson-ui.mjs && node scripts/smoke-reference-ui.mjs"
   },
   "devDependencies": {

@@ -72,6 +72,7 @@ try {
     });
     assert.ok(answerSelectLayout.availableWidth >= answerSelectLayout.textWidth, 'подсказка выбора ответа помещается целиком');
     assert.ok(answerSelectLayout.arrowSpace >= 28, 'стрелка выбора отделена от текста');
+    if (screenshotDir) await page.screenshot({ path: join(screenshotDir, `task13-placeholder-${device.slug}.png`), animations: 'disabled' });
     assert.match(await page.locator('#questionText').innerText(), /Демоверсия ЕГЭ-2026/);
     await page.evaluate(() => { officialExamState.task13 = 50; renderOfficial13(); });
     assert.match(await page.locator('#questionText').innerText(), /вариант 1/);
