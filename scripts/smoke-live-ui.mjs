@@ -59,7 +59,8 @@ try {
     await page.locator('#startGameBtn').click();
     await page.locator('#official13Rows select').first().waitFor({ timeout: 10000 });
     assert.equal(await page.locator('#official13Rows select').count(), 5, 'пять позиций №13');
-    const answerSelectLayout = await page.locator('#official13Rows select').first().evaluate(select => {
+    const answerSelect = page.locator('#official13Rows select').first();
+    const measureAnswerSelect = select => {
       const style = getComputedStyle(select);
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
@@ -73,9 +74,15 @@ try {
         fieldWidth: select.clientWidth,
         stylesheet: document.querySelector('link[rel="stylesheet"]').href
       };
-    });
+    };
+    const answerSelectLayout = await answerSelect.evaluate(measureAnswerSelect);
     assert.ok(answerSelectLayout.availableWidth >= answerSelectLayout.textWidth, `подсказка выбора ответа помещается целиком: ${JSON.stringify(answerSelectLayout)}`);
     assert.ok(answerSelectLayout.arrowSpace >= 28, 'стрелка выбора отделена от текста');
+    // A wider fallback catches font-metric differences between Windows and Linux.
+    await answerSelect.evaluate(select => { select.style.fontFamily = 'Verdana, monospace'; });
+    const wideFontLayout = await answerSelect.evaluate(measureAnswerSelect);
+    assert.ok(wideFontLayout.availableWidth >= wideFontLayout.textWidth + 4, `широкий запасной шрифт помещается с отступом: ${JSON.stringify(wideFontLayout)}`);
+    await answerSelect.evaluate(select => { select.style.removeProperty('font-family'); });
     if (screenshotDir) await page.screenshot({ path: join(screenshotDir, `task13-placeholder-${device.slug}.png`), animations: 'disabled' });
     assert.match(await page.locator('#questionText').innerText(), /Демоверсия ЕГЭ-2026/);
     await page.evaluate(() => { officialExamState.task13 = 50; renderOfficial13(); });
