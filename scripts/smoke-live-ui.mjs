@@ -59,6 +59,19 @@ try {
     await page.locator('#startGameBtn').click();
     await page.locator('#official13Rows select').first().waitFor({ timeout: 10000 });
     assert.equal(await page.locator('#official13Rows select').count(), 5, 'пять позиций №13');
+    const answerSelectLayout = await page.locator('#official13Rows select').first().evaluate(select => {
+      const style = getComputedStyle(select);
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      context.font = style.font;
+      return {
+        textWidth: context.measureText(select.options[0].textContent).width,
+        availableWidth: select.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+        arrowSpace: parseFloat(style.paddingRight)
+      };
+    });
+    assert.ok(answerSelectLayout.availableWidth >= answerSelectLayout.textWidth, 'подсказка выбора ответа помещается целиком');
+    assert.ok(answerSelectLayout.arrowSpace >= 28, 'стрелка выбора отделена от текста');
     assert.match(await page.locator('#questionText').innerText(), /Демоверсия ЕГЭ-2026/);
     await page.evaluate(() => { officialExamState.task13 = 50; renderOfficial13(); });
     assert.match(await page.locator('#questionText').innerText(), /вариант 1/);
